@@ -1,0 +1,474 @@
+import express from 'express';
+import pool from '../config/db.js';
+import { verifyAdmin } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
+import fs from 'fs';
+import path from 'path';
+
+const router = express.Router();
+
+// Helper to delete an image file if it exists
+const deleteFile = (relativePath) => {
+  if (!relativePath) return;
+  const fullPath = path.resolve('..', relativePath);
+  fs.unlink(fullPath, (err) => {
+    if (err && err.code !== 'ENOENT') {
+      console.error(`⚠️ Failed to delete file: ${fullPath}`, err);
+    }
+  });
+};
+
+// Helper to parse JSON fields safely
+const parseRoom = (room) => {
+  if (!room) return room;
+  try {
+    room.facilities = room.facilities_json ? 
+      (typeof room.facilities_json === 'string' ? JSON.parse(room.facilities_json) : room.facilities_json) 
+      : [];
+  } catch (e) {
+    room.facilities = [];
+  }
+  try {
+    room.rules = room.rules_json ? 
+      (typeof room.rules_json === 'string' ? JSON.parse(room.rules_json) : room.rules_json) 
+      : [];
+  } catch (e) {
+    room.rules = [];
+  }
+  delete room.facilities_json;
+  delete room.rules_json;
+  return room;
+};
+
+// GET all rooms with filters
+router.get('/', async (req, res) => {
+  const { 
+    admin, 
+    gender, 
+    is_ac, 
+    price_min, 
+    price_max, 
+    distance_max, 
+    beds_per_room,
+    available_only, 
+    limit 
+  } = req.query;
+
+  const isAdmin = admin === 'true';
+
+  try {
+    let query = `
+      SELECT r.*, rp.photo AS primary_photo 
+      FROM rooms r
+      LEFT JOIN room_photos rp ON r.id = rp.room_id AND rp.is_primary = 1
+      WHERE 1=1
+    `;
+    const params = [];
+
+    // Filter status for clients
+    if (!isAdmin) {
+      query += " AND r.status = 'active'";
+    }
+
+    // Gender filter (supports boys, girls, unisex)
+    if (gender) {
+      query += " AND r.gender = ?";
+      params.push(gender);
+    }
+
+    // AC filter
+    if (is_ac !== undefined) {
+      query += " AND r.is_ac = ?";
+      params.push(parseInt(is_ac));
+    }
+
+    // Price range filters (uses price_per_person)
+    if (price_min) {
+      query += " AND r.price_per_person >= ?";
+      params.push(parseFloat(price_min));
+    }
+    if (price_max) {
+      query += " AND r.price_per_person <= ?";
+      params.push(parseFloat(price_max));
+    }
+
+    // Distance from SRKR filter
+    if (distance_max) {
+      query += " AND r.distance_from_srkr <= ?";
+      params.push(parseFloat(distance_max));
+    }
+
+    // Beds per room sharing filter
+    if (beds_per_room) {
+      query += " AND r.beds_per_room = ?";
+      params.push(parseInt(beds_per_room));
+    }
+
+    // Available only filter
+    if (available_only === 'true') {
+      query += " AND r.available_beds > 0";
+    }
+
+    // Sorting: Newest rooms first, or distance first
+    query += " ORDER BY r.distance_from_srkr ASC, r.id DESC";
+
+    // Limit records
+    if (limit) {
+      query += " LIMIT ?";
+      params.push(parseInt(limit));
+    }
+
+    const [rows] = await pool.query(query, params);
+    const parsedRooms = rows.map(room => parseRoom(room));
+    res.json(parsedRooms);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET single room detail (public)
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rooms] = await pool.query('SELECT * FROM rooms WHERE id = ?', [id]);
+    if (rooms.length === 0) {
+      return res.status(404).json({ error: 'Room / PG not found.' });
+    }
+
+    const [photos] = await pool.query(
+      'SELECT * FROM room_photos WHERE room_id = ? ORDER BY is_primary DESC, id ASC',
+      [id]
+    );
+
+    const room = parseRoom(rooms[0]);
+    room.photos = photos;
+
+    res.json(room);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST create room (admin only, handles multiple files up to 10)
+router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
+  const {
+    room_name,
+    gender,
+    price_per_person,
+    is_ac,
+    beds_per_room,
+    filled_count,
+    available_beds,
+    total_beds,
+    distance_from_srkr,
+    phone,
+    google_maps_link,
+    address,
+    facilities,
+    rules,
+    status
+  } = req.body;
+
+  if (!room_name || !gender || !price_per_person || !phone) {
+    // Delete uploaded files on request error
+    if (req.files) {
+      req.files.forEach(file => deleteFile(`Uploads/Rooms/${file.filename}`));
+    }
+    return res.status(400).json({ error: 'Room name, gender, price per person, and contact number are required.' });
+  }
+
+  // Format JSON fields properly
+  let facilities_json = '[]';
+  let rules_json = '[]';
+
+  try {
+    facilities_json = typeof facilities === 'string' ? facilities : JSON.stringify(facilities || []);
+    rules_json = typeof rules === 'string' ? rules : JSON.stringify(rules || []);
+  } catch (e) {
+    console.error('JSON stringify error during creation', e);
+  }
+
+  const conn = await pool.getConnection();
+
+  try {
+    await conn.beginTransaction();
+
+    const [result] = await conn.query(
+      `INSERT INTO rooms 
+       (room_name, gender, price_per_person, is_ac, beds_per_room, filled_count, available_beds, total_beds, distance_from_srkr, phone, google_maps_link, address, facilities_json, rules_json, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        room_name,
+        gender,
+        parseFloat(price_per_person),
+        is_ac === 'true' || is_ac === '1' ? 1 : 0,
+        parseInt(beds_per_room || '1'),
+        parseInt(filled_count || '0'),
+        parseInt(available_beds || '0'),
+        parseInt(total_beds || '0'),
+        distance_from_srkr ? parseFloat(distance_from_srkr) : null,
+        phone,
+        google_maps_link || '',
+        address || '',
+        facilities_json,
+        rules_json,
+        status || 'active'
+      ]
+    );
+
+    const roomId = result.insertId;
+
+    // Handle uploaded photos
+    if (req.files && req.files.length > 0) {
+      for (let i = 0; i < req.files.length; i++) {
+        const photoPath = `Uploads/Rooms/${req.files[i].filename}`;
+        const isPrimary = i === 0 ? 1 : 0; // Mark the first photo as primary
+        await conn.query(
+          'INSERT INTO room_photos (room_id, photo, is_primary) VALUES (?, ?, ?)',
+          [roomId, photoPath, isPrimary]
+        );
+      }
+    }
+
+    await conn.commit();
+    conn.release();
+
+    // Fetch newly created room with photos
+    const [newRooms] = await pool.query('SELECT * FROM rooms WHERE id = ?', [roomId]);
+    const [photos] = await pool.query('SELECT * FROM room_photos WHERE room_id = ?', [roomId]);
+    const room = parseRoom(newRooms[0]);
+    room.photos = photos;
+
+    res.status(201).json(room);
+  } catch (error) {
+    await conn.rollback();
+    conn.release();
+    if (req.files) {
+      req.files.forEach(file => deleteFile(`Uploads/Rooms/${file.filename}`));
+    }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT update room (admin only)
+router.put('/:id', verifyAdmin, async (req, res) => {
+  const { id } = req.params;
+  const {
+    room_name,
+    gender,
+    price_per_person,
+    is_ac,
+    beds_per_room,
+    filled_count,
+    available_beds,
+    total_beds,
+    distance_from_srkr,
+    phone,
+    google_maps_link,
+    address,
+    facilities,
+    rules,
+    status
+  } = req.body;
+
+  try {
+    const [existing] = await pool.query('SELECT * FROM rooms WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ error: 'Room not found.' });
+    }
+
+    let facilities_json = existing[0].facilities_json;
+    let rules_json = existing[0].rules_json;
+
+    if (facilities !== undefined) {
+      facilities_json = typeof facilities === 'string' ? facilities : JSON.stringify(facilities);
+    }
+    if (rules !== undefined) {
+      rules_json = typeof rules === 'string' ? rules : JSON.stringify(rules);
+    }
+
+    await pool.query(
+      `UPDATE rooms SET 
+        room_name = ?, 
+        gender = ?, 
+        price_per_person = ?, 
+        is_ac = ?, 
+        beds_per_room = ?, 
+        filled_count = ?, 
+        available_beds = ?, 
+        total_beds = ?, 
+        distance_from_srkr = ?, 
+        phone = ?, 
+        google_maps_link = ?, 
+        address = ?, 
+        facilities_json = ?, 
+        rules_json = ?, 
+        status = ? 
+      WHERE id = ?`,
+      [
+        room_name !== undefined ? room_name : existing[0].room_name,
+        gender !== undefined ? gender : existing[0].gender,
+        price_per_person !== undefined ? parseFloat(price_per_person) : existing[0].price_per_person,
+        is_ac !== undefined ? (is_ac === 'true' || is_ac === '1' || is_ac === 1 ? 1 : 0) : existing[0].is_ac,
+        beds_per_room !== undefined ? parseInt(beds_per_room) : existing[0].beds_per_room,
+        filled_count !== undefined ? parseInt(filled_count) : existing[0].filled_count,
+        available_beds !== undefined ? parseInt(available_beds) : existing[0].available_beds,
+        total_beds !== undefined ? parseInt(total_beds) : existing[0].total_beds,
+        distance_from_srkr !== undefined ? (distance_from_srkr ? parseFloat(distance_from_srkr) : null) : existing[0].distance_from_srkr,
+        phone !== undefined ? phone : existing[0].phone,
+        google_maps_link !== undefined ? google_maps_link : existing[0].google_maps_link,
+        address !== undefined ? address : existing[0].address,
+        facilities_json,
+        rules_json,
+        status !== undefined ? status : existing[0].status,
+        id
+      ]
+    );
+
+    const [updated] = await pool.query('SELECT * FROM rooms WHERE id = ?', [id]);
+    res.json(parseRoom(updated[0]));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST upload photos to existing room (admin only)
+router.post('/:id/photos', verifyAdmin, upload.array('photos', 10), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [existing] = await pool.query('SELECT * FROM rooms WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      if (req.files) {
+        req.files.forEach(file => deleteFile(`Uploads/Rooms/${file.filename}`));
+      }
+      return res.status(404).json({ error: 'Room not found.' });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No files uploaded.' });
+    }
+
+    // Check if the room already has a primary photo
+    const [primaryPhoto] = await pool.query('SELECT id FROM room_photos WHERE room_id = ? AND is_primary = 1', [id]);
+    const hasPrimary = primaryPhoto.length > 0;
+
+    const insertedPhotos = [];
+    for (let i = 0; i < req.files.length; i++) {
+      const photoPath = `Uploads/Rooms/${req.files[i].filename}`;
+      // If there is no existing primary, make the first uploaded photo primary
+      const isPrimary = (!hasPrimary && i === 0) ? 1 : 0;
+
+      const [result] = await pool.query(
+        'INSERT INTO room_photos (room_id, photo, is_primary) VALUES (?, ?, ?)',
+        [id, photoPath, isPrimary]
+      );
+      
+      insertedPhotos.push({
+        id: result.insertId,
+        room_id: parseInt(id),
+        photo: photoPath,
+        is_primary: isPrimary
+      });
+    }
+
+    res.json(insertedPhotos);
+  } catch (error) {
+    if (req.files) {
+      req.files.forEach(file => deleteFile(`Uploads/Rooms/${file.filename}`));
+    }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT set photo as primary (admin only)
+router.put('/:id/photos/:photoId/primary', verifyAdmin, async (req, res) => {
+  const { id, photoId } = req.params;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Verify photo belongs to room
+    const [photo] = await conn.query('SELECT * FROM room_photos WHERE id = ? AND room_id = ?', [photoId, id]);
+    if (photo.length === 0) {
+      conn.release();
+      return res.status(404).json({ error: 'Photo not found for this room.' });
+    }
+
+    // Set all photos for this room to non-primary
+    await conn.query('UPDATE room_photos SET is_primary = 0 WHERE room_id = ?', [id]);
+    
+    // Set selected photo to primary
+    await conn.query('UPDATE room_photos SET is_primary = 1 WHERE id = ?', [photoId]);
+
+    await conn.commit();
+    conn.release();
+
+    res.json({ success: true, message: 'Photo marked as primary successfully.' });
+  } catch (error) {
+    await conn.rollback();
+    conn.release();
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE single photo (admin only)
+router.delete('/photos/:photoId', verifyAdmin, async (req, res) => {
+  const { photoId } = req.params;
+
+  try {
+    const [photo] = await pool.query('SELECT * FROM room_photos WHERE id = ?', [photoId]);
+    if (photo.length === 0) {
+      return res.status(404).json({ error: 'Photo not found.' });
+    }
+
+    // Delete image file from storage
+    deleteFile(photo[0].photo);
+
+    // Delete record
+    await pool.query('DELETE FROM room_photos WHERE id = ?', [photoId]);
+
+    // If we deleted the primary photo, assign a new primary if there are other photos left
+    if (photo[0].is_primary === 1) {
+      const [remaining] = await pool.query(
+        'SELECT id FROM room_photos WHERE room_id = ? ORDER BY id ASC LIMIT 1',
+        [photo[0].room_id]
+      );
+      if (remaining.length > 0) {
+        await pool.query('UPDATE room_photos SET is_primary = 1 WHERE id = ?', [remaining[0].id]);
+      }
+    }
+
+    res.json({ success: true, message: 'Photo deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE whole room (admin only - cascades database records, manually deletes physical files)
+router.delete('/:id', verifyAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Get all photos associated with the room to delete files from disk
+    const [photos] = await pool.query('SELECT photo FROM room_photos WHERE room_id = ?', [id]);
+    
+    // Delete each image file from disk
+    photos.forEach(p => deleteFile(p.photo));
+
+    // Delete room (cascades database deletes via FOREIGN KEY ON DELETE CASCADE constraint)
+    const [result] = await pool.query('DELETE FROM rooms WHERE id = ?', [id]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Room not found.' });
+    }
+
+    res.json({ success: true, message: 'Room and all its images deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export default router;
