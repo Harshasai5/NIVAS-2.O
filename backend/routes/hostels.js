@@ -35,8 +35,16 @@ const parseHostel = (hostel) => {
   } catch (e) {
     hostel.rules = [];
   }
+  try {
+    hostel.roomOptions = hostel.room_options_json ? 
+      (typeof hostel.room_options_json === 'string' ? JSON.parse(hostel.room_options_json) : hostel.room_options_json) 
+      : [];
+  } catch (e) {
+    hostel.roomOptions = [];
+  }
   delete hostel.facilities_json;
   delete hostel.rules_json;
+  delete hostel.room_options_json;
   return hostel;
 };
 
@@ -50,6 +58,7 @@ router.get('/', async (req, res) => {
     price_max, 
     beds_per_room,
     sponsored, 
+    college,
     available_only, 
     limit 
   } = req.query;
@@ -80,6 +89,12 @@ router.get('/', async (req, res) => {
     if (is_ac !== undefined) {
       query += " AND h.is_ac = ?";
       params.push(parseInt(is_ac));
+    }
+
+    // College filter
+    if (college !== undefined) {
+      query += " AND h.is_college_hostel = ?";
+      params.push(college === 'true' || college === '1' || college === 1 ? 1 : 0);
     }
 
     // Beds sharing filter
@@ -166,7 +181,9 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
     address,
     facilities, // Array or stringified JSON
     rules, // Array or stringified JSON
+    roomOptions, // Array or stringified JSON
     sponsor_order,
+    is_college_hostel,
     available_beds,
     total_beds,
     status
@@ -183,10 +200,12 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
   // Format JSON fields properly
   let facilities_json = '[]';
   let rules_json = '[]';
+  let room_options_json = '[]';
 
   try {
     facilities_json = typeof facilities === 'string' ? facilities : JSON.stringify(facilities || []);
     rules_json = typeof rules === 'string' ? rules : JSON.stringify(rules || []);
+    room_options_json = typeof roomOptions === 'string' ? roomOptions : JSON.stringify(roomOptions || []);
   } catch (e) {
     console.error('JSON stringify error during creation', e);
   }
@@ -198,8 +217,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
 
     const [result] = await conn.query(
       `INSERT INTO hostels 
-       (hostel_name, gender, price_starting, is_ac, beds_per_room, phone, google_maps_link, address, facilities_json, rules_json, sponsor_order, available_beds, total_beds, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (hostel_name, gender, price_starting, is_ac, beds_per_room, phone, google_maps_link, address, facilities_json, rules_json, sponsor_order, is_college_hostel, available_beds, total_beds, status, room_options_json) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         hostel_name,
         gender,
@@ -212,9 +231,11 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
         facilities_json,
         rules_json,
         sponsor_order ? parseInt(sponsor_order) : 0,
+        is_college_hostel === 'true' || is_college_hostel === '1' || is_college_hostel === 1 || is_college_hostel === true ? 1 : 0,
         available_beds ? parseInt(available_beds) : 0,
         total_beds ? parseInt(total_beds) : 0,
-        status || 'active'
+        status || 'active',
+        room_options_json
       ]
     );
 
@@ -266,7 +287,9 @@ router.put('/:id', verifyAdmin, async (req, res) => {
     address,
     facilities,
     rules,
+    roomOptions,
     sponsor_order,
+    is_college_hostel,
     available_beds,
     total_beds,
     status
@@ -280,12 +303,16 @@ router.put('/:id', verifyAdmin, async (req, res) => {
 
     let facilities_json = existing[0].facilities_json;
     let rules_json = existing[0].rules_json;
+    let room_options_json = existing[0].room_options_json;
 
     if (facilities !== undefined) {
       facilities_json = typeof facilities === 'string' ? facilities : JSON.stringify(facilities);
     }
     if (rules !== undefined) {
       rules_json = typeof rules === 'string' ? rules : JSON.stringify(rules);
+    }
+    if (roomOptions !== undefined) {
+      room_options_json = typeof roomOptions === 'string' ? roomOptions : JSON.stringify(roomOptions);
     }
 
     await pool.query(
@@ -301,9 +328,11 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         facilities_json = ?, 
         rules_json = ?, 
         sponsor_order = ?, 
+        is_college_hostel = ?, 
         available_beds = ?, 
         total_beds = ?, 
-        status = ? 
+        status = ?,
+        room_options_json = ? 
       WHERE id = ?`,
       [
         hostel_name !== undefined ? hostel_name : existing[0].hostel_name,
@@ -317,9 +346,11 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         facilities_json,
         rules_json,
         sponsor_order !== undefined ? parseInt(sponsor_order) : existing[0].sponsor_order,
+        is_college_hostel !== undefined ? (is_college_hostel === 'true' || is_college_hostel === '1' || is_college_hostel === 1 || is_college_hostel === true ? 1 : 0) : existing[0].is_college_hostel,
         available_beds !== undefined ? parseInt(available_beds) : existing[0].available_beds,
         total_beds !== undefined ? parseInt(total_beds) : existing[0].total_beds,
         status !== undefined ? status : existing[0].status,
+        room_options_json,
         id
       ]
     );

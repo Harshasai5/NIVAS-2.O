@@ -1691,3 +1691,190 @@ button, input, select, textarea {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================
+   INLINE ADVERTISEMENT BANNERS (LISTINGS)
+   ========================================== */
+.inline-banner-wrapper {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0.5rem 0 1.5rem 0;
+}
+
+.inline-banner-card {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+}
+
+.inline-banner-track {
+  display: flex;
+  height: 100%;
+}
+
+.inline-banner-slide {
+  height: 100%;
+  position: relative;
+}
+
+.inline-banner-slide-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+
+.inline-banner-content-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 25%, rgba(15, 23, 42, 0.6) 60%, rgba(15, 23, 42, 0.2) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 2.5rem;
+  gap: 0.8rem;
+}
+
+.inline-banner-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: white;
+  max-width: 60%;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  line-height: 1.2;
+}
+
+.inline-banner-action-btn {
+  background: var(--primary);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 10px var(--primary-glow);
+  transition: var(--transition-fast);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.inline-banner-action-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  color: white;
+}
+
+/* Arrow controls */
+.inline-banner-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.inline-banner-nav-btn:hover {
+  background: var(--primary);
+  border-color: transparent;
+}
+
+.inline-banner-nav-prev {
+  left: 1rem;
+}
+
+.inline-banner-nav-next {
+  right: 1rem;
+}
+
+/* Indicators Dots */
+.inline-banner-dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.4rem;
+  z-index: 3;
+}
+
+.inline-banner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition-fast);
+}
+
+.inline-banner-dot.active {
+  background: var(--primary);
+  width: 18px;
+  border-radius: var(--radius-full);
+}
+
+.inline-banner-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  line-height: 1;
+}
+
+.inline-banner-close-btn:hover {
+  background: rgba(244, 63, 94, 0.85);
+  border-color: transparent;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .inline-banner-card {
+    height: 150px;
+  }
+  .inline-banner-content-overlay {
+    padding: 1.5rem;
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 50%, rgba(15, 23, 42, 0.75) 100%);
+  }
+  .inline-banner-title {
+    font-size: 1.25rem;
+    max-width: 80%;
+  }
+}
+

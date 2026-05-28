@@ -129,6 +129,7 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
         google_maps_link: '',
         address: '',
         sponsor_order: 0,
+        is_college_hostel: 0,
         available_beds: 10,
         total_beds: 30,
         status: 'active'
@@ -154,6 +155,8 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
         title: '',
         redirect_link: '#',
         display_order: 1,
+        in_between: 0,
+        main_display: 0,
         status: 'active'
       });
     }
@@ -166,6 +169,8 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
       title: banner.title,
       redirect_link: banner.redirect_link,
       display_order: banner.display_order,
+      in_between: banner.in_between || 0,
+      main_display: banner.main_display || 0,
       status: banner.status
     });
     setSelectedFiles([]);
@@ -216,6 +221,8 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
           uploadData.append('title', formData.title || '');
           uploadData.append('redirect_link', formData.redirect_link || '#');
           uploadData.append('display_order', formData.display_order !== undefined ? formData.display_order : 1);
+          uploadData.append('in_between', formData.in_between === 1 || formData.in_between === true ? 1 : 0);
+          uploadData.append('main_display', formData.main_display === 1 || formData.main_display === true ? 1 : 0);
           uploadData.append('status', formData.status || 'active');
           
           if (selectedFiles.length > 0) {
@@ -573,9 +580,14 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
 
                   <div style={{ padding: '1rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                     <Folder size={32} style={{ color: 'var(--primary)', fill: 'var(--primary-glow)', flexShrink: 0 }} />
-                    <div style={{ overflow: 'hidden' }}>
-                      <h4 style={{ fontWeight: 700, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={name}>{name}</h4>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{Math.round(price)}/mo • {item.available_beds} beds left</p>
+                    <div style={{ overflow: 'hidden', flexGrow: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'space-between' }}>
+                        <h4 style={{ fontWeight: 700, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0 }} title={name}>{name}</h4>
+                        {item.is_college_hostel === 1 && (
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(99, 102, 241, 0.15)', color: 'var(--primary)', padding: '0.15rem 0.4rem', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}>College</span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>₹{Math.round(price)}/mo • {item.available_beds} beds left</p>
                     </div>
                   </div>
                 </div>
@@ -722,17 +734,26 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
                         <span>Air Conditioned (AC)</span>
                       </label>
 
-                      <div className="form-group">
-                        <label className="form-label">Sponsor Placements Display Order (0 for None, 1-4 for Sponsored)</label>
+                      <label className="form-checkbox-row">
                         <input 
-                          type="number" 
-                          value={formData.sponsor_order !== undefined ? formData.sponsor_order : 0} 
-                          onChange={(e) => setFormData({ ...formData, sponsor_order: parseInt(e.target.value) })} 
-                          className="form-input" 
-                          min="0"
-                          max="4"
+                          type="checkbox" 
+                          checked={formData.is_college_hostel === 1 || formData.is_college_hostel === true} 
+                          onChange={(e) => setFormData({ ...formData, is_college_hostel: e.target.checked ? 1 : 0 })} 
                         />
-                      </div>
+                        <span>College Hostel (Affiliated/Owned)</span>
+                      </label>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Sponsor Placements Display Order (0 for None, 1-4 for Sponsored)</label>
+                      <input 
+                        type="number" 
+                        value={formData.sponsor_order !== undefined ? formData.sponsor_order : 0} 
+                        onChange={(e) => setFormData({ ...formData, sponsor_order: parseInt(e.target.value) })} 
+                        className="form-input" 
+                        min="0"
+                        max="4"
+                      />
                     </div>
                   </>
                 ) : (
@@ -1036,6 +1057,11 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
                       Sequence: **Order {b.display_order}** | Status: **{b.status}**
                     </p>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.25rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      {b.main_display === 1 || b.main_display === true ? <span style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}>🏠 Home Hero</span> : null}
+                      {b.in_between === 1 || b.in_between === true ? <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--unisex-color)', padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}>📜 Inline List</span> : null}
+                      {!(b.main_display) && !(b.in_between) ? <span style={{ color: 'var(--text-muted)' }}>No Placements</span> : null}
+                    </p>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
@@ -1177,17 +1203,26 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
                       <span>Air Conditioned (AC)</span>
                     </label>
 
-                    <div className="form-group">
-                      <label className="form-label">Sponsor Placements Display Order (0 for None, 1-4 for Sponsored)</label>
+                    <label className="form-checkbox-row">
                       <input 
-                        type="number" 
-                        value={formData.sponsor_order !== undefined ? formData.sponsor_order : 0} 
-                        onChange={(e) => setFormData({ ...formData, sponsor_order: parseInt(e.target.value) })} 
-                        className="form-input" 
-                        min="0"
-                        max="4"
+                        type="checkbox" 
+                        checked={formData.is_college_hostel === 1 || formData.is_college_hostel === true} 
+                        onChange={(e) => setFormData({ ...formData, is_college_hostel: e.target.checked ? 1 : 0 })} 
                       />
-                    </div>
+                      <span>College Hostel (Affiliated/Owned)</span>
+                    </label>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Sponsor Placements Display Order (0 for None, 1-4 for Sponsored)</label>
+                    <input 
+                      type="number" 
+                      value={formData.sponsor_order !== undefined ? formData.sponsor_order : 0} 
+                      onChange={(e) => setFormData({ ...formData, sponsor_order: parseInt(e.target.value) })} 
+                      className="form-input" 
+                      min="0"
+                      max="4"
+                    />
                   </div>
                 </>
               )}
@@ -1347,6 +1382,26 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
                         <option value="inactive">Inactive</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="form-grid-2" style={{ margin: '1rem 0 1.5rem 0' }}>
+                    <label className="form-checkbox-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={formData.main_display === 1 || formData.main_display === true} 
+                        onChange={(e) => setFormData({ ...formData, main_display: e.target.checked ? 1 : 0 })} 
+                      />
+                      <span>Main Hero Banner</span>
+                    </label>
+
+                    <label className="form-checkbox-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={formData.in_between === 1 || formData.in_between === true} 
+                        onChange={(e) => setFormData({ ...formData, in_between: e.target.checked ? 1 : 0 })} 
+                      />
+                      <span>In-Between Scrolling Ad</span>
+                    </label>
                   </div>
                 </>
               )}

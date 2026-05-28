@@ -138,6 +138,11 @@ export default function DetailView({ id, type, setPage }) {
                 <span>AC Accommodation</span>
               </span>
             )}
+            {type === 'hostel' && (item.is_college_hostel === 1 || item.is_college_hostel === true) && (
+              <span className="card-college-badge" style={{ position: 'static', background: 'rgba(99, 102, 241, 0.95)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-sm)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.15)' }}>
+                College Hostels
+              </span>
+            )}
           </div>
           
           <div className="detail-address-row">

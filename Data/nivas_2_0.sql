@@ -46,6 +46,8 @@ CREATE TABLE `banners` (
   `banner_image` varchar(255) NOT NULL,
   `redirect_link` text DEFAULT NULL,
   `display_order` int(11) DEFAULT 0,
+  `in_between` tinyint(1) DEFAULT 0,
+  `main_display` tinyint(1) DEFAULT 0,
   `status` enum('active','inactive') DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -79,6 +81,7 @@ CREATE TABLE `hostels` (
   `facilities_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`facilities_json`)),
   `rules_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`rules_json`)),
   `sponsor_order` int(11) DEFAULT 0,
+  `is_college_hostel` tinyint(1) DEFAULT 0,
   `available_beds` int(11) DEFAULT 0,
   `total_beds` int(11) DEFAULT 0,
   `status` enum('active','inactive') DEFAULT 'active',

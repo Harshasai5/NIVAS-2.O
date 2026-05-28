@@ -4,7 +4,7 @@ import HeroBanner from '../components/HeroBanner';
 import SponsoredHostels from '../components/SponsoredHostels';
 import ListingCard from '../components/ListingCard';
 
-export default function Home({ setPage, setDetailId, setDetailType }) {
+export default function Home({ setPage, setDetailId, setDetailType, setHostelFilters, initialHostelFilters }) {
   const [banners, setBanners] = useState([]);
   const [sponsoredHostels, setSponsoredHostels] = useState([]);
   const [nearbyRooms, setNearbyRooms] = useState([]);
@@ -19,7 +19,8 @@ export default function Home({ setPage, setDetailId, setDetailType }) {
         // 1. Fetch Banners
         const bannersRes = await fetch('/api/banners');
         const bannersData = await bannersRes.json();
-        setBanners(bannersData);
+        const mainBanners = bannersData.filter(b => b.main_display === 1 || b.main_display === true);
+        setBanners(mainBanners.length > 0 ? mainBanners : bannersData);
 
         // 2. Fetch Sponsored Hostels
         const sponsoredRes = await fetch('/api/hostels?sponsored=true');
@@ -130,37 +131,99 @@ export default function Home({ setPage, setDetailId, setDetailType }) {
         </section>
       )}
 
-      {/* 4. Hostel Listings Section */}
-      {allHostels.length > 0 && (
-        <section style={{ margin: '2rem 0' }}>
-          <div className="section-header">
-            <h2 className="section-title">
-              <span>Verified Hostels</span>
-            </h2>
-            <div className="section-action" onClick={() => setPage('hostels')}>
-              <span>View All Hostels</span>
-              <ArrowRight size={16} />
-            </div>
-          </div>
-
-          <div className="scroll-container">
-            {allHostels.slice(0, 4).map((hostel) => (
-              <ListingCard 
-                key={hostel.id}
-                item={hostel}
-                type="hostel"
-                onClick={() => handleSelectListing(hostel.id, 'hostel')}
-              />
-            ))}
-            <div className="view-more-card" onClick={() => setPage('hostels')}>
-              <div className="view-more-icon">
-                <ArrowRight size={24} />
+      {/* 4. Verified Hostels Section (Private) */}
+      {(() => {
+        const verifiedHostels = allHostels.filter(h => !h.is_college_hostel);
+        if (verifiedHostels.length === 0) return null;
+        
+        return (
+          <section style={{ margin: '2rem 0' }}>
+            <div className="section-header">
+              <h2 className="section-title">
+                <span>Verified Private Hostels</span>
+              </h2>
+              <div className="section-action" onClick={() => {
+                if (setHostelFilters && initialHostelFilters) {
+                  setHostelFilters({ ...initialHostelFilters, college: 'false' });
+                }
+                setPage('hostels');
+              }}>
+                <span>View All</span>
+                <ArrowRight size={16} />
               </div>
-              <span style={{ fontWeight: 700 }}>View All Hostels</span>
             </div>
-          </div>
-        </section>
-      )}
+
+            <div className="scroll-container">
+              {verifiedHostels.slice(0, 4).map((hostel) => (
+                <ListingCard 
+                  key={hostel.id}
+                  item={hostel}
+                  type="hostel"
+                  onClick={() => handleSelectListing(hostel.id, 'hostel')}
+                />
+              ))}
+              <div className="view-more-card" onClick={() => {
+                if (setHostelFilters && initialHostelFilters) {
+                  setHostelFilters({ ...initialHostelFilters, college: 'false' });
+                }
+                setPage('hostels');
+              }}>
+                <div className="view-more-icon">
+                  <ArrowRight size={24} />
+                </div>
+                <span style={{ fontWeight: 700 }}>View All Private Hostels</span>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* 4b. College Affiliated Hostels Section */}
+      {(() => {
+        const collegeHostels = allHostels.filter(h => h.is_college_hostel === 1 || h.is_college_hostel === true);
+        if (collegeHostels.length === 0) return null;
+
+        return (
+          <section style={{ margin: '2rem 0' }}>
+            <div className="section-header">
+              <h2 className="section-title">
+                <span>College Hostels</span>
+              </h2>
+              <div className="section-action" onClick={() => {
+                if (setHostelFilters && initialHostelFilters) {
+                  setHostelFilters({ ...initialHostelFilters, college: 'true' });
+                }
+                setPage('hostels');
+              }}>
+                <span>View All</span>
+                <ArrowRight size={16} />
+              </div>
+            </div>
+
+            <div className="scroll-container">
+              {collegeHostels.slice(0, 4).map((hostel) => (
+                <ListingCard 
+                  key={hostel.id}
+                  item={hostel}
+                  type="hostel"
+                  onClick={() => handleSelectListing(hostel.id, 'hostel')}
+                />
+              ))}
+              <div className="view-more-card" onClick={() => {
+                if (setHostelFilters && initialHostelFilters) {
+                  setHostelFilters({ ...initialHostelFilters, college: 'true' });
+                }
+                setPage('hostels');
+              }}>
+                <div className="view-more-icon">
+                  <ArrowRight size={24} />
+                </div>
+                <span style={{ fontWeight: 700 }}>View All College Hostels</span>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* 5. PG / Room Listings Section */}
       {allRooms.length > 0 && (

@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
 
 // POST create banner (admin only, uploads 1 banner_image)
 router.post('/', verifyAdmin, upload.single('banner_image'), async (req, res) => {
-  const { title, redirect_link, display_order, status } = req.body;
+  const { title, redirect_link, display_order, status, in_between, main_display } = req.body;
   
   if (!req.file) {
     return res.status(400).json({ error: 'Banner image is required.' });
@@ -47,11 +47,13 @@ router.post('/', verifyAdmin, upload.single('banner_image'), async (req, res) =>
   const banner_image = `Uploads/Banners/${req.file.filename}`;
   const order = display_order ? parseInt(display_order) : 0;
   const activeStatus = status || 'active';
+  const inBetweenVal = in_between === 'true' || in_between === '1' || in_between === 1 || in_between === true ? 1 : 0;
+  const mainDisplayVal = main_display === 'true' || main_display === '1' || main_display === 1 || main_display === true ? 1 : 0;
 
   try {
     const [result] = await pool.query(
-      'INSERT INTO banners (title, banner_image, redirect_link, display_order, status) VALUES (?, ?, ?, ?, ?)',
-      [title || '', banner_image, redirect_link || '#', order, activeStatus]
+      'INSERT INTO banners (title, banner_image, redirect_link, display_order, status, in_between, main_display) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [title || '', banner_image, redirect_link || '#', order, activeStatus, inBetweenVal, mainDisplayVal]
     );
 
     const [newBanner] = await pool.query('SELECT * FROM banners WHERE id = ?', [result.insertId]);
@@ -66,7 +68,7 @@ router.post('/', verifyAdmin, upload.single('banner_image'), async (req, res) =>
 // PUT update banner (admin only, optionally uploads a new banner_image)
 router.put('/:id', verifyAdmin, upload.single('banner_image'), async (req, res) => {
   const { id } = req.params;
-  const { title, redirect_link, display_order, status } = req.body;
+  const { title, redirect_link, display_order, status, in_between, main_display } = req.body;
 
   try {
     // Get existing banner to clean up old image if a new one is uploaded
@@ -85,10 +87,23 @@ router.put('/:id', verifyAdmin, upload.single('banner_image'), async (req, res) 
 
     const order = display_order !== undefined ? parseInt(display_order) : existing[0].display_order;
     const activeStatus = status || existing[0].status;
+    const inBetweenVal = in_between !== undefined ? (in_between === 'true' || in_between === '1' || in_between === 1 || in_between === true ? 1 : 0) : existing[0].in_between;
+    const mainDisplayVal = main_display !== undefined ? (main_display === 'true' || main_display === '1' || main_display === 1 || main_display === true ? 1 : 0) : existing[0].main_display;
+
+
 
     await pool.query(
-      'UPDATE banners SET title = ?, banner_image = ?, redirect_link = ?, display_order = ?, status = ? WHERE id = ?',
-      [title !== undefined ? title : existing[0].title, banner_image, redirect_link !== undefined ? redirect_link : existing[0].redirect_link, order, activeStatus, id]
+      'UPDATE banners SET title = ?, banner_image = ?, redirect_link = ?, display_order = ?, status = ?, in_between = ?, main_display = ? WHERE id = ?',
+      [
+        title !== undefined ? title : existing[0].title,
+        banner_image,
+        redirect_link !== undefined ? redirect_link : existing[0].redirect_link,
+        order,
+        activeStatus,
+        inBetweenVal,
+        mainDisplayVal,
+        id
+      ]
     );
 
     const [updatedBanner] = await pool.query('SELECT * FROM banners WHERE id = ?', [id]);

@@ -35,8 +35,16 @@ const parseRoom = (room) => {
   } catch (e) {
     room.rules = [];
   }
+  try {
+    room.roomOptions = room.room_options_json ? 
+      (typeof room.room_options_json === 'string' ? JSON.parse(room.room_options_json) : room.room_options_json) 
+      : [];
+  } catch (e) {
+    room.roomOptions = [];
+  }
   delete room.facilities_json;
   delete room.rules_json;
+  delete room.room_options_json;
   return room;
 };
 
@@ -167,6 +175,7 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
     address,
     facilities,
     rules,
+    roomOptions,
     status
   } = req.body;
 
@@ -181,10 +190,12 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
   // Format JSON fields properly
   let facilities_json = '[]';
   let rules_json = '[]';
+  let room_options_json = '[]';
 
   try {
     facilities_json = typeof facilities === 'string' ? facilities : JSON.stringify(facilities || []);
     rules_json = typeof rules === 'string' ? rules : JSON.stringify(rules || []);
+    room_options_json = typeof roomOptions === 'string' ? roomOptions : JSON.stringify(roomOptions || []);
   } catch (e) {
     console.error('JSON stringify error during creation', e);
   }
@@ -196,8 +207,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
 
     const [result] = await conn.query(
       `INSERT INTO rooms 
-       (room_name, gender, price_per_person, is_ac, beds_per_room, filled_count, available_beds, total_beds, distance_from_srkr, phone, google_maps_link, address, facilities_json, rules_json, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (room_name, gender, price_per_person, is_ac, beds_per_room, filled_count, available_beds, total_beds, distance_from_srkr, phone, google_maps_link, address, facilities_json, rules_json, status, room_options_json) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         room_name,
         gender,
@@ -213,7 +224,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
         address || '',
         facilities_json,
         rules_json,
-        status || 'active'
+        status || 'active',
+        room_options_json
       ]
     );
 
@@ -269,6 +281,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
     address,
     facilities,
     rules,
+    roomOptions,
     status
   } = req.body;
 
@@ -280,12 +293,16 @@ router.put('/:id', verifyAdmin, async (req, res) => {
 
     let facilities_json = existing[0].facilities_json;
     let rules_json = existing[0].rules_json;
+    let room_options_json = existing[0].room_options_json;
 
     if (facilities !== undefined) {
       facilities_json = typeof facilities === 'string' ? facilities : JSON.stringify(facilities);
     }
     if (rules !== undefined) {
       rules_json = typeof rules === 'string' ? rules : JSON.stringify(rules);
+    }
+    if (roomOptions !== undefined) {
+      room_options_json = typeof roomOptions === 'string' ? roomOptions : JSON.stringify(roomOptions);
     }
 
     await pool.query(
@@ -304,7 +321,8 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         address = ?, 
         facilities_json = ?, 
         rules_json = ?, 
-        status = ? 
+        status = ?,
+        room_options_json = ? 
       WHERE id = ?`,
       [
         room_name !== undefined ? room_name : existing[0].room_name,
@@ -322,6 +340,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         facilities_json,
         rules_json,
         status !== undefined ? status : existing[0].status,
+        room_options_json,
         id
       ]
     );

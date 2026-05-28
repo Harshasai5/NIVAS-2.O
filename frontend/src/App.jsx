@@ -21,6 +21,7 @@ export default function App() {
     price_min: '',
     price_max: '',
     beds_per_room: '',
+    college: '',
   };
   const [hostelFilters, setHostelFilters] = useState(initialHostelFilters);
   const [hostelSearch, setHostelSearch] = useState('');
@@ -146,6 +147,8 @@ export default function App() {
             }} 
             setDetailId={setDetailId} 
             setDetailType={setDetailType} 
+            setHostelFilters={setHostelFilters}
+            initialHostelFilters={initialHostelFilters}
           />
         )}
         

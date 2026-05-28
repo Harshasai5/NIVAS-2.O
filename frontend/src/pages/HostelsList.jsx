@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Sparkles, Search, Inbox } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
+import InlineBanner from '../components/InlineBanner';
 
 export default function HostelsList({ 
   setPage, 
@@ -15,11 +16,26 @@ export default function HostelsList({
 }) {
   const [hostels, setHostels] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [banners, setBanners] = useState([]);
+  const [closedSlots, setClosedSlots] = useState([]);
 
   const resetFilters = () => {
     setFilters(initialFilters);
     setSearch('');
   };
+
+  useEffect(() => {
+    async function fetchBanners() {
+      try {
+        const res = await fetch('/api/banners');
+        const data = await res.json();
+        setBanners(data.filter(b => b.in_between === 1 || b.in_between === true));
+      } catch (error) {
+        console.error('Error loading inline banners:', error);
+      }
+    }
+    fetchBanners();
+  }, []);
 
   useEffect(() => {
     async function fetchFilteredHostels() {
@@ -32,6 +48,7 @@ export default function HostelsList({
         if (filters.price_min) params.append('price_min', filters.price_min);
         if (filters.price_max) params.append('price_max', filters.price_max);
         if (filters.beds_per_room) params.append('beds_per_room', filters.beds_per_room);
+        if (filters.college) params.append('college', filters.college);
 
         const res = await fetch(`/api/hostels?${params.toString()}`);
         const data = await res.json();
@@ -117,14 +134,46 @@ export default function HostelsList({
           </div>
         ) : (
           <div className="grid-layout">
-            {filteredHostelsList.map((hostel) => (
-              <ListingCard 
-                key={hostel.id}
-                item={hostel}
-                type="hostel"
-                onClick={() => handleSelectHostel(hostel.id)}
-              />
-            ))}
+            {(() => {
+              const renderList = [];
+              const activeBanners = banners;
+              
+              filteredHostelsList.forEach((hostel, index) => {
+                renderList.push(
+                  <ListingCard 
+                    key={`hostel-${hostel.id}`}
+                    item={hostel}
+                    type="hostel"
+                    onClick={() => handleSelectHostel(hostel.id)}
+                  />
+                );
+                
+                // Show banner after every 3rd card
+                const position = index + 1;
+                if (position % 3 === 0 && activeBanners.length > 0 && !closedSlots.includes(`slot-${position}`)) {
+                  renderList.push(
+                    <InlineBanner 
+                      key={`inline-banner-slot-${position}`}
+                      banners={activeBanners}
+                      onClose={() => setClosedSlots(prev => [...prev, `slot-${position}`])}
+                    />
+                  );
+                }
+              });
+
+              // If there are less than 3 items but more than 0, and no banner has been added yet, add one at the end
+              if (filteredHostelsList.length > 0 && filteredHostelsList.length < 3 && activeBanners.length > 0 && renderList.length === filteredHostelsList.length && !closedSlots.includes('slot-end')) {
+                renderList.push(
+                  <InlineBanner 
+                    key="inline-banner-slot-end"
+                    banners={activeBanners}
+                    onClose={() => setClosedSlots(prev => [...prev, 'slot-end'])}
+                  />
+                );
+              }
+              
+              return renderList;
+            })()}
           </div>
         )}
       </div>

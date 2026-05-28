@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Search, Inbox } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
+import InlineBanner from '../components/InlineBanner';
 
 export default function RoomsList({ 
   setPage, 
@@ -15,11 +16,26 @@ export default function RoomsList({
 }) {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [banners, setBanners] = useState([]);
+  const [closedSlots, setClosedSlots] = useState([]);
 
   const resetFilters = () => {
     setFilters(initialFilters);
     setSearch('');
   };
+
+  useEffect(() => {
+    async function fetchBanners() {
+      try {
+        const res = await fetch('/api/banners');
+        const data = await res.json();
+        setBanners(data.filter(b => b.in_between === 1 || b.in_between === true));
+      } catch (error) {
+        console.error('Error loading inline banners:', error);
+      }
+    }
+    fetchBanners();
+  }, []);
 
   useEffect(() => {
     async function fetchFilteredRooms() {
@@ -118,14 +134,46 @@ export default function RoomsList({
           </div>
         ) : (
           <div className="grid-layout">
-            {filteredRoomsList.map((room) => (
-              <ListingCard 
-                key={room.id}
-                item={room}
-                type="room"
-                onClick={() => handleSelectRoom(room.id)}
-              />
-            ))}
+            {(() => {
+              const renderList = [];
+              const activeBanners = banners;
+              
+              filteredRoomsList.forEach((room, index) => {
+                renderList.push(
+                  <ListingCard 
+                    key={`room-${room.id}`}
+                    item={room}
+                    type="room"
+                    onClick={() => handleSelectRoom(room.id)}
+                  />
+                );
+                
+                // Show banner after every 3rd card
+                const position = index + 1;
+                if (position % 3 === 0 && activeBanners.length > 0 && !closedSlots.includes(`slot-${position}`)) {
+                  renderList.push(
+                    <InlineBanner 
+                      key={`inline-banner-slot-${position}`}
+                      banners={activeBanners}
+                      onClose={() => setClosedSlots(prev => [...prev, `slot-${position}`])}
+                    />
+                  );
+                }
+              });
+
+              // If there are less than 3 items but more than 0, and no banner has been added yet, add one at the end
+              if (filteredRoomsList.length > 0 && filteredRoomsList.length < 3 && activeBanners.length > 0 && renderList.length === filteredRoomsList.length && !closedSlots.includes('slot-end')) {
+                renderList.push(
+                  <InlineBanner 
+                    key="inline-banner-slot-end"
+                    banners={activeBanners}
+                    onClose={() => setClosedSlots(prev => [...prev, 'slot-end'])}
+                  />
+                );
+              }
+              
+              return renderList;
+            })()}
           </div>
         )}
       </div>

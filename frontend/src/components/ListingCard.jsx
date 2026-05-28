@@ -65,6 +65,13 @@ export default function ListingCard({ item, type, onClick }) {
             <span>{distance} km to SRKR</span>
           </div>
         )}
+
+        {/* College Affiliated Badge */}
+        {type === 'hostel' && (item.is_college_hostel === 1 || item.is_college_hostel === true) && (
+          <div className="card-college-badge" style={{ position: 'absolute', bottom: '0.75rem', left: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(99, 102, 241, 0.95)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', backdropFilter: 'blur(4px)', boxShadow: '0 2px 4px rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            <span>College Hostels</span>
+          </div>
+        )}
       </div>
 
       <div className="card-body">
