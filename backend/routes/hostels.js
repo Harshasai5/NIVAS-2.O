@@ -500,4 +500,21 @@ router.delete('/:id', verifyAdmin, async (req, res) => {
   }
 });
 
+// POST click counter increment
+router.post('/:id/click', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await pool.query(
+      'UPDATE hostels SET clicks = clicks + 1 WHERE id = ?',
+      [id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Hostel not found.' });
+    }
+    res.json({ success: true, message: 'Hostel click tracked successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

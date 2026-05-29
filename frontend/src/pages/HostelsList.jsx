@@ -17,7 +17,6 @@ export default function HostelsList({
   const [hostels, setHostels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState([]);
-  const [closedSlots, setClosedSlots] = useState([]);
 
   const resetFilters = () => {
     setFilters(initialFilters);
@@ -150,24 +149,22 @@ export default function HostelsList({
                 
                 // Show banner after every 3rd card
                 const position = index + 1;
-                if (position % 3 === 0 && activeBanners.length > 0 && !closedSlots.includes(`slot-${position}`)) {
+                if (position % 3 === 0 && activeBanners.length > 0) {
                   renderList.push(
                     <InlineBanner 
                       key={`inline-banner-slot-${position}`}
                       banners={activeBanners}
-                      onClose={() => setClosedSlots(prev => [...prev, `slot-${position}`])}
                     />
                   );
                 }
               });
 
               // If there are less than 3 items but more than 0, and no banner has been added yet, add one at the end
-              if (filteredHostelsList.length > 0 && filteredHostelsList.length < 3 && activeBanners.length > 0 && renderList.length === filteredHostelsList.length && !closedSlots.includes('slot-end')) {
+              if (filteredHostelsList.length > 0 && filteredHostelsList.length < 3 && activeBanners.length > 0 && renderList.length === filteredHostelsList.length) {
                 renderList.push(
                   <InlineBanner 
                     key="inline-banner-slot-end"
                     banners={activeBanners}
-                    onClose={() => setClosedSlots(prev => [...prev, 'slot-end'])}
                   />
                 );
               }

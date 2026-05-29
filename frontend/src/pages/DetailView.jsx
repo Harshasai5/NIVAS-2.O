@@ -53,7 +53,12 @@ export default function DetailView({ id, type, setPage }) {
       }
     }
     
-    if (id) fetchDetail();
+    if (id) {
+      fetchDetail();
+      // Track specific hostel or room click counter
+      fetch(`/api/${type}s/${id}/click`, { method: 'POST' })
+        .catch(err => console.warn('Failed to track click:', err));
+    }
   }, [id, type]);
 
   if (loading) {

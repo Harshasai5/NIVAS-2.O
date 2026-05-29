@@ -15,12 +15,25 @@ const pool = mysql.createPool({
   // Automatically parse JSON fields if database returns them as strings
 });
 
-// Test the connection on startup
+// Test the connection and run migrations on startup
 async function testConnection() {
   try {
     const connection = await pool.getConnection();
     console.log('✅ Connected to MySQL database successfully.');
     connection.release();
+
+    // Schema migration: Clicks count columns for specific hostels/rooms
+    const [hostelCols] = await pool.query("SHOW COLUMNS FROM hostels LIKE 'clicks'");
+    if (hostelCols.length === 0) {
+      await pool.query("ALTER TABLE hostels ADD COLUMN clicks INT DEFAULT 0");
+      console.log("✨ Appended 'clicks' column to 'hostels' table successfully.");
+    }
+
+    const [roomCols] = await pool.query("SHOW COLUMNS FROM rooms LIKE 'clicks'");
+    if (roomCols.length === 0) {
+      await pool.query("ALTER TABLE rooms ADD COLUMN clicks INT DEFAULT 0");
+      console.log("✨ Appended 'clicks' column to 'rooms' table successfully.");
+    }
   } catch (error) {
     console.error('❌ Failed to connect to MySQL database:', error.message);
     console.error('👉 Please make sure MySQL is running on', process.env.DB_HOST, 'and database', process.env.DB_NAME, 'exists.');

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, ArrowRight, Hotel, Key, MapPin, Navigation } from 'lucide-react';
+import { Sparkles, ArrowRight, Hotel, Key, MapPin, Navigation, X } from 'lucide-react';
 import HeroBanner from '../components/HeroBanner';
 import SponsoredHostels from '../components/SponsoredHostels';
 import ListingCard from '../components/ListingCard';
@@ -68,10 +68,13 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
     );
   }
 
+  const mainBanners = banners.filter(b => b.main_display === 1 || b.main_display === true);
+  const inBetweenBanners = banners.filter(b => b.in_between === 1 || b.in_between === true);
+
   return (
     <div className="animate-fade">
       {/* 1. Hero Banner Section */}
-      <HeroBanner banners={banners} />
+      <HeroBanner banners={mainBanners} />
 
       {/* 2. Sponsored Hostels Section (Double Row on Mobile) */}
       <SponsoredHostels 
@@ -129,6 +132,11 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
             </div>
           </div>
         </section>
+      )}
+
+      {/* Inline Advertisement Banner (Auto-rotates & Closeable every 180s) */}
+      {inBetweenBanners.length > 0 && (
+        <InlineAdBanner banners={inBetweenBanners} />
       )}
 
       {/* 4. Verified Hostels Section (Private) */}
@@ -257,5 +265,101 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
         </section>
       )}
     </div>
+  );
+}
+
+// Dynamic closeable, auto-rotating 180s inline ad banner component
+function InlineAdBanner({ banners }) {
+  const [activeBanner, setActiveBanner] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  const selectRandomBanner = React.useCallback(() => {
+    if (!banners || banners.length === 0) return;
+    // Pick a random banner
+    const randomIndex = Math.floor(Math.random() * banners.length);
+    setActiveBanner(banners[randomIndex]);
+  }, [banners]);
+
+  // Pick on mount
+  useEffect(() => {
+    selectRandomBanner();
+  }, [banners, selectRandomBanner]);
+
+  // Precise 180s timer logic:
+  // - When visible: rotates the ad every 180 seconds.
+  // - When hidden (closed): waits exactly 180 seconds before picking a new ad and showing it again.
+  useEffect(() => {
+    if (!banners || banners.length === 0) return;
+
+    let timerId;
+
+    if (isVisible) {
+      // If visible, rotate to a new random banner every 180 seconds
+      const runTimer = () => {
+        timerId = setTimeout(() => {
+          selectRandomBanner();
+          runTimer(); // schedule next rotation
+        }, 180000); // 180,000 ms = 180 seconds
+      };
+      runTimer();
+    } else {
+      // If hidden (user clicked X), wait exactly 180 seconds, then pick a new random ad and show it
+      timerId = setTimeout(() => {
+        selectRandomBanner();
+        setIsVisible(true);
+      }, 180000); // 180,000 ms = 180 seconds
+    }
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [banners, isVisible, selectRandomBanner]);
+
+  if (!activeBanner || !isVisible) return null;
+
+  return (
+    <section className="inline-banner-container animate-fade" style={{ padding: '0 5%', margin: '2rem 0' }}>
+      <div className="inline-banner-card glass" style={{ position: 'relative', width: '100%', height: '180px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+        <a 
+          href={activeBanner.redirect_link || '#'} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="inline-banner-slide-link"
+          style={{ display: 'block', width: '100%', height: '100%', textDecoration: 'none' }}
+        >
+          <img 
+            src={`/${activeBanner.banner_image}`} 
+            alt={activeBanner.title || 'Advertisement'} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=600&auto=format&fit=cover'; }}
+          />
+          <div className="inline-banner-content-overlay">
+            <span className="card-sponsor-badge" style={{ position: 'static', marginBottom: '0.25rem', display: 'flex', width: 'fit-content' }}>
+              <Sparkles size={10} />
+              <span style={{ marginLeft: '0.25rem' }}>SPONSORED AD</span>
+            </span>
+            <h3 className="inline-banner-title">{activeBanner.title || 'Nivas Accommodations'}</h3>
+            <button className="inline-banner-action-btn">
+              <span>Learn More</span>
+              <ArrowRight size={14} style={{ marginLeft: '0.25rem' }} />
+            </button>
+          </div>
+        </a>
+        
+        {/* Close Button X */}
+        <button 
+          className="inline-banner-close-btn" 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsVisible(false);
+          }}
+          title="Remove advertisement"
+          aria-label="Close Ad"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </section>
   );
 }

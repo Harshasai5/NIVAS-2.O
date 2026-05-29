@@ -573,6 +573,24 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
                 >
                   <div style={{ height: '140px', overflow: 'hidden', position: 'relative' }}>
                     <img src={coverPhoto} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    
+                    {/* Heatmap popular views badge */}
+                    <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem' }}>
+                      {item.clicks >= 108 ? (
+                        <span className="heat-badge heat-badge-hot">
+                          🔥 {item.clicks} visits
+                        </span>
+                      ) : item.clicks > 0 ? (
+                        <span className="heat-badge heat-badge-active">
+                          👁️ {item.clicks} views
+                        </span>
+                      ) : (
+                        <span className="heat-badge heat-badge-new">
+                          🌱 new
+                        </span>
+                      )}
+                    </div>
+
                     <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'capitalize', color: 'white', background: 'rgba(0,0,0,0.65)' }}>
                       {item.gender}
                     </div>
@@ -638,6 +656,42 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
                 <FileText size={20} style={{ color: 'var(--primary)' }} />
                 <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.2rem' }}>Textual Parameters</h3>
+              </div>
+
+              {/* Real-time clicks heatmap widget */}
+              <div 
+                className="glass" 
+                style={{ 
+                  padding: '1rem', 
+                  borderRadius: 'var(--radius-sm)', 
+                  marginBottom: '1.5rem', 
+                  border: '1px solid var(--border)', 
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '1.4rem' }}>
+                    {formData.clicks >= 108 ? '🔥' : formData.clicks > 0 ? '👁️' : '🌱'}
+                  </span>
+                  <div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Accumulated Traffic Metrics</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Real-time user visits recorded on Nivas Platform</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ 
+                    fontSize: '1.4rem', 
+                    fontWeight: 800, 
+                    color: formData.clicks >= 108 ? '#fbbf24' : 'var(--text-primary)',
+                    textShadow: formData.clicks >= 108 ? '0 0 10px rgba(251, 191, 36, 0.2)' : 'none'
+                  }}>
+                    {formData.clicks || 0}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Total visits</div>
+                </div>
               </div>
 
               <form onSubmit={handleSaveTextChanges}>

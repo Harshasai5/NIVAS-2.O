@@ -1,129 +1,129 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, ArrowRight, X } from 'lucide-react';
 
-export default function InlineBanner({ banners, onClose }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+export default function InlineBanner({ banners }) {
+  const [activeBanner, setActiveBanner] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
 
-  // Auto-play banners
-  useEffect(() => {
-    if (!banners || banners.length <= 1) return;
-    
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % banners.length);
-    }, 4500);
-    
-    return () => clearInterval(interval);
+  // Helper to pick a random banner
+  const selectRandomBanner = React.useCallback(() => {
+    if (!banners || banners.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * banners.length);
+    setActiveBanner(banners[randomIndex]);
   }, [banners]);
 
-  if (!banners || banners.length === 0) return null;
+  // Pick a random banner on mount
+  useEffect(() => {
+    selectRandomBanner();
+  }, [banners, selectRandomBanner]);
 
-  const prevSlide = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setActiveIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
-  };
+  // Precise 180-second timer logic:
+  // - When visible: rotates the ad to a new random one every 180s.
+  // - When hidden (user clicked X): waits exactly 180s, then picks a new random ad and displays it again.
+  useEffect(() => {
+    if (!banners || banners.length === 0) return;
 
-  const nextSlide = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setActiveIndex((prev) => (prev + 1) % banners.length);
-  };
+    let timerId;
+
+    if (isVisible) {
+      // If visible, rotate to a new random banner every 180 seconds
+      const runTimer = () => {
+        timerId = setTimeout(() => {
+          selectRandomBanner();
+          runTimer(); // schedule next rotation
+        }, 180000); // 180 seconds
+      };
+      runTimer();
+    } else {
+      // If hidden (user clicked X), wait exactly 180 seconds, then pick a new random ad and show it
+      timerId = setTimeout(() => {
+        selectRandomBanner();
+        setIsVisible(true);
+      }, 180000); // 180 seconds
+    }
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [banners, isVisible, selectRandomBanner]);
+
+  if (!banners || banners.length === 0 || !activeBanner || !isVisible) return null;
+
+  const imageUrl = `/${activeBanner.banner_image}`;
 
   return (
-    <div className="inline-banner-wrapper">
-      <div className="inline-banner-card">
-        {/* Banner Track */}
-        <div 
-          className="inline-banner-track"
-          style={{ 
-            display: 'flex',
-            width: `${banners.length * 100}%`,
-            height: '100%',
-            transition: 'transform 0.5s ease-in-out',
-            transform: `translateX(-${(activeIndex * 100) / banners.length}%)`
-          }}
-        >
-          {banners.map((banner) => {
-            const imageUrl = `/${banner.banner_image}`;
-            return (
-              <div 
-                key={banner.id} 
-                className="inline-banner-slide"
-                style={{ 
-                  width: `${100 / banners.length}%`,
-                  height: '100%',
-                  position: 'relative',
-                  backgroundImage: `url(${imageUrl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                {banner.redirect_link && banner.redirect_link !== '#' ? (
-                  <a 
-                    href={banner.redirect_link} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="inline-banner-slide-link"
-                    style={{ display: 'block', width: '100%', height: '100%', textDecoration: 'none' }}
-                  >
-                    <div className="inline-banner-content-overlay">
-                      {banner.title && <h3 className="inline-banner-title">{banner.title}</h3>}
-                      <span className="inline-banner-action-btn">Learn More</span>
-                    </div>
-                  </a>
-                ) : (
-                  <div className="inline-banner-content-overlay">
-                    {banner.title && <h3 className="inline-banner-title">{banner.title}</h3>}
-                    <span className="inline-banner-action-btn" style={{ pointerEvents: 'none' }}>Sponsored</span>
-                  </div>
-                )}
+    <div className="inline-banner-wrapper animate-fade">
+      <div className="inline-banner-card" style={{ position: 'relative', width: '100%', height: '180px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+        
+        {activeBanner.redirect_link && activeBanner.redirect_link !== '#' ? (
+          <a 
+            href={activeBanner.redirect_link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="inline-banner-slide-link"
+            style={{ display: 'block', width: '100%', height: '100%', textDecoration: 'none' }}
+          >
+            <div 
+              className="inline-banner-slide"
+              style={{ 
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${imageUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
+              <div className="inline-banner-content-overlay">
+                <span className="card-sponsor-badge" style={{ position: 'static', marginBottom: '0.25rem', display: 'flex', width: 'fit-content' }}>
+                  <Sparkles size={10} />
+                  <span style={{ marginLeft: '0.25rem' }}>SPONSORED AD</span>
+                </span>
+                {activeBanner.title && <h3 className="inline-banner-title">{activeBanner.title}</h3>}
+                <button className="inline-banner-action-btn">
+                  <span>Learn More</span>
+                  <ArrowRight size={14} style={{ marginLeft: '0.25rem' }} />
+                </button>
               </div>
-            );
-          })}
-        </div>
-
-        {/* Navigation Arrows */}
-        {banners.length > 1 && (
-          <>
-            <button className="inline-banner-nav-btn inline-banner-nav-prev" onClick={prevSlide} aria-label="Previous Ad">
-              <ChevronLeft size={16} />
-            </button>
-            <button className="inline-banner-nav-btn inline-banner-nav-next" onClick={nextSlide} aria-label="Next Ad">
-              <ChevronRight size={16} />
-            </button>
-          </>
-        )}
-
-        {/* Indicators Dots */}
-        {banners.length > 1 && (
-          <div className="inline-banner-dots">
-            {banners.map((_, index) => (
-              <button 
-                key={index} 
-                className={`inline-banner-dot ${activeIndex === index ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setActiveIndex(index);
-                }}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
+            </div>
+          </a>
+        ) : (
+          <div 
+            className="inline-banner-slide"
+            style={{ 
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url(${imageUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          >
+            <div className="inline-banner-content-overlay">
+              <span className="card-sponsor-badge" style={{ position: 'static', marginBottom: '0.25rem', display: 'flex', width: 'fit-content' }}>
+                <Sparkles size={10} />
+                <span style={{ marginLeft: '0.25rem' }}>SPONSORED AD</span>
+              </span>
+              {activeBanner.title && <h3 className="inline-banner-title">{activeBanner.title}</h3>}
+              <button className="inline-banner-action-btn" style={{ pointerEvents: 'none' }}>
+                <span>Sponsored</span>
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Close button */}
+        {/* Close button X */}
         <button 
           className="inline-banner-close-btn" 
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onClose();
+            setIsVisible(false);
           }}
+          title="Remove advertisement"
           aria-label="Close Ad"
         >
-          &times;
+          <X size={16} />
         </button>
+
       </div>
     </div>
   );
