@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, MapPin, Phone, Wind, UserCheck, CheckCircle2, AlertTriangle, MessageSquare, ChevronLeft, ChevronRight, X, Map } from 'lucide-react';
 
 const GoogleMapsIcon = ({ size = 20 }) => (
@@ -36,6 +36,9 @@ export default function DetailView({ id, type, setPage }) {
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  
+  // Ref to prevent duplicate click tracking calls on double mounts (StrictMode / re-renders)
+  const trackedRef = useRef(null);
 
   useEffect(() => {
     async function fetchDetail() {
@@ -55,9 +58,14 @@ export default function DetailView({ id, type, setPage }) {
     
     if (id) {
       fetchDetail();
-      // Track specific hostel or room click counter
-      fetch(`/api/${type}s/${id}/click`, { method: 'POST' })
-        .catch(err => console.warn('Failed to track click:', err));
+      
+      // Track specific hostel or room click counter exactly once per card click/view session
+      const trackKey = `${type}-${id}`;
+      if (trackedRef.current !== trackKey) {
+        trackedRef.current = trackKey;
+        fetch(`/api/${type}s/${id}/click`, { method: 'POST' })
+          .catch(err => console.warn('Failed to track click:', err));
+      }
     }
   }, [id, type]);
 
