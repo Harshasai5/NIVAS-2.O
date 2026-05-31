@@ -83,22 +83,20 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
       />
 
       {/* Quick Navigation Quick Links */}
-      <div style={{ padding: '0 5% 2rem 5%', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+      <div className="quick-nav-container">
         <button 
-          className="action-btn action-btn-secondary" 
+          className="quick-nav-card" 
           onClick={() => setPage('hostels')}
-          style={{ flex: 1, minWidth: '150px', padding: '1rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.4rem', border: '1px solid var(--border)' }}
         >
-          <Hotel size={24} style={{ color: 'var(--primary)' }} />
-          <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Browse Hostels</span>
+          <Hotel size={28} className="quick-nav-icon" style={{ color: 'var(--primary)' }} />
+          <span className="quick-nav-label">Browse Hostels</span>
         </button>
         <button 
-          className="action-btn action-btn-secondary" 
+          className="quick-nav-card" 
           onClick={() => setPage('rooms')}
-          style={{ flex: 1, minWidth: '150px', padding: '1rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.4rem', border: '1px solid var(--border)' }}
         >
-          <Key size={24} style={{ color: 'var(--unisex-color)' }} />
-          <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Browse Rooms / PGs</span>
+          <Key size={28} className="quick-nav-icon" style={{ color: 'var(--unisex-color)' }} />
+          <span className="quick-nav-label">Browse Rooms / PGs</span>
         </button>
       </div>
 

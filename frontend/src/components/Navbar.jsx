@@ -18,8 +18,7 @@ export default function Navbar({ activePage, setPage, adminToken, logoutAdmin })
     <>
       <header className="navbar glass">
         <div className="nav-logo" onClick={() => navigateTo('home')} style={{ cursor: 'pointer' }}>
-          <Sparkles size={24} style={{ fill: 'currentColor' }} />
-          <span>Nivas</span>
+          <img src="/Uploads/logo.jpeg" alt="NIVAS" className="nav-logo-img" />
         </div>
 
         {/* Desktop Links */}

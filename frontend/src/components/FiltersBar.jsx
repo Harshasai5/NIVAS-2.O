@@ -1,11 +1,13 @@
 import React from 'react';
-import { Filter, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Filter, RotateCcw, ShieldAlert, X } from 'lucide-react';
 
 export default function FiltersBar({ 
   type, // 'hostel' or 'room'
   filters, 
   setFilters, 
-  resetFilters 
+  resetFilters,
+  isOpen,
+  setIsOpen
 }) {
   
   const handleGenderChange = (genderVal) => {
@@ -52,19 +54,30 @@ export default function FiltersBar({
   };
 
   return (
-    <aside className="filter-sidebar glass">
-      <div className="filter-section" style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+    <aside className={`filter-sidebar glass ${isOpen ? 'open' : ''}`}>
+      <div className="filter-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
           <Filter size={18} style={{ color: 'var(--primary)' }} />
           <span>Filters</span>
         </div>
-        <button 
-          onClick={resetFilters}
-          style={{ background: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', fontWeight: 600 }}
-        >
-          <RotateCcw size={12} />
-          <span>Reset</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button 
+            onClick={resetFilters}
+            style={{ background: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', fontWeight: 600 }}
+          >
+            <RotateCcw size={12} />
+            <span>Reset</span>
+          </button>
+          {setIsOpen && (
+            <button 
+              className="mobile-close-filters-btn"
+              onClick={() => setIsOpen(false)}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Gender Filter */}

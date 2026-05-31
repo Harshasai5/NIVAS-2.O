@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, Search, Inbox } from 'lucide-react';
+import { Sparkles, Search, Inbox, Filter } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
 import InlineBanner from '../components/InlineBanner';
@@ -17,6 +17,7 @@ export default function HostelsList({
   const [hostels, setHostels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState([]);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const resetFilters = () => {
     setFilters(initialFilters);
@@ -82,6 +83,8 @@ export default function HostelsList({
         filters={filters}
         setFilters={setFilters}
         resetFilters={resetFilters}
+        isOpen={showMobileFilters}
+        setIsOpen={setShowMobileFilters}
       />
 
       {/* Main Listings Column */}
@@ -99,19 +102,28 @@ export default function HostelsList({
         </div>
 
         {/* Search Bar */}
-        <div style={{ position: 'relative', marginBottom: '2rem' }}>
-          <Search 
-            size={18} 
-            style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} 
-          />
-          <input 
-            type="text" 
-            placeholder="Search hostels by name or address..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="form-input"
-            style={{ width: '100%', paddingLeft: '2.8rem', borderRadius: 'var(--radius-full)' }}
-          />
+        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search 
+              size={18} 
+              style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} 
+            />
+            <input 
+              type="text" 
+              placeholder="Search hostels by name or address..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="form-input"
+              style={{ width: '100%', paddingLeft: '2.8rem', borderRadius: 'var(--radius-full)' }}
+            />
+          </div>
+          <button 
+            className="mobile-filter-toggle-btn"
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+          >
+            <Filter size={18} />
+            <span>Filters</span>
+          </button>
         </div>
 
         {/* Grid List */}
