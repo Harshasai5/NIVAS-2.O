@@ -348,7 +348,7 @@ function AdPopup({ banners }) {
           style={{ display: 'block', width: '100%', textDecoration: 'none' }}
           onClick={() => setIsOpen(false)}
         >
-          <div style={{ position: 'relative', width: '100%', height: isMobile ? '240px' : '380px', overflow: 'hidden' }}>
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '1600 / 750', maxHeight: '350px', overflow: 'hidden' }}>
             <img 
               src={activeBanner.banner_image.startsWith('http') ? activeBanner.banner_image : `/${activeBanner.banner_image}`} 
               alt={activeBanner.title || 'Advertisement'} 

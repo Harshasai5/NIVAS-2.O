@@ -198,6 +198,7 @@ button, input, select, textarea {
   border-radius: var(--radius-lg);
   overflow: hidden;
   aspect-ratio: 1600 / 750;
+  max-height: 350px;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
 }
@@ -1156,25 +1157,29 @@ button, input, select, textarea {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.6); /* Sleek slate glass */
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: white;
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition);
+  z-index: 150; /* Ensure they layer above the image */
+  transition: all 0.2s ease;
 }
 
-.lightbox-btn-prev { left: -5rem; }
-.lightbox-btn-next { right: -5rem; }
+.lightbox-btn-prev { left: 1.5rem; }
+.lightbox-btn-next { right: 1.5rem; }
 
 .lightbox-btn-prev:hover, .lightbox-btn-next:hover {
-  background: white;
-  color: var(--bg-dark);
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: translateY(-50%) scale(1.08);
 }
 
 /* ADMIN PANEL LOGIN */
