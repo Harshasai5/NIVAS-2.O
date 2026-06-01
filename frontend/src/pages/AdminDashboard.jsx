@@ -483,13 +483,6 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                 <div className="admin-stat-label">PGs / Rooms Registered</div>
               </div>
             </div>
-            <div className="admin-stat-card glass" style={{ borderLeft: '4px solid #fbbf24' }}>
-              <div className="admin-stat-icon" style={{ color: '#fbbf24' }}><Sparkles size={20} /></div>
-              <div>
-                <div className="admin-stat-num">{stats.beds}</div>
-                <div className="admin-stat-label">Available Vacancies</div>
-              </div>
-            </div>
           </div>
 
           <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Folder Directories</h3>

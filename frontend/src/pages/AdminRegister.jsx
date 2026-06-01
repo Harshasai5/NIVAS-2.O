@@ -45,7 +45,7 @@ export default function AdminRegister({ navigateTo }) {
 
       setSuccess('Administrator registered successfully! Directing you to login...');
       setTimeout(() => {
-        navigateTo('/admin-login', 'admin-login');
+        navigateTo('/kalix-nivas-login', 'kalix-nivas-login');
       }, 2000);
     } catch (err) {
       setError(err.message);
@@ -133,7 +133,7 @@ export default function AdminRegister({ navigateTo }) {
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
           Already have an account?{' '}
           <span 
-            onClick={() => navigateTo('/admin-login', 'admin-login')} 
+            onClick={() => navigateTo('/kalix-nivas-login', 'kalix-nivas-login')} 
             style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
           >
             Sign In here

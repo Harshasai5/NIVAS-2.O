@@ -65,8 +65,8 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      if (path === '/NIVAS-2.O/admin-login' || path === '/admin-login') {
-        setPage('admin-login');
+      if (path === '/NIVAS-2.O/kalix-nivas-login' || path === '/kalix-nivas-login') {
+        setPage('kalix-nivas-login');
       } else if (path === '/NIVAS-2.O/admin-register' || path === '/admin-register') {
         setPage('admin-register');
       } else if (path === '/NIVAS-2.O/admin-dashboard' || path === '/admin-dashboard') {
@@ -203,7 +203,7 @@ export default function App() {
           />
         )}
 
-        {page === 'admin-login' && (
+        {page === 'kalix-nivas-login' && (
           <AdminLogin 
             setAdminToken={setAdminToken}
             setPage={(pageName) => navigateTo(`/${pageName}`, pageName)}
@@ -239,8 +239,10 @@ export default function App() {
         <p style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>- SRKR Students.</p>
       </footer>
 
-      {/* Global ad pop-up overlay */}
-      <AdPopup banners={inBetweenBanners} />
+      {/* Global ad pop-up overlay (no ads on admin pages) */}
+      {page !== 'kalix-nivas-login' && page !== 'admin-register' && page !== 'admin-dashboard' && (
+        <AdPopup banners={inBetweenBanners} />
+      )}
     </div>
   );
 }
