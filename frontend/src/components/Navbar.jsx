@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Home, Hotel, Key, ShieldAlert, Sparkles, Menu, X } from 'lucide-react';
+import logoImg from '../assets/logo.jpeg';
 
 export default function Navbar({ activePage, setPage, adminToken, logoutAdmin }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -18,7 +19,7 @@ export default function Navbar({ activePage, setPage, adminToken, logoutAdmin })
     <>
       <header className="navbar glass">
         <div className="nav-logo" onClick={() => navigateTo('home')} style={{ cursor: 'pointer' }}>
-          <img src="/Uploads/logo.jpeg" alt="NIVAS" className="nav-logo-img" />
+          <img src={logoImg} alt="NIVAS" className="nav-logo-img" />
         </div>
 
         {/* Desktop Links */}
