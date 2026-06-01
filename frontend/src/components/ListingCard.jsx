@@ -39,6 +39,7 @@ export default function ListingCard({ item, type, onClick }) {
           src={photoUrl} 
           alt={name} 
           className="card-image"
+          loading="lazy"
           onError={(e) => {
             e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=600&auto=format&fit=cover';
           }}

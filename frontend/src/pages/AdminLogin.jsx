@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldAlert, LogIn } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function AdminLogin({ setAdminToken, setPage }) {
   const [username, setUsername] = useState('');
@@ -17,7 +18,7 @@ export default function AdminLogin({ setAdminToken, setPage }) {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch('/api/admin/login', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })

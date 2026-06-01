@@ -8,6 +8,7 @@ import DetailView from './pages/DetailView';
 import AdminLogin from './pages/AdminLogin';
 import AdminRegister from './pages/AdminRegister';
 import AdminDashboard from './pages/AdminDashboard';
+import { API_BASE_URL } from './config';
 
 export default function App() {
   const [page, setPage] = useState('home');
@@ -42,7 +43,7 @@ export default function App() {
   useEffect(() => {
     async function fetchBanners() {
       try {
-        const res = await fetch('/api/banners');
+        const res = await fetch(`${API_BASE_URL}/api/banners`);
         const data = await res.json();
         const bannersList = Array.isArray(data) ? data : [];
         setInBetweenBanners(bannersList.filter(b => b.in_between === 1 || b.in_between === true));
@@ -106,7 +107,7 @@ export default function App() {
       if (!adminToken) return;
 
       try {
-        const res = await fetch('/api/admin/verify', {
+        const res = await fetch(`${API_BASE_URL}/api/admin/verify`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${adminToken}` }
         });
@@ -352,6 +353,7 @@ function AdPopup({ banners }) {
             <img 
               src={activeBanner.banner_image.startsWith('http') ? activeBanner.banner_image : `/${activeBanner.banner_image}`} 
               alt={activeBanner.title || 'Advertisement'} 
+              loading="lazy"
               style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease-out' }}
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.04)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}

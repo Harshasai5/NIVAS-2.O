@@ -3,6 +3,7 @@ import { Sparkles, Search, Inbox, Filter, ArrowUp } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
 import InlineBanner from '../components/InlineBanner';
+import { API_BASE_URL } from '../config';
 
 export default function HostelsList({ 
   setPage, 
@@ -44,7 +45,7 @@ export default function HostelsList({
   useEffect(() => {
     async function fetchBanners() {
       try {
-        const res = await fetch('/api/banners');
+        const res = await fetch(`${API_BASE_URL}/api/banners`);
         const data = await res.json();
         setBanners(data.filter(b => b.in_between === 1 || b.in_between === true));
       } catch (error) {
@@ -67,7 +68,7 @@ export default function HostelsList({
         if (filters.beds_per_room) params.append('beds_per_room', filters.beds_per_room);
         if (filters.college) params.append('college', filters.college);
 
-        const res = await fetch(`/api/hostels?${params.toString()}`);
+        const res = await fetch(`${API_BASE_URL}/api/hostels?${params.toString()}`);
         const data = await res.json();
         setHostels(data);
       } catch (error) {

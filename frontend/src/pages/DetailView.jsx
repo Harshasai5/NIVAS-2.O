@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, MapPin, Phone, Wind, UserCheck, CheckCircle2, AlertTriangle, MessageSquare, ChevronLeft, ChevronRight, X, Map } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 const GoogleMapsIcon = ({ size = 20 }) => (
   <svg 
@@ -44,7 +45,7 @@ export default function DetailView({ id, type, setPage }) {
     async function fetchDetail() {
       try {
         setLoading(true);
-        const endpoint = type === 'hostel' ? `/api/hostels/${id}` : `/api/rooms/${id}`;
+        const endpoint = type === 'hostel' ? `${API_BASE_URL}/api/hostels/${id}` : `${API_BASE_URL}/api/rooms/${id}`;
         const res = await fetch(endpoint);
         if (!res.ok) throw new Error('Listing not found');
         const data = await res.json();
@@ -63,7 +64,7 @@ export default function DetailView({ id, type, setPage }) {
       const trackKey = `${type}-${id}`;
       if (trackedRef.current !== trackKey) {
         trackedRef.current = trackKey;
-        fetch(`/api/${type}s/${id}/click`, { method: 'POST' })
+        fetch(`${API_BASE_URL}/api/${type}s/${id}/click`, { method: 'POST' })
           .catch(err => console.warn('Failed to track click:', err));
       }
     }
@@ -180,7 +181,7 @@ export default function DetailView({ id, type, setPage }) {
       {/* Asymmetric grid: large photo left, two stacked thumbnails right */}
       <div className="gallery-layout">
         <div className="gallery-main" onClick={() => openLightbox(0)}>
-          <img src={photos[0]} alt="Primary View" className="gallery-img" />
+          <img src={photos[0]} alt="Primary View" className="gallery-img" loading="lazy" />
         </div>
         
         <div className="gallery-thumb-grid">
@@ -189,6 +190,7 @@ export default function DetailView({ id, type, setPage }) {
               src={photos[1 % photos.length]} 
               alt="Thumbnail 1" 
               className="gallery-img" 
+              loading="lazy"
               onError={(e) => { e.target.src = photos[0]; }}
             />
           </div>
@@ -198,6 +200,7 @@ export default function DetailView({ id, type, setPage }) {
               src={photos[2 % photos.length]} 
               alt="Thumbnail 2" 
               className="gallery-img"
+              loading="lazy"
               onError={(e) => { e.target.src = photos[0]; }}
             />
             {photos.length > 3 && (
@@ -349,6 +352,7 @@ export default function DetailView({ id, type, setPage }) {
               src={photos[lightboxIndex]} 
               alt={`Gallery Index ${lightboxIndex + 1}`} 
               className="lightbox-image" 
+              loading="lazy"
             />
 
             {photos.length > 1 && (

@@ -21,6 +21,8 @@ import {
   Key
 } from 'lucide-react';
 
+import { API_BASE_URL } from '../config';
+
 export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo }) {
   // Navigation State inside Drive
   // 'root' -> Root Drive showing Hostels, Rooms, Banners folder
@@ -57,15 +59,15 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
     try {
       setLoading(true);
       
-      const bannersRes = await fetch('/api/banners?admin=true');
+      const bannersRes = await fetch(`${API_BASE_URL}/api/banners?admin=true`);
       const bannersData = await bannersRes.json();
       setBanners(bannersData);
-
-      const hostelsRes = await fetch('/api/hostels?admin=true');
+ 
+      const hostelsRes = await fetch(`${API_BASE_URL}/api/hostels?admin=true`);
       const hostelsData = await hostelsRes.json();
       setHostels(hostelsData);
-
-      const roomsRes = await fetch('/api/rooms?admin=true');
+ 
+      const roomsRes = await fetch(`${API_BASE_URL}/api/rooms?admin=true`);
       const roomsData = await roomsRes.json();
       setRooms(roomsData);
 
@@ -92,7 +94,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
     try {
       setLoading(true);
       const endpoint = type === 'hostel' ? `/api/hostels/${id}` : `/api/rooms/${id}`;
-      const res = await fetch(endpoint);
+      const res = await fetch(`${API_BASE_URL}${endpoint}`);
       const data = await res.json();
       
       setFormData(data);
@@ -186,7 +188,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
 
     try {
       const endpoint = `/api/${type}s/${id}`;
-      const res = await fetch(endpoint, {
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -263,7 +265,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
         body = JSON.stringify(jsonBody);
       }
 
-      const res = await fetch(endpoint, { method, headers, body });
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, { method, headers, body });
       const data = await res.json();
 
       if (!res.ok) {
@@ -301,7 +303,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
 
       const type = drivePath === 'hostel-edit' ? 'hostel' : 'room';
       const endpoint = `/api/${type}s/${selectedItemId}/photos`;
-      const res = await fetch(endpoint, {
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: uploadData
@@ -321,7 +323,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
     try {
       const type = drivePath === 'hostel-edit' ? 'hostel' : 'room';
       const endpoint = `/api/${type}s/${selectedItemId}/photos/${photoId}/primary`;
-      const res = await fetch(endpoint, {
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -337,7 +339,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
     try {
       const type = drivePath === 'hostel-edit' ? 'hostel' : 'room';
       const endpoint = `/api/${type}s/photos/${photoId}`;
-      const res = await fetch(endpoint, {
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -352,7 +354,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
   const handleDeleteBanner = async (bannerId) => {
     if (!window.confirm('Delete this promotional banner?')) return;
     try {
-      const res = await fetch(`/api/banners/${bannerId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/banners/${bannerId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -585,7 +587,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                   onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
                 >
                   <div style={{ height: '140px', overflow: 'hidden', position: 'relative' }}>
-                    <img src={coverPhoto} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={coverPhoto} alt={name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     
                     {/* Heatmap popular views badge */}
                     <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem' }}>
@@ -1020,7 +1022,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                       const isPrimary = p.is_primary === 1;
                       return (
                         <div key={p.id} className="admin-photo-box">
-                          <img src={p.photo.startsWith('http') ? p.photo : `/${p.photo}`} alt="Thumb view" className="admin-photo-img" />
+                          <img src={p.photo.startsWith('http') ? p.photo : `/${p.photo}`} alt="Thumb view" className="admin-photo-img" loading="lazy" />
                           <div className="admin-photo-actions">
                             <button 
                               className={`admin-photo-btn admin-photo-btn-primary ${isPrimary ? 'active' : ''}`}
@@ -1112,6 +1114,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                   <img 
                     src={b.banner_image.startsWith('http') ? b.banner_image : `/${b.banner_image}`} 
                     alt={b.title} 
+                    loading="lazy"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=300&auto=format&fit=cover'; }}
                   />

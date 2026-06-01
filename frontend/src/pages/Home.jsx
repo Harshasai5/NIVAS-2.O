@@ -3,6 +3,7 @@ import { Sparkles, ArrowRight, Hotel, Key, MapPin, Navigation, X } from 'lucide-
 import HeroBanner from '../components/HeroBanner';
 import SponsoredHostels from '../components/SponsoredHostels';
 import ListingCard from '../components/ListingCard';
+import { API_BASE_URL } from '../config';
 
 export default function Home({ setPage, setDetailId, setDetailType, setHostelFilters, initialHostelFilters }) {
   const [banners, setBanners] = useState([]);
@@ -10,36 +11,44 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
   const [nearbyRooms, setNearbyRooms] = useState([]);
   const [allHostels, setAllHostels] = useState([]);
   const [allRooms, setAllRooms] = useState([]);
+  const [collegeHostels, setCollegeHostels] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true);
-        // 1. Fetch Banners
-        const bannersRes = await fetch('/api/banners');
-        const bannersData = await bannersRes.json();
+        // 1. Fetch Banners (Array safeguarded)
+        const bannersRes = await fetch(`${API_BASE_URL}/api/banners`);
+        const bannersJson = await bannersRes.json();
+        const bannersData = Array.isArray(bannersJson) ? bannersJson : [];
         const mainBanners = bannersData.filter(b => b.main_display === 1 || b.main_display === true);
         setBanners(mainBanners.length > 0 ? mainBanners : bannersData);
 
         // 2. Fetch Sponsored Hostels
-        const sponsoredRes = await fetch('/api/hostels?sponsored=true');
-        const sponsoredData = await sponsoredRes.json();
-        setSponsoredHostels(sponsoredData);
+        const sponsoredRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=true`);
+        const sponsoredJson = await sponsoredRes.json();
+        setSponsoredHostels(Array.isArray(sponsoredJson) ? sponsoredJson : []);
 
-        // 3. Fetch Hostels (Client List)
-        const hostelsRes = await fetch('/api/hostels');
-        const hostelsData = await hostelsRes.json();
-        setAllHostels(hostelsData);
+        // 3. Fetch Hostels - Load Home Data Only (Limit to 4)
+        const hostelsRes = await fetch(`${API_BASE_URL}/api/hostels?limit=4`);
+        const hostelsJson = await hostelsRes.json();
+        setAllHostels(Array.isArray(hostelsJson) ? hostelsJson : []);
 
-        // 4. Fetch PG Rooms (Client List)
-        const roomsRes = await fetch('/api/rooms');
-        const roomsData = await roomsRes.json();
-        setAllRooms(roomsData);
+        // 4. Fetch PG Rooms - Load Home Data Only (Limit to 4)
+        const roomsRes = await fetch(`${API_BASE_URL}/api/rooms?limit=4`);
+        const roomsJson = await roomsRes.json();
+        setAllRooms(Array.isArray(roomsJson) ? roomsJson : []);
 
-        // 5. Filter Nearby Rooms (< 1.2 km from SRKR)
-        const nearby = roomsData.filter(room => room.distance_from_srkr <= 1.2);
-        setNearbyRooms(nearby);
+        // 5. Fetch Nearby Rooms directly from API - Load Home Data Only (Limit to 4, under 1.2km)
+        const nearbyRes = await fetch(`${API_BASE_URL}/api/rooms?distance_max=1.2&limit=4`);
+        const nearbyJson = await nearbyRes.json();
+        setNearbyRooms(Array.isArray(nearbyJson) ? nearbyJson : []);
+
+        // 6. Fetch College Hostels directly from API - Load Home Data Only (Limit to 4)
+        const collegeRes = await fetch(`${API_BASE_URL}/api/hostels?college=true&limit=4`);
+        const collegeJson = await collegeRes.json();
+        setCollegeHostels(Array.isArray(collegeJson) ? collegeJson : []);
       } catch (error) {
         console.error('Error fetching home data:', error);
       } finally {
@@ -199,51 +208,46 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
       )}
 
       {/* 4b. College Affiliated Hostels Section (Now at the bottom of the home page) */}
-      {(() => {
-        const collegeHostels = allHostels.filter(h => h.is_college_hostel === 1 || h.is_college_hostel === true);
-        if (collegeHostels.length === 0) return null;
-
-        return (
-          <section style={{ margin: '2rem 0', paddingBottom: '3rem' }}>
-            <div className="section-header">
-              <h2 className="section-title">
-                <span>College Hostels</span>
-              </h2>
-              <div className="section-action" onClick={() => {
-                if (setHostelFilters && initialHostelFilters) {
-                  setHostelFilters({ ...initialHostelFilters, college: 'true' });
-                }
-                setPage('hostels');
-              }}>
-                <span>View All</span>
-                <ArrowRight size={16} />
-              </div>
+      {collegeHostels.length > 0 && (
+        <section style={{ margin: '2rem 0', paddingBottom: '3rem' }}>
+          <div className="section-header">
+            <h2 className="section-title">
+              <span>College Hostels</span>
+            </h2>
+            <div className="section-action" onClick={() => {
+              if (setHostelFilters && initialHostelFilters) {
+                setHostelFilters({ ...initialHostelFilters, college: 'true' });
+              }
+              setPage('hostels');
+            }}>
+              <span>View All</span>
+              <ArrowRight size={16} />
             </div>
+          </div>
 
-            <div className="scroll-container">
-              {collegeHostels.slice(0, 4).map((hostel) => (
-                <ListingCard 
-                  key={hostel.id}
-                  item={hostel}
-                  type="hostel"
-                  onClick={() => handleSelectListing(hostel.id, 'hostel')}
-                />
-              ))}
-              <div className="view-more-card" onClick={() => {
-                if (setHostelFilters && initialHostelFilters) {
-                  setHostelFilters({ ...initialHostelFilters, college: 'true' });
-                }
-                setPage('hostels');
-              }}>
-                <div className="view-more-icon">
-                  <ArrowRight size={24} />
-                </div>
-                <span style={{ fontWeight: 700 }}>View All College Hostels</span>
+          <div className="scroll-container">
+            {collegeHostels.slice(0, 4).map((hostel) => (
+              <ListingCard 
+                key={hostel.id}
+                item={hostel}
+                type="hostel"
+                onClick={() => handleSelectListing(hostel.id, 'hostel')}
+              />
+            ))}
+            <div className="view-more-card" onClick={() => {
+              if (setHostelFilters && initialHostelFilters) {
+                setHostelFilters({ ...initialHostelFilters, college: 'true' });
+              }
+              setPage('hostels');
+            }}>
+              <div className="view-more-icon">
+                <ArrowRight size={24} />
               </div>
+              <span style={{ fontWeight: 700 }}>View All College Hostels</span>
             </div>
-          </section>
-        );
-      })()}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

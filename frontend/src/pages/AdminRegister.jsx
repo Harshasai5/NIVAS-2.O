@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldPlus, UserPlus } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function AdminRegister({ navigateTo }) {
   const [username, setUsername] = useState('');
@@ -31,7 +32,7 @@ export default function AdminRegister({ navigateTo }) {
       setError('');
       setSuccess('');
       
-      const res = await fetch('/api/admin/register', {
+      const res = await fetch(`${API_BASE_URL}/api/admin/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })

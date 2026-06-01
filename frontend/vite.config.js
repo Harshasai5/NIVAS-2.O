@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/NIVAS-2.O/',
+  base: process.env.VERCEL ? '/' : '/NIVAS-2.O/',
   plugins: [react()],
   server: {
     port: 3000,

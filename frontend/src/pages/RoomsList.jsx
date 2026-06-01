@@ -3,6 +3,7 @@ import { Search, Inbox, Filter } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
 import InlineBanner from '../components/InlineBanner';
+import { API_BASE_URL } from '../config';
 
 export default function RoomsList({ 
   setPage, 
@@ -27,7 +28,7 @@ export default function RoomsList({
   useEffect(() => {
     async function fetchBanners() {
       try {
-        const res = await fetch('/api/banners');
+        const res = await fetch(`${API_BASE_URL}/api/banners`);
         const data = await res.json();
         setBanners(data.filter(b => b.in_between === 1 || b.in_between === true));
       } catch (error) {
@@ -50,7 +51,7 @@ export default function RoomsList({
         if (filters.distance_max) params.append('distance_max', filters.distance_max);
         if (filters.beds_per_room) params.append('beds_per_room', filters.beds_per_room);
 
-        const res = await fetch(`/api/rooms?${params.toString()}`);
+        const res = await fetch(`${API_BASE_URL}/api/rooms?${params.toString()}`);
         const data = await res.json();
         setRooms(data);
       } catch (error) {
