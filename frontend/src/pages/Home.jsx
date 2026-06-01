@@ -30,23 +30,23 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
         const sponsoredJson = await sponsoredRes.json();
         setSponsoredHostels(Array.isArray(sponsoredJson) ? sponsoredJson : []);
 
-        // 3. Fetch Hostels - Load Home Data Only (Limit to 4)
-        const hostelsRes = await fetch(`${API_BASE_URL}/api/hostels?limit=4`);
+        // 3. Fetch Hostels - Load Home Data Only (Limit to 10)
+        const hostelsRes = await fetch(`${API_BASE_URL}/api/hostels?limit=10`);
         const hostelsJson = await hostelsRes.json();
         setAllHostels(Array.isArray(hostelsJson) ? hostelsJson : []);
 
-        // 4. Fetch PG Rooms - Load Home Data Only (Limit to 4)
-        const roomsRes = await fetch(`${API_BASE_URL}/api/rooms?limit=4`);
+        // 4. Fetch PG Rooms - Load Home Data Only (Limit to 10)
+        const roomsRes = await fetch(`${API_BASE_URL}/api/rooms?limit=10`);
         const roomsJson = await roomsRes.json();
         setAllRooms(Array.isArray(roomsJson) ? roomsJson : []);
 
-        // 5. Fetch Nearby Rooms directly from API - Load Home Data Only (Limit to 4, under 1.2km)
-        const nearbyRes = await fetch(`${API_BASE_URL}/api/rooms?distance_max=1.2&limit=4`);
+        // 5. Fetch Nearby Rooms directly from API - Load Home Data Only (Limit to 10, under 1.2km)
+        const nearbyRes = await fetch(`${API_BASE_URL}/api/rooms?distance_max=1.2&limit=10`);
         const nearbyJson = await nearbyRes.json();
         setNearbyRooms(Array.isArray(nearbyJson) ? nearbyJson : []);
 
-        // 6. Fetch College Hostels directly from API - Load Home Data Only (Limit to 4)
-        const collegeRes = await fetch(`${API_BASE_URL}/api/hostels?college=true&limit=4`);
+        // 6. Fetch College Hostels directly from API - Load Home Data Only (Limit to 10)
+        const collegeRes = await fetch(`${API_BASE_URL}/api/hostels?college=true&limit=10`);
         const collegeJson = await collegeRes.json();
         setCollegeHostels(Array.isArray(collegeJson) ? collegeJson : []);
       } catch (error) {
@@ -125,7 +125,7 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
           </div>
 
           <div className="scroll-container">
-            {nearbyRooms.slice(0, 4).map((room) => (
+            {nearbyRooms.slice(0, 10).map((room) => (
               <ListingCard 
                 key={room.id}
                 item={room}
@@ -157,7 +157,7 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
           </div>
 
           <div className="scroll-container">
-            {allHostels.slice(0, 4).map((hostel) => (
+            {allHostels.slice(0, 10).map((hostel) => (
               <ListingCard 
                 key={hostel.id}
                 item={hostel}
@@ -189,7 +189,7 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
           </div>
 
           <div className="scroll-container">
-            {allRooms.slice(0, 4).map((room) => (
+            {allRooms.slice(0, 10).map((room) => (
               <ListingCard 
                 key={room.id}
                 item={room}
@@ -226,7 +226,7 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
           </div>
 
           <div className="scroll-container">
-            {collegeHostels.slice(0, 4).map((hostel) => (
+            {collegeHostels.slice(0, 10).map((hostel) => (
               <ListingCard 
                 key={hostel.id}
                 item={hostel}

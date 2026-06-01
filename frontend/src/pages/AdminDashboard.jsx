@@ -48,7 +48,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
   const [facilityInput, setFacilityInput] = useState('');
   const [rules, setRules] = useState([]);
   const [ruleInput, setRuleInput] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [coverFile, setCoverFile] = useState(null);
+  const [galleryFiles, setGalleryFiles] = useState([]);
   const [activePhotos, setActivePhotos] = useState([]);
 
   // Create Mode state (when true, opens the creation form instead of Drive grid)
@@ -102,7 +103,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
       setRules(data.rules || []);
       setActivePhotos(data.photos || []);
       setSelectedItemId(id);
-      setSelectedFiles([]);
+      setCoverFile(null);
+      setGalleryFiles([]);
       
       setDrivePath(`${type}-edit`);
     } catch (e) {
@@ -116,7 +118,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
   const openCreateWorkspace = (type) => {
     setSelectedItemId(null);
     setCreateType(type);
-    setSelectedFiles([]);
+    setCoverFile(null);
+    setGalleryFiles([]);
     setFacilities([]);
     setRules([]);
     
@@ -175,7 +178,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
       main_display: banner.main_display || 0,
       status: banner.status
     });
-    setSelectedFiles([]);
+    setCoverFile(null);
+    setGalleryFiles([]);
     setSelectedItemId(banner.id);
     setCreateMode(true);
   };
@@ -227,8 +231,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
           uploadData.append('main_display', formData.main_display === 1 || formData.main_display === true ? 1 : 0);
           uploadData.append('status', formData.status || 'active');
           
-          if (selectedFiles.length > 0) {
-            uploadData.append('banner_image', selectedFiles[0]);
+          if (coverFile) {
+            uploadData.append('banner_image', coverFile);
           } else if (!isEdit) {
             throw new Error('Banner image file is required.');
           }
@@ -239,13 +243,22 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
           endpoint = `/api/${createType}s`;
           method = 'POST';
 
+          if (!coverFile) {
+            throw new Error('A primary cover image is required for registration.');
+          }
+
           const uploadData = new FormData();
           Object.keys(formData).forEach(key => {
             uploadData.append(key, formData[key]);
           });
           uploadData.append('facilities', JSON.stringify(facilities));
           uploadData.append('rules', JSON.stringify(rules));
-          selectedFiles.forEach(file => {
+          
+          // Append cover photo first so the backend sets it as primary cover (is_primary = 1)
+          uploadData.append('photos', coverFile);
+          
+          // Append the rest of the gallery photos
+          galleryFiles.forEach(file => {
             uploadData.append('photos', file);
           });
           body = uploadData;
@@ -275,6 +288,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
       alert('Workspace changes saved successfully.');
       setCreateMode(false);
       setSelectedItemId(null);
+      setCoverFile(null);
+      setGalleryFiles([]);
       
       // If we saved an edit, reload that folder workspace
       if (!createMode) {
@@ -1535,36 +1550,70 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                 </>
               )}
 
-              {/* Upload files select uploader */}
+              {/* Upload Cover Picture (Single Upload) */}
               <div className="form-group" style={{ margin: '1.5rem 0' }}>
-                <label className="form-label">Upload Cover/Gallery Pictures</label>
+                <label className="form-label">Upload Cover Image (Single Upload - Required)</label>
                 <div 
-                  style={{ border: '2px dashed var(--border)', borderRadius: 'var(--radius-sm)', padding: '2rem 1rem', textAlign: 'center', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.01)' }}
-                  onClick={() => document.getElementById('create-files-input').click()}
+                  style={{ border: '2px dashed var(--border)', borderRadius: 'var(--radius-sm)', padding: '2rem 1rem', textAlign: 'center', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.01)', transition: 'var(--transition)' }}
+                  onClick={() => document.getElementById('create-cover-input').click()}
                 >
                   <Upload size={24} style={{ color: 'var(--text-muted)', marginBottom: '0.4rem' }} />
-                  <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>Click to browse picture files</p>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>Click to browse cover picture</p>
                   <input 
-                    id="create-files-input"
+                    id="create-cover-input"
                     type="file" 
-                    multiple={createType !== 'banner'}
-                    onChange={(e) => setSelectedFiles([...selectedFiles, ...Array.from(e.target.files)])}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        setCoverFile(e.target.files[0]);
+                      }
+                    }}
                     style={{ display: 'none' }}
                     accept="image/*"
                   />
                 </div>
 
-                {selectedFiles.length > 0 && (
+                {coverFile && (
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
-                    {selectedFiles.map((file, idx) => (
-                      <div key={idx} className="tag-badge" style={{ fontSize: '0.75rem' }}>
-                        <span style={{ maxWidth: '140px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
-                        <button type="button" className="tag-badge-remove" onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== idx))}>&times;</button>
-                      </div>
-                    ))}
+                    <div className="tag-badge" style={{ fontSize: '0.75rem', background: 'var(--primary-glow)', color: 'var(--primary)', borderColor: 'var(--primary)' }}>
+                      <span style={{ maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 700 }}>Cover: {coverFile.name}</span>
+                      <button type="button" className="tag-badge-remove" onClick={() => setCoverFile(null)}>&times;</button>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {/* Upload Hostel/Room Gallery Pictures (Multiple Upload) */}
+              {createType !== 'banner' && (
+                <div className="form-group" style={{ margin: '1.5rem 0' }}>
+                  <label className="form-label">Upload Hostel/Room Gallery Images (Multiple Upload)</label>
+                  <div 
+                    style={{ border: '2px dashed var(--border)', borderRadius: 'var(--radius-sm)', padding: '2rem 1rem', textAlign: 'center', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.01)', transition: 'var(--transition)' }}
+                    onClick={() => document.getElementById('create-gallery-input').click()}
+                  >
+                    <Upload size={24} style={{ color: 'var(--text-muted)', marginBottom: '0.4rem' }} />
+                    <p style={{ fontSize: '0.85rem', fontWeight: 600 }}>Click to browse gallery pictures</p>
+                    <input 
+                      id="create-gallery-input"
+                      type="file" 
+                      multiple 
+                      onChange={(e) => setGalleryFiles([...galleryFiles, ...Array.from(e.target.files)])}
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                    />
+                  </div>
+
+                  {galleryFiles.length > 0 && (
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+                      {galleryFiles.map((file, idx) => (
+                        <div key={idx} className="tag-badge" style={{ fontSize: '0.75rem' }}>
+                          <span style={{ maxWidth: '140px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
+                          <button type="button" className="tag-badge-remove" onClick={() => setGalleryFiles(galleryFiles.filter((_, i) => i !== idx))}>&times;</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <button 
                 type="submit" 
