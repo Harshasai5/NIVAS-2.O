@@ -93,7 +93,7 @@ export default function DetailView({ id, type, setPage }) {
 
   const name = type === 'hostel' ? item.hostel_name : item.room_name;
   const price = type === 'hostel' ? item.price_starting : item.price_per_person;
-  const priceLabel = type === 'hostel' ? '/ month' : '/ person monthly';
+  const priceLabel = type === 'hostel' ? '/ yearly' : '/ person monthly';
   const isAc = item.is_ac === 1 || item.is_ac === true;
   const gender = item.gender;
   const beds = item.beds_per_room;
@@ -103,7 +103,7 @@ export default function DetailView({ id, type, setPage }) {
 
   // Resolve Photos list
   const photos = item.photos && item.photos.length > 0 
-    ? item.photos.map(p => `/${p.photo}`) 
+    ? item.photos.map(p => p.photo.startsWith('http') ? p.photo : `/${p.photo}`) 
     : ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=1200&auto=format&fit=cover'];
 
   // Bed Fill calculation

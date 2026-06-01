@@ -2,6 +2,7 @@ import express from 'express';
 import pool from '../config/db.js';
 import { verifyAdmin } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
+import { uploadToCloudinary } from '../config/cloudinary.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -9,7 +10,7 @@ const router = express.Router();
 
 // Helper to delete an image file if it exists
 const deleteFile = (relativePath) => {
-  if (!relativePath) return;
+  if (!relativePath || relativePath.startsWith('http')) return; // Ignore Cloudinary CDN URLs
   const fullPath = path.resolve('..', relativePath);
   fs.unlink(fullPath, (err) => {
     if (err && err.code !== 'ENOENT') {
@@ -244,11 +245,11 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
     // Handle uploaded photos
     if (req.files && req.files.length > 0) {
       for (let i = 0; i < req.files.length; i++) {
-        const photoPath = `Uploads/Hostels/${req.files[i].filename}`;
+        const secureUrl = await uploadToCloudinary(req.files[i].path, 'hostels');
         const isPrimary = i === 0 ? 1 : 0; // Mark the first photo as primary
         await conn.query(
           'INSERT INTO hostel_photos (hostel_id, photo, is_primary) VALUES (?, ?, ?)',
-          [hostelId, photoPath, isPrimary]
+          [hostelId, secureUrl, isPrimary]
         );
       }
     }
@@ -385,19 +386,19 @@ router.post('/:id/photos', verifyAdmin, upload.array('photos', 10), async (req, 
 
     const insertedPhotos = [];
     for (let i = 0; i < req.files.length; i++) {
-      const photoPath = `Uploads/Hostels/${req.files[i].filename}`;
+      const secureUrl = await uploadToCloudinary(req.files[i].path, 'hostels');
       // If there is no existing primary, make the first uploaded photo primary
       const isPrimary = (!hasPrimary && i === 0) ? 1 : 0;
 
       const [result] = await pool.query(
         'INSERT INTO hostel_photos (hostel_id, photo, is_primary) VALUES (?, ?, ?)',
-        [id, photoPath, isPrimary]
+        [id, secureUrl, isPrimary]
       );
       
       insertedPhotos.push({
         id: result.insertId,
         hostel_id: parseInt(id),
-        photo: photoPath,
+        photo: secureUrl,
         is_primary: isPrimary
       });
     }

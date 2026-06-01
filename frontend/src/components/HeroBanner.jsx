@@ -46,7 +46,7 @@ export default function HeroBanner({ banners }) {
           style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
           {banners.map((banner, index) => {
-            const imageUrl = `/${banner.banner_image}`;
+            const imageUrl = banner.banner_image.startsWith('http') ? banner.banner_image : `/${banner.banner_image}`;
             return (
               <div 
                 key={banner.id} 

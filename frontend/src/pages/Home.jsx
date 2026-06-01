@@ -83,20 +83,22 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
       />
 
       {/* Quick Navigation Quick Links */}
-      <div className="quick-nav-container">
+      <div style={{ padding: '0 5% 2rem 5%', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
         <button 
-          className="quick-nav-card" 
+          className="action-btn action-btn-secondary" 
           onClick={() => setPage('hostels')}
+          style={{ flex: 1, minWidth: '150px', padding: '1rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.4rem', border: '1px solid var(--border)' }}
         >
-          <Hotel size={28} className="quick-nav-icon" style={{ color: 'var(--primary)' }} />
-          <span className="quick-nav-label">Browse Hostels</span>
+          <Hotel size={24} style={{ color: 'var(--primary)' }} />
+          <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>View Hostels</span>
         </button>
         <button 
-          className="quick-nav-card" 
+          className="action-btn action-btn-secondary" 
           onClick={() => setPage('rooms')}
+          style={{ flex: 1, minWidth: '150px', padding: '1rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.4rem', border: '1px solid var(--border)' }}
         >
-          <Key size={28} className="quick-nav-icon" style={{ color: 'var(--unisex-color)' }} />
-          <span className="quick-nav-label">Browse Rooms / PGs</span>
+          <Key size={24} style={{ color: 'var(--unisex-color)' }} />
+          <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>View Rooms</span>
         </button>
       </div>
 
@@ -132,65 +134,77 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
         </section>
       )}
 
-      {/* Inline Advertisement Banner (Auto-rotates & Closeable every 180s) */}
-      {inBetweenBanners.length > 0 && (
-        <InlineAdBanner banners={inBetweenBanners} />
+      {/* Hostels Section */}
+      {allHostels.length > 0 && (
+        <section style={{ margin: '2rem 0' }}>
+          <div className="section-header">
+            <h2 className="section-title">
+              <span>Hostels</span>
+            </h2>
+            <div className="section-action" onClick={() => setPage('hostels')}>
+              <span>View All Hostels</span>
+              <ArrowRight size={16} />
+            </div>
+          </div>
+
+          <div className="scroll-container">
+            {allHostels.slice(0, 4).map((hostel) => (
+              <ListingCard 
+                key={hostel.id}
+                item={hostel}
+                type="hostel"
+                onClick={() => handleSelectListing(hostel.id, 'hostel')}
+              />
+            ))}
+            <div className="view-more-card" onClick={() => setPage('hostels')}>
+              <div className="view-more-icon">
+                <ArrowRight size={24} />
+              </div>
+              <span style={{ fontWeight: 700 }}>View All Hostels</span>
+            </div>
+          </div>
+        </section>
       )}
 
-      {/* 4. Verified Hostels Section (Private) */}
-      {(() => {
-        const verifiedHostels = allHostels.filter(h => !h.is_college_hostel);
-        if (verifiedHostels.length === 0) return null;
-        
-        return (
-          <section style={{ margin: '2rem 0' }}>
-            <div className="section-header">
-              <h2 className="section-title">
-                <span>Verified Private Hostels</span>
-              </h2>
-              <div className="section-action" onClick={() => {
-                if (setHostelFilters && initialHostelFilters) {
-                  setHostelFilters({ ...initialHostelFilters, college: 'false' });
-                }
-                setPage('hostels');
-              }}>
-                <span>View All</span>
-                <ArrowRight size={16} />
-              </div>
+      {/* 5. PG / Room Listings Section */}
+      {allRooms.length > 0 && (
+        <section style={{ margin: '2rem 0' }}>
+          <div className="section-header">
+            <h2 className="section-title">
+              <span>Rental PG & Rooms</span>
+            </h2>
+            <div className="section-action" onClick={() => setPage('rooms')}>
+              <span>View All Rooms</span>
+              <ArrowRight size={16} />
             </div>
+          </div>
 
-            <div className="scroll-container">
-              {verifiedHostels.slice(0, 4).map((hostel) => (
-                <ListingCard 
-                  key={hostel.id}
-                  item={hostel}
-                  type="hostel"
-                  onClick={() => handleSelectListing(hostel.id, 'hostel')}
-                />
-              ))}
-              <div className="view-more-card" onClick={() => {
-                if (setHostelFilters && initialHostelFilters) {
-                  setHostelFilters({ ...initialHostelFilters, college: 'false' });
-                }
-                setPage('hostels');
-              }}>
-                <div className="view-more-icon">
-                  <ArrowRight size={24} />
-                </div>
-                <span style={{ fontWeight: 700 }}>View All Private Hostels</span>
+          <div className="scroll-container">
+            {allRooms.slice(0, 4).map((room) => (
+              <ListingCard 
+                key={room.id}
+                item={room}
+                type="room"
+                onClick={() => handleSelectListing(room.id, 'room')}
+              />
+            ))}
+            <div className="view-more-card" onClick={() => setPage('rooms')}>
+              <div className="view-more-icon">
+                <ArrowRight size={24} />
               </div>
+              <span style={{ fontWeight: 700 }}>View All Rooms</span>
             </div>
-          </section>
-        );
-      })()}
+          </div>
+        </section>
+      )}
 
-      {/* 4b. College Affiliated Hostels Section */}
+      {/* 4b. College Affiliated Hostels Section (Now at the bottom of the home page) */}
       {(() => {
         const collegeHostels = allHostels.filter(h => h.is_college_hostel === 1 || h.is_college_hostel === true);
         if (collegeHostels.length === 0) return null;
 
         return (
-          <section style={{ margin: '2rem 0' }}>
+          <section style={{ margin: '2rem 0', paddingBottom: '3rem' }}>
             <div className="section-header">
               <h2 className="section-title">
                 <span>College Hostels</span>
@@ -230,134 +244,8 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
           </section>
         );
       })()}
-
-      {/* 5. PG / Room Listings Section */}
-      {allRooms.length > 0 && (
-        <section style={{ margin: '2rem 0', paddingBottom: '3rem' }}>
-          <div className="section-header">
-            <h2 className="section-title">
-              <span>Rental PG & Rooms</span>
-            </h2>
-            <div className="section-action" onClick={() => setPage('rooms')}>
-              <span>View All Rooms</span>
-              <ArrowRight size={16} />
-            </div>
-          </div>
-
-          <div className="scroll-container">
-            {allRooms.slice(0, 4).map((room) => (
-              <ListingCard 
-                key={room.id}
-                item={room}
-                type="room"
-                onClick={() => handleSelectListing(room.id, 'room')}
-              />
-            ))}
-            <div className="view-more-card" onClick={() => setPage('rooms')}>
-              <div className="view-more-icon">
-                <ArrowRight size={24} />
-              </div>
-              <span style={{ fontWeight: 700 }}>View All Rooms</span>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
 
-// Dynamic closeable, auto-rotating 180s inline ad banner component
-function InlineAdBanner({ banners }) {
-  const [activeBanner, setActiveBanner] = useState(null);
-  const [isVisible, setIsVisible] = useState(true);
 
-  const selectRandomBanner = React.useCallback(() => {
-    if (!banners || banners.length === 0) return;
-    // Pick a random banner
-    const randomIndex = Math.floor(Math.random() * banners.length);
-    setActiveBanner(banners[randomIndex]);
-  }, [banners]);
-
-  // Pick on mount
-  useEffect(() => {
-    selectRandomBanner();
-  }, [banners, selectRandomBanner]);
-
-  // Precise 180s timer logic:
-  // - When visible: rotates the ad every 180 seconds.
-  // - When hidden (closed): waits exactly 180 seconds before picking a new ad and showing it again.
-  useEffect(() => {
-    if (!banners || banners.length === 0) return;
-
-    let timerId;
-
-    if (isVisible) {
-      // If visible, rotate to a new random banner every 180 seconds
-      const runTimer = () => {
-        timerId = setTimeout(() => {
-          selectRandomBanner();
-          runTimer(); // schedule next rotation
-        }, 180000); // 180,000 ms = 180 seconds
-      };
-      runTimer();
-    } else {
-      // If hidden (user clicked X), wait exactly 180 seconds, then pick a new random ad and show it
-      timerId = setTimeout(() => {
-        selectRandomBanner();
-        setIsVisible(true);
-      }, 180000); // 180,000 ms = 180 seconds
-    }
-
-    return () => {
-      if (timerId) clearTimeout(timerId);
-    };
-  }, [banners, isVisible, selectRandomBanner]);
-
-  if (!activeBanner || !isVisible) return null;
-
-  return (
-    <section className="inline-banner-container animate-fade" style={{ padding: '0 5%', margin: '2rem 0' }}>
-      <div className="inline-banner-card glass" style={{ position: 'relative', width: '100%', height: '180px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
-        <a 
-          href={activeBanner.redirect_link || '#'} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="inline-banner-slide-link"
-          style={{ display: 'block', width: '100%', height: '100%', textDecoration: 'none' }}
-        >
-          <img 
-            src={`/${activeBanner.banner_image}`} 
-            alt={activeBanner.title || 'Advertisement'} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=600&auto=format&fit=cover'; }}
-          />
-          <div className="inline-banner-content-overlay">
-            <span className="card-sponsor-badge" style={{ position: 'static', marginBottom: '0.25rem', display: 'flex', width: 'fit-content' }}>
-              <Sparkles size={10} />
-              <span style={{ marginLeft: '0.25rem' }}>SPONSORED AD</span>
-            </span>
-            <h3 className="inline-banner-title">{activeBanner.title || 'Nivas Accommodations'}</h3>
-            <button className="inline-banner-action-btn">
-              <span>Learn More</span>
-              <ArrowRight size={14} style={{ marginLeft: '0.25rem' }} />
-            </button>
-          </div>
-        </a>
-        
-        {/* Close Button X */}
-        <button 
-          className="inline-banner-close-btn" 
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsVisible(false);
-          }}
-          title="Remove advertisement"
-          aria-label="Close Ad"
-        >
-          <X size={16} />
-        </button>
-      </div>
-    </section>
-  );
-}

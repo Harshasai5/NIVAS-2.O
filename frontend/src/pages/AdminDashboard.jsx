@@ -21,7 +21,7 @@ import {
   Key
 } from 'lucide-react';
 
-export default function AdminDashboard({ token, setPage, navigateTo }) {
+export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo }) {
   // Navigation State inside Drive
   // 'root' -> Root Drive showing Hostels, Rooms, Banners folder
   // 'hostels-dir' -> Grid of all Hostels folders
@@ -441,14 +441,25 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
           </h2>
         </div>
 
-        <button 
-          className="nav-button" 
-          onClick={() => navigateTo('/home', 'home')}
-          style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border)', display: 'flex', gap: '0.4rem' }}
-        >
-          <Eye size={16} />
-          <span>Exit Admin View</span>
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <button 
+            className="nav-button" 
+            onClick={() => navigateTo('/home', 'home')}
+            style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border)', display: 'flex', gap: '0.4rem' }}
+          >
+            <Eye size={16} />
+            <span>Exit Admin View</span>
+          </button>
+
+          <button 
+            className="nav-button" 
+            onClick={logoutAdmin}
+            style={{ background: 'var(--girls-color)', color: 'white', display: 'flex', gap: '0.4rem', border: 'none', boxShadow: '0 4px 14px rgba(244, 63, 94, 0.25)' }}
+          >
+            <LogOut size={16} />
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. ROOT DRIVE VIEW */}
@@ -559,7 +570,9 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
             {(drivePath === 'hostels-dir' ? hostels : rooms).map((item) => {
               const id = item.id;
               const name = drivePath === 'hostels-dir' ? item.hostel_name : item.room_name;
-              const coverPhoto = item.primary_photo ? `/${item.primary_photo}` : 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=300&auto=format&fit=cover';
+              const coverPhoto = item.primary_photo 
+                ? (item.primary_photo.startsWith('http') ? item.primary_photo : `/${item.primary_photo}`) 
+                : 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=300&auto=format&fit=cover';
               const price = drivePath === 'hostels-dir' ? item.price_starting : item.price_per_person;
               
               return (
@@ -1007,7 +1020,7 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
                       const isPrimary = p.is_primary === 1;
                       return (
                         <div key={p.id} className="admin-photo-box">
-                          <img src={`/${p.photo}`} alt="Thumb view" className="admin-photo-img" />
+                          <img src={p.photo.startsWith('http') ? p.photo : `/${p.photo}`} alt="Thumb view" className="admin-photo-img" />
                           <div className="admin-photo-actions">
                             <button 
                               className={`admin-photo-btn admin-photo-btn-primary ${isPrimary ? 'active' : ''}`}
@@ -1097,7 +1110,7 @@ export default function AdminDashboard({ token, setPage, navigateTo }) {
               >
                 <div style={{ height: '140px', overflow: 'hidden' }}>
                   <img 
-                    src={`/${b.banner_image}`} 
+                    src={b.banner_image.startsWith('http') ? b.banner_image : `/${b.banner_image}`} 
                     alt={b.title} 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=300&auto=format&fit=cover'; }}

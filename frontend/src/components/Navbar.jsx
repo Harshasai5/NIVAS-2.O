@@ -46,21 +46,6 @@ export default function Navbar({ activePage, setPage, adminToken, logoutAdmin })
             <Key size={18} />
             <span>PG & Rooms</span>
           </div>
-
-          {adminToken ? (
-            <>
-              <div 
-                className={`nav-item ${activePage === 'admin-dashboard' ? 'active' : ''}`}
-                onClick={() => navigateTo('admin-dashboard')}
-              >
-                <ShieldAlert size={18} />
-                <span>Admin Panel</span>
-              </div>
-              <button className="nav-button" onClick={handleLogout} style={{ background: 'var(--girls-color)', boxShadow: '0 4px 14px rgba(244, 63, 94, 0.25)' }}>
-                Logout
-              </button>
-            </>
-          ) : null}
         </nav>
 
         {/* Mobile Toggle Button */}
@@ -98,25 +83,6 @@ export default function Navbar({ activePage, setPage, adminToken, logoutAdmin })
           <Key size={18} />
           <span>PG & Rooms</span>
         </div>
-
-        {adminToken ? (
-          <>
-            <div 
-              className={`nav-item ${activePage === 'admin-dashboard' ? 'active' : ''}`}
-              onClick={() => navigateTo('admin-dashboard')}
-            >
-              <ShieldAlert size={18} />
-              <span>Admin Panel</span>
-            </div>
-            <button 
-              className="nav-button" 
-              onClick={handleLogout} 
-              style={{ width: '100%', justifyContent: 'center', background: 'var(--girls-color)', boxShadow: '0 4px 14px rgba(244, 63, 94, 0.25)' }}
-            >
-              Logout
-            </button>
-          </>
-        ) : null}
       </nav>
     </>
   );

@@ -13,12 +13,8 @@ export default function SponsoredHostels({ hostels, onSelectHostel }) {
     <section style={{ margin: '2.5rem 0' }}>
       <div className="section-header">
         <h2 className="section-title">
-          <span>Premium Sponsored Hostels</span>
+          <span>Featured Hostels</span>
         </h2>
-        <div className="section-action" style={{ color: '#fbbf24' }}>
-          <Sparkles size={16} style={{ fill: '#fbbf24' }} />
-          <span>Verified Accommodations</span>
-        </div>
       </div>
 
       {/* Mobile view: two rows of horizontal scrolling lists */}

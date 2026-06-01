@@ -49,7 +49,7 @@ export default function InlineBanner({ banners }) {
 
   if (!banners || banners.length === 0 || !activeBanner || !isVisible) return null;
 
-  const imageUrl = `/${activeBanner.banner_image}`;
+  const imageUrl = activeBanner.banner_image.startsWith('http') ? activeBanner.banner_image : `/${activeBanner.banner_image}`;
 
   return (
     <div className="inline-banner-wrapper animate-fade">
@@ -74,10 +74,6 @@ export default function InlineBanner({ banners }) {
               }}
             >
               <div className="inline-banner-content-overlay">
-                <span className="card-sponsor-badge" style={{ position: 'static', marginBottom: '0.25rem', display: 'flex', width: 'fit-content' }}>
-                  <Sparkles size={10} />
-                  <span style={{ marginLeft: '0.25rem' }}>SPONSORED AD</span>
-                </span>
                 {activeBanner.title && <h3 className="inline-banner-title">{activeBanner.title}</h3>}
                 <button className="inline-banner-action-btn">
                   <span>Learn More</span>
@@ -98,13 +94,9 @@ export default function InlineBanner({ banners }) {
             }}
           >
             <div className="inline-banner-content-overlay">
-              <span className="card-sponsor-badge" style={{ position: 'static', marginBottom: '0.25rem', display: 'flex', width: 'fit-content' }}>
-                <Sparkles size={10} />
-                <span style={{ marginLeft: '0.25rem' }}>SPONSORED AD</span>
-              </span>
               {activeBanner.title && <h3 className="inline-banner-title">{activeBanner.title}</h3>}
               <button className="inline-banner-action-btn" style={{ pointerEvents: 'none' }}>
-                <span>Sponsored</span>
+                <span>Advertisement</span>
               </button>
             </div>
           </div>

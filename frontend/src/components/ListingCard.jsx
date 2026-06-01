@@ -6,7 +6,7 @@ export default function ListingCard({ item, type, onClick }) {
   const id = item.id;
   const name = type === 'hostel' ? item.hostel_name : item.room_name;
   const price = type === 'hostel' ? item.price_starting : item.price_per_person;
-  const priceLabel = type === 'hostel' ? '/ month starting' : '/ person monthly';
+  const priceLabel = type === 'hostel' ? '/ yearly' : '/ person monthly';
   
   const isAc = item.is_ac === 1 || item.is_ac === true;
   const gender = item.gender; // boys, girls, unisex
@@ -18,7 +18,7 @@ export default function ListingCard({ item, type, onClick }) {
   // Resolve primary photo
   // Serve via static uploads directory route proxied by vite
   const photoUrl = item.primary_photo 
-    ? `/${item.primary_photo}` 
+    ? (item.primary_photo.startsWith('http') ? item.primary_photo : `/${item.primary_photo}`) 
     : 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=600&auto=format&fit=cover';
 
   return (
@@ -30,7 +30,7 @@ export default function ListingCard({ item, type, onClick }) {
       {isSponsored && (
         <div className="card-sponsor-badge">
           <Sparkles size={12} />
-          <span>Sponsored</span>
+          <span>Featured</span>
         </div>
       )}
 
@@ -104,7 +104,7 @@ export default function ListingCard({ item, type, onClick }) {
           <div className="card-beds" style={{ fontSize: '0.8rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
             <span>Beds: {beds} sharing | </span>
             <span className="card-beds-count" style={{ color: 'var(--unisex-color)', fontWeight: 700 }}>
-              {availableBeds} Available Left
+              {availableBeds} Beds Available
             </span>
           </div>
         </div>

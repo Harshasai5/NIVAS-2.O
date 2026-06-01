@@ -197,7 +197,7 @@ button, input, select, textarea {
   width: 100%;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  height: 380px;
+  aspect-ratio: 1600 / 750;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
 }
@@ -431,7 +431,8 @@ button, input, select, textarea {
 }
 
 .card-image-wrapper {
-  height: 200px;
+  aspect-ratio: 1200 / 600;
+  height: auto;
   position: relative;
   overflow: hidden;
   background: var(--bg-dark);
@@ -1721,7 +1722,8 @@ button, input, select, textarea {
   
   /* Banner slider adjustment for mobile view */
   .banner-slider {
-    height: 240px;
+    aspect-ratio: 1600 / 750;
+    height: auto;
   }
   .banner-content {
     padding: 1.5rem;
@@ -1731,13 +1733,25 @@ button, input, select, textarea {
   }
   
   /* Scroll card adjustments */
-  .card-item {
+  .scroll-container .card-item {
     min-width: 280px;
     max-width: 290px;
     height: 400px;
   }
+  .grid-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 1.5rem;
+  }
+  .grid-layout .card-item {
+    width: 100%;
+    max-width: 360px;
+    min-width: 0;
+    height: 400px;
+  }
   .card-image-wrapper {
-    height: 160px;
+    aspect-ratio: 1200 / 600;
+    height: auto;
   }
   
   .view-more-card {

@@ -2,6 +2,7 @@ import express from 'express';
 import pool from '../config/db.js';
 import { verifyAdmin } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
+import { uploadToCloudinary } from '../config/cloudinary.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -9,7 +10,7 @@ const router = express.Router();
 
 // Helper to delete an image file if it exists
 const deleteFile = (relativePath) => {
-  if (!relativePath) return;
+  if (!relativePath || relativePath.startsWith('http')) return;
   const fullPath = path.resolve('..', relativePath);
   fs.unlink(fullPath, (err) => {
     if (err && err.code !== 'ENOENT') {
@@ -43,14 +44,15 @@ router.post('/', verifyAdmin, upload.single('banner_image'), async (req, res) =>
     return res.status(400).json({ error: 'Banner image is required.' });
   }
 
-  // Format the image path identically to database seeding (e.g. Uploads/Banners/1716492323.jpg)
-  const banner_image = `Uploads/Banners/${req.file.filename}`;
   const order = display_order ? parseInt(display_order) : 0;
   const activeStatus = status || 'active';
   const in_between = req.body.in_between === 'true' || req.body.in_between === '1' || req.body.in_between === 1 || req.body.in_between === true ? 1 : 0;
   const main_display = req.body.main_display === 'true' || req.body.main_display === '1' || req.body.main_display === 1 || req.body.main_display === true ? 1 : 0;
 
   try {
+    // Upload image to Cloudinary
+    const banner_image = await uploadToCloudinary(req.file.path, 'banners');
+
     const [result] = await pool.query(
       'INSERT INTO banners (title, banner_image, redirect_link, display_order, in_between, main_display, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [title || '', banner_image, redirect_link || '#', order, in_between, main_display, activeStatus]
@@ -59,8 +61,10 @@ router.post('/', verifyAdmin, upload.single('banner_image'), async (req, res) =>
     const [newBanner] = await pool.query('SELECT * FROM banners WHERE id = ?', [result.insertId]);
     res.status(201).json(newBanner[0]);
   } catch (error) {
-    // Clean up uploaded file on error
-    deleteFile(banner_image);
+    // If the file is still local, try to delete it
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+    }
     res.status(500).json({ error: error.message });
   }
 });
@@ -74,7 +78,9 @@ router.put('/:id', verifyAdmin, upload.single('banner_image'), async (req, res) 
     // Get existing banner to clean up old image if a new one is uploaded
     const [existing] = await pool.query('SELECT * FROM banners WHERE id = ?', [id]);
     if (existing.length === 0) {
-      if (req.file) deleteFile(`Uploads/Banners/${req.file.filename}`);
+      if (req.file && fs.existsSync(req.file.path)) {
+        try { fs.unlinkSync(req.file.path); } catch (e) {}
+      }
       return res.status(404).json({ error: 'Banner not found.' });
     }
 
@@ -82,7 +88,7 @@ router.put('/:id', verifyAdmin, upload.single('banner_image'), async (req, res) 
     if (req.file) {
       // Delete old banner image
       deleteFile(existing[0].banner_image);
-      banner_image = `Uploads/Banners/${req.file.filename}`;
+      banner_image = await uploadToCloudinary(req.file.path, 'banners');
     }
 
     const order = display_order !== undefined ? parseInt(display_order) : existing[0].display_order;
@@ -107,7 +113,9 @@ router.put('/:id', verifyAdmin, upload.single('banner_image'), async (req, res) 
     const [updatedBanner] = await pool.query('SELECT * FROM banners WHERE id = ?', [id]);
     res.json(updatedBanner[0]);
   } catch (error) {
-    if (req.file) deleteFile(`Uploads/Banners/${req.file.filename}`);
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+    }
     res.status(500).json({ error: error.message });
   }
 });

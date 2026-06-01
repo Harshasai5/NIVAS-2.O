@@ -91,13 +91,7 @@ export default function RoomsList({
       <div className="grid-listings-wrapper">
         <div className="grid-listings-header">
           <div className="detail-title-col">
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800 }}>Explore PG & Rental Rooms</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Budget-friendly stays and luxury PG accommodations near SRKR</p>
-          </div>
-
-          {/* Listings Count */}
-          <div className="grid-listings-count">
-            Found <span className="grid-listings-count-num">{filteredRoomsList.length}</span> rooms
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800 }}>Explore rental house</h1>
           </div>
         </div>
 
@@ -145,44 +139,14 @@ export default function RoomsList({
           </div>
         ) : (
           <div className="grid-layout">
-            {(() => {
-              const renderList = [];
-              const activeBanners = banners;
-              
-              filteredRoomsList.forEach((room, index) => {
-                renderList.push(
-                  <ListingCard 
-                    key={`room-${room.id}`}
-                    item={room}
-                    type="room"
-                    onClick={() => handleSelectRoom(room.id)}
-                  />
-                );
-                
-                // Show banner after every 3rd card
-                const position = index + 1;
-                if (position % 3 === 0 && activeBanners.length > 0) {
-                  renderList.push(
-                    <InlineBanner 
-                      key={`inline-banner-slot-${position}`}
-                      banners={activeBanners}
-                    />
-                  );
-                }
-              });
-
-              // If there are less than 3 items but more than 0, and no banner has been added yet, add one at the end
-              if (filteredRoomsList.length > 0 && filteredRoomsList.length < 3 && activeBanners.length > 0 && renderList.length === filteredRoomsList.length) {
-                renderList.push(
-                  <InlineBanner 
-                    key="inline-banner-slot-end"
-                    banners={activeBanners}
-                  />
-                );
-              }
-              
-              return renderList;
-            })()}
+            {filteredRoomsList.map((room) => (
+              <ListingCard 
+                key={`room-${room.id}`}
+                item={room}
+                type="room"
+                onClick={() => handleSelectRoom(room.id)}
+              />
+            ))}
           </div>
         )}
       </div>

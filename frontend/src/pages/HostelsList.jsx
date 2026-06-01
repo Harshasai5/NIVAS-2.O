@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, Search, Inbox, Filter } from 'lucide-react';
+import { Sparkles, Search, Inbox, Filter, ArrowUp } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
 import InlineBanner from '../components/InlineBanner';
@@ -18,10 +18,27 @@ export default function HostelsList({
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showGoTop, setShowGoTop] = useState(false);
 
   const resetFilters = () => {
     setFilters(initialFilters);
     setSearch('');
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowGoTop(true);
+      } else {
+        setShowGoTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -91,13 +108,7 @@ export default function HostelsList({
       <div className="grid-listings-wrapper">
         <div className="grid-listings-header">
           <div className="detail-title-col">
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800 }}>Explore Student Hostels</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Verified accommodations near SRKR college Bhimavaram</p>
-          </div>
-
-          {/* Listings Count */}
-          <div className="grid-listings-count">
-            Found <span className="grid-listings-count-num">{filteredHostelsList.length}</span> hostels
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800 }}>Hostels near SRKR Engg. college</h1>
           </div>
         </div>
 
@@ -145,47 +156,48 @@ export default function HostelsList({
           </div>
         ) : (
           <div className="grid-layout">
-            {(() => {
-              const renderList = [];
-              const activeBanners = banners;
-              
-              filteredHostelsList.forEach((hostel, index) => {
-                renderList.push(
-                  <ListingCard 
-                    key={`hostel-${hostel.id}`}
-                    item={hostel}
-                    type="hostel"
-                    onClick={() => handleSelectHostel(hostel.id)}
-                  />
-                );
-                
-                // Show banner after every 3rd card
-                const position = index + 1;
-                if (position % 3 === 0 && activeBanners.length > 0) {
-                  renderList.push(
-                    <InlineBanner 
-                      key={`inline-banner-slot-${position}`}
-                      banners={activeBanners}
-                    />
-                  );
-                }
-              });
-
-              // If there are less than 3 items but more than 0, and no banner has been added yet, add one at the end
-              if (filteredHostelsList.length > 0 && filteredHostelsList.length < 3 && activeBanners.length > 0 && renderList.length === filteredHostelsList.length) {
-                renderList.push(
-                  <InlineBanner 
-                    key="inline-banner-slot-end"
-                    banners={activeBanners}
-                  />
-                );
-              }
-              
-              return renderList;
-            })()}
+            {filteredHostelsList.map((hostel) => (
+              <ListingCard 
+                key={`hostel-${hostel.id}`}
+                item={hostel}
+                type="hostel"
+                onClick={() => handleSelectHostel(hostel.id)}
+              />
+            ))}
           </div>
         )}
       </div>
+
+      {/* Floating Go to Top Arrow */}
+      {showGoTop && (
+        <button 
+          onClick={scrollToTop}
+          style={{
+            position: 'fixed',
+            bottom: '2.5rem',
+            right: '2.5rem',
+            background: 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            width: '3.2rem',
+            height: '3.2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(99, 102, 241, 0.4)',
+            zIndex: 1000,
+            transition: 'all 0.25s ease-in-out',
+            animation: 'fadeIn 0.2s'
+          }}
+          aria-label="Scroll to top"
+          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.6)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(99, 102, 241, 0.4)'; }}
+        >
+          <ArrowUp size={24} />
+        </button>
+      )}
     </div>
   );
 }
