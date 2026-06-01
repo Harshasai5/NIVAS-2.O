@@ -34,6 +34,20 @@ async function testConnection() {
       await pool.query("ALTER TABLE rooms ADD COLUMN clicks INT DEFAULT 0");
       console.log("✨ Appended 'clicks' column to 'rooms' table successfully.");
     }
+
+    // Schema migration: room_options_json columns for hostels
+    const [hostelRoomOpt] = await pool.query("SHOW COLUMNS FROM hostels LIKE 'room_options_json'");
+    if (hostelRoomOpt.length === 0) {
+      await pool.query("ALTER TABLE hostels ADD COLUMN room_options_json TEXT DEFAULT NULL");
+      console.log("✨ Appended 'room_options_json' column to 'hostels' table successfully.");
+    }
+
+    // Schema migration: room_options_json columns for rooms
+    const [roomRoomOpt] = await pool.query("SHOW COLUMNS FROM rooms LIKE 'room_options_json'");
+    if (roomRoomOpt.length === 0) {
+      await pool.query("ALTER TABLE rooms ADD COLUMN room_options_json TEXT DEFAULT NULL");
+      console.log("✨ Appended 'room_options_json' column to 'rooms' table successfully.");
+    }
   } catch (error) {
     console.error('❌ Failed to connect to MySQL database:', error.message);
     console.error('👉 Please make sure MySQL is running on', process.env.DB_HOST, 'and database', process.env.DB_NAME, 'exists.');
