@@ -67,7 +67,20 @@ router.get('/', async (req, res) => {
 
   try {
     let query = `
-      SELECT r.*, rp.photo AS primary_photo 
+      SELECT 
+        r.id, 
+        r.room_name, 
+        r.gender, 
+        r.price_per_person, 
+        r.is_ac, 
+        r.beds_per_room, 
+        r.address, 
+        r.available_beds, 
+        r.total_beds, 
+        r.distance_from_srkr, 
+        r.status, 
+        r.facilities_json,
+        rp.photo AS primary_photo 
       FROM rooms r
       LEFT JOIN room_photos rp ON r.id = rp.room_id AND rp.is_primary = 1
       WHERE 1=1

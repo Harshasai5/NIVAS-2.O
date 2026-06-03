@@ -1,8 +1,8 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import ListingCard from './ListingCard';
 
-export default function SponsoredHostels({ hostels, onSelectHostel }) {
+export default function SponsoredHostels({ hostels, onSelectHostel, onViewAll }) {
   if (!hostels || hostels.length === 0) return null;
 
   // Split sponsored hostels into two rows for the mobile 2-row layout
@@ -15,6 +15,12 @@ export default function SponsoredHostels({ hostels, onSelectHostel }) {
         <h2 className="section-title">
           <span>Featured Hostels</span>
         </h2>
+        {onViewAll && (
+          <div className="section-action" onClick={onViewAll}>
+            <span>View All</span>
+            <ArrowRight size={16} />
+          </div>
+        )}
       </div>
 
       {/* Mobile view: two rows of horizontal scrolling lists */}

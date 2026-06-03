@@ -4,6 +4,7 @@ import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
 import InlineBanner from '../components/InlineBanner';
 import { API_BASE_URL } from '../config';
+import logoImg from '../assets/logo.jpeg';
 
 export default function HostelsList({ 
   setPage, 
@@ -140,9 +141,57 @@ export default function HostelsList({
 
         {/* Grid List */}
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '40vh', gap: '1rem' }}>
-            <div style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <span style={{ color: 'var(--text-secondary)' }}>Loading hostels...</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50vh', gap: '2rem' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ position: 'absolute', width: '140px', height: '140px', borderRadius: '50%', border: '2px solid var(--primary-glow)', animation: 'ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite', opacity: 0.8 }} />
+              <div style={{ 
+                width: '110px', 
+                height: '110px', 
+                filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.2))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <img 
+                  src={logoImg} 
+                  alt="Nivas Logo" 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover', 
+                    animation: 'morph-shape 6s ease-in-out infinite, pulse-slow 2s ease-in-out infinite' 
+                  }} 
+                />
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '0.02em' }}>Finding hostels near SRKR...</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 500 }}>developed by KaliX</span>
+            </div>
+            <style>{`
+              @keyframes pulse-slow {
+                0%, 100% { transform: scale(1); opacity: 0.95; }
+                50% { transform: scale(1.08); opacity: 1; filter: brightness(1.08); }
+              }
+              @keyframes ping-slow {
+                0% { transform: scale(0.95); opacity: 0.8; }
+                70%, 100% { transform: scale(1.4); opacity: 0; }
+              }
+              @keyframes morph-shape {
+                0%, 100% {
+                  clip-path: polygon(50% 0%, 79.4% 9.5%, 97.6% 34.5%, 97.6% 65.5%, 79.4% 90.5%, 50% 100%, 20.6% 90.5%, 2.4% 65.5%, 2.4% 34.5%, 20.6% 9.5%);
+                  border-radius: 50%;
+                }
+                33% {
+                  clip-path: polygon(50% 0%, 100% 0%, 100% 50%, 100% 100%, 50% 100%, 50% 100%, 0% 100%, 0% 50%, 0% 0%, 0% 0%);
+                  border-radius: 0%;
+                }
+                66% {
+                  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+                  border-radius: 0%;
+                }
+              }
+            `}</style>
           </div>
         ) : filteredHostelsList.length === 0 ? (
           <div className="no-results">
