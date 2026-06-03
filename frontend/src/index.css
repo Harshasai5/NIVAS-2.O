@@ -662,14 +662,66 @@ button, input, select, textarea {
 
 /* FILTER SIDEBAR PANEL */
 .filter-sidebar {
-  width: 300px;
-  flex-shrink: 0;
-  border-radius: var(--radius-md);
+  display: none !important;
+}
+
+/* Filter Modal Popup Overlay */
+.filter-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
   padding: 1.5rem;
-  max-height: calc(100vh - 120px);
-  position: sticky;
-  top: 95px;
+}
+
+.filter-modal-content {
+  width: 480px;
+  max-width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  background: rgba(255, 255, 255, 0.9); /* Frosty light mode theme */
+  color: var(--text-primary);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: filterModalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.filter-modal-body {
   overflow-y: auto;
+  flex-grow: 1;
+  padding-right: 0.5rem;
+}
+
+/* Custom Scrollbar for Modal Body */
+.filter-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.filter-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.filter-modal-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+.filter-modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+@keyframes filterModalSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Custom Scrollbar for Filter Sidebar */
@@ -1585,9 +1637,9 @@ button, input, select, textarea {
   border-color: var(--girls-color);
 }
 
-/* Mobile Filter Buttons */
-.mobile-filter-toggle-btn {
-  display: none;
+/* Filter Buttons */
+.filter-toggle-btn {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
@@ -1601,10 +1653,11 @@ button, input, select, textarea {
   box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
-.mobile-filter-toggle-btn:hover {
+.filter-toggle-btn:hover {
   border-color: var(--primary);
   color: var(--primary);
   background: var(--primary-light);
+  transform: translateY(-1px);
 }
 
 .mobile-close-filters-btn {
@@ -1647,9 +1700,6 @@ button, input, select, textarea {
   }
   .filter-sidebar.open {
     display: block;
-  }
-  .mobile-filter-toggle-btn {
-    display: flex;
   }
   .mobile-close-filters-btn {
     display: flex;
@@ -1727,14 +1777,15 @@ button, input, select, textarea {
   
   /* Banner slider adjustment for mobile view */
   .banner-slider {
-    aspect-ratio: 1600 / 750;
+    aspect-ratio: 16 / 10;
+    min-height: 240px;
     height: auto;
   }
   .banner-content {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
   .banner-title {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
   
   /* Scroll card adjustments */
@@ -1800,7 +1851,7 @@ button, input, select, textarea {
 .inline-banner-card {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: 135px;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--border);
@@ -1962,15 +2013,15 @@ button, input, select, textarea {
 
 @media (max-width: 768px) {
   .inline-banner-card {
-    height: 150px;
+    height: 100px;
   }
   .inline-banner-content-overlay {
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
     background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 50%, rgba(15, 23, 42, 0.75) 100%);
   }
   .inline-banner-title {
-    font-size: 1.25rem;
-    max-width: 80%;
+    font-size: 1.1rem;
+    max-width: 85%;
   }
 }
 

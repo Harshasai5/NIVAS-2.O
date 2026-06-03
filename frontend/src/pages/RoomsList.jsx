@@ -19,6 +19,7 @@ export default function RoomsList({
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [priceBounds, setPriceBounds] = useState({ minPrice: 0, maxPrice: 10000 });
 
   const resetFilters = () => {
     setFilters(initialFilters);
@@ -35,7 +36,19 @@ export default function RoomsList({
         console.error('Error loading inline banners:', error);
       }
     }
+    async function fetchPriceBounds() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/rooms/price-bounds`);
+        const data = await res.json();
+        if (data.minPrice !== undefined && data.maxPrice !== undefined) {
+          setPriceBounds({ minPrice: data.minPrice, maxPrice: data.maxPrice });
+        }
+      } catch (error) {
+        console.error('Error fetching room price bounds:', error);
+      }
+    }
     fetchBanners();
+    fetchPriceBounds();
   }, []);
 
   useEffect(() => {
@@ -86,6 +99,7 @@ export default function RoomsList({
         resetFilters={resetFilters}
         isOpen={showMobileFilters}
         setIsOpen={setShowMobileFilters}
+        priceBounds={priceBounds}
       />
 
       {/* Main Listings Column */}
@@ -113,7 +127,7 @@ export default function RoomsList({
             />
           </div>
           <button 
-            className="mobile-filter-toggle-btn"
+            className="filter-toggle-btn"
             onClick={() => setShowMobileFilters(!showMobileFilters)}
           >
             <Filter size={18} />
@@ -140,14 +154,24 @@ export default function RoomsList({
           </div>
         ) : (
           <div className="grid-layout">
-            {filteredRoomsList.map((room) => (
-              <ListingCard 
-                key={`room-${room.id}`}
-                item={room}
-                type="room"
-                onClick={() => handleSelectRoom(room.id)}
-              />
+            {filteredRoomsList.map((room, index) => (
+              <React.Fragment key={`room-wrapper-${room.id}`}>
+                <ListingCard 
+                  key={`room-${room.id}`}
+                  item={room}
+                  type="room"
+                  onClick={() => handleSelectRoom(room.id)}
+                />
+                {/* Render inline banner after the 4th item (index === 3) */}
+                {index === 3 && banners.length > 0 && (
+                  <InlineBanner banners={banners} />
+                )}
+              </React.Fragment>
             ))}
+            {/* If list is shorter than 4 items, render at the end */}
+            {filteredRoomsList.length > 0 && filteredRoomsList.length < 4 && banners.length > 0 && (
+              <InlineBanner banners={banners} />
+            )}
           </div>
         )}
       </div>

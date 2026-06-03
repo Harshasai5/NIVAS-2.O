@@ -53,7 +53,7 @@ export default function InlineBanner({ banners }) {
 
   return (
     <div className="inline-banner-wrapper animate-fade">
-      <div className="inline-banner-card" style={{ position: 'relative', width: '100%', height: '180px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+      <div className="inline-banner-card" style={{ position: 'relative', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
         
         {activeBanner.redirect_link && activeBanner.redirect_link !== '#' ? (
           <a 

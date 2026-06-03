@@ -56,11 +56,11 @@ CREATE TABLE `banners` (
 -- Dumping data for table `banners`
 --
 
-INSERT INTO `banners` (`id`, `title`, `banner_image`, `redirect_link`, `display_order`, `status`, `created_at`) VALUES
-(1, 'Premium Hostels Near SRKR', 'Uploads/Banners/1.png', '#', 1, 'active', '2026-05-23 15:18:14'),
-(2, 'Affordable PG Rooms Available', 'Uploads/Banners/2.png', '#', 2, 'active', '2026-05-23 15:18:14'),
-(3, 'AC Rooms Starting From ₹3000', 'Uploads/Banners/3.png', '#', 3, 'active', '2026-05-23 15:18:14'),
-(4, 'Best Student Accommodation', 'Uploads/Banners/4.png', '#', 4, 'active', '2026-05-23 15:18:14');
+INSERT INTO `banners` (`id`, `title`, `banner_image`, `redirect_link`, `display_order`, `in_between`, `main_display`, `status`, `created_at`) VALUES
+(1, 'Premium Hostels Near SRKR', 'Uploads/Banners/1.png', '#', 1, 0, 1, 'active', '2026-05-23 15:18:14'),
+(2, 'Affordable PG Rooms Available', 'Uploads/Banners/2.png', '#', 2, 0, 1, 'active', '2026-05-23 15:18:14'),
+(3, 'AC Rooms Starting From ₹3000', 'Uploads/Banners/3.png', '#', 3, 1, 1, 'active', '2026-05-23 15:18:14'),
+(4, 'Best Student Accommodation', 'Uploads/Banners/4.png', '#', 4, 1, 0, 'active', '2026-05-23 15:18:14');
 
 -- --------------------------------------------------------
 

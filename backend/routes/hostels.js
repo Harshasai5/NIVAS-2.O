@@ -145,6 +145,19 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET price bounds (public)
+router.get('/price-bounds', async (req, res) => {
+  try {
+    const [result] = await pool.query('SELECT MIN(price_starting) AS minPrice, MAX(price_starting) AS maxPrice FROM hostels WHERE status = "active"');
+    res.json({
+      minPrice: parseFloat(result[0].minPrice || 0),
+      maxPrice: parseFloat(result[0].maxPrice || 10000)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET single hostel detail (public)
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
