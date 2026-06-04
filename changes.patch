@@ -1,0 +1,853 @@
+From d11817cf8b2723adb97ba30dff54c2c06e1ad59d Mon Sep 17 00:00:00 2001
+From: Deepak Boddeti <deepakboddeti@Deepaks-MacBook-Air.local>
+Date: Wed, 3 Jun 2026 16:20:43 +0530
+Subject: [PATCH] Feat: Add dynamic price range sliders, modal filters, and
+ responsive banner sizing
+
+---
+ Data/nivas_2_0.sql                       |  10 +-
+ backend/routes/hostels.js                |  13 ++
+ backend/routes/rooms.js                  |  13 ++
+ frontend/src/App.jsx                     |   2 +-
+ frontend/src/components/FiltersBar.jsx   | 342 +++++++++++++++++--------------
+ frontend/src/components/InlineBanner.jsx |   2 +-
+ frontend/src/index.css                   |  93 +++++++--
+ frontend/src/pages/HostelsList.jsx       |  40 +++-
+ frontend/src/pages/RoomsList.jsx         |  40 +++-
+ frontend/vite.config.js                  |   4 +-
+ 10 files changed, 360 insertions(+), 199 deletions(-)
+
+diff --git a/Data/nivas_2_0.sql b/Data/nivas_2_0.sql
+index 1facf91..36f3e46 100644
+--- a/Data/nivas_2_0.sql
++++ b/Data/nivas_2_0.sql
+@@ -56,11 +56,11 @@ CREATE TABLE `banners` (
+ -- Dumping data for table `banners`
+ --
+ 
+-INSERT INTO `banners` (`id`, `title`, `banner_image`, `redirect_link`, `display_order`, `status`, `created_at`) VALUES
+-(1, 'Premium Hostels Near SRKR', 'Uploads/Banners/1.png', '#', 1, 'active', '2026-05-23 15:18:14'),
+-(2, 'Affordable PG Rooms Available', 'Uploads/Banners/2.png', '#', 2, 'active', '2026-05-23 15:18:14'),
+-(3, 'AC Rooms Starting From ₹3000', 'Uploads/Banners/3.png', '#', 3, 'active', '2026-05-23 15:18:14'),
+-(4, 'Best Student Accommodation', 'Uploads/Banners/4.png', '#', 4, 'active', '2026-05-23 15:18:14');
++INSERT INTO `banners` (`id`, `title`, `banner_image`, `redirect_link`, `display_order`, `in_between`, `main_display`, `status`, `created_at`) VALUES
++(1, 'Premium Hostels Near SRKR', 'Uploads/Banners/1.png', '#', 1, 0, 1, 'active', '2026-05-23 15:18:14'),
++(2, 'Affordable PG Rooms Available', 'Uploads/Banners/2.png', '#', 2, 0, 1, 'active', '2026-05-23 15:18:14'),
++(3, 'AC Rooms Starting From ₹3000', 'Uploads/Banners/3.png', '#', 3, 1, 1, 'active', '2026-05-23 15:18:14'),
++(4, 'Best Student Accommodation', 'Uploads/Banners/4.png', '#', 4, 1, 0, 'active', '2026-05-23 15:18:14');
+ 
+ -- --------------------------------------------------------
+ 
+diff --git a/backend/routes/hostels.js b/backend/routes/hostels.js
+index 5469174..67f42ab 100644
+--- a/backend/routes/hostels.js
++++ b/backend/routes/hostels.js
+@@ -145,6 +145,19 @@ router.get('/', async (req, res) => {
+   }
+ });
+ 
++// GET price bounds (public)
++router.get('/price-bounds', async (req, res) => {
++  try {
++    const [result] = await pool.query('SELECT MIN(price_starting) AS minPrice, MAX(price_starting) AS maxPrice FROM hostels WHERE status = "active"');
++    res.json({
++      minPrice: parseFloat(result[0].minPrice || 0),
++      maxPrice: parseFloat(result[0].maxPrice || 10000)
++    });
++  } catch (error) {
++    res.status(500).json({ error: error.message });
++  }
++});
++
+ // GET single hostel detail (public)
+ router.get('/:id', async (req, res) => {
+   const { id } = req.params;
+diff --git a/backend/routes/rooms.js b/backend/routes/rooms.js
+index 6ed5485..33734fd 100644
+--- a/backend/routes/rooms.js
++++ b/backend/routes/rooms.js
+@@ -135,6 +135,19 @@ router.get('/', async (req, res) => {
+   }
+ });
+ 
++// GET price bounds (public)
++router.get('/price-bounds', async (req, res) => {
++  try {
++    const [result] = await pool.query('SELECT MIN(price_per_person) AS minPrice, MAX(price_per_person) AS maxPrice FROM rooms WHERE status = "active"');
++    res.json({
++      minPrice: parseFloat(result[0].minPrice || 0),
++      maxPrice: parseFloat(result[0].maxPrice || 10000)
++    });
++  } catch (error) {
++    res.status(500).json({ error: error.message });
++  }
++});
++
+ // GET single room detail (public)
+ router.get('/:id', async (req, res) => {
+   const { id } = req.params;
+diff --git a/frontend/src/App.jsx b/frontend/src/App.jsx
+index 411b2c2..c101c91 100644
+--- a/frontend/src/App.jsx
++++ b/frontend/src/App.jsx
+@@ -351,7 +351,7 @@ function AdPopup({ banners }) {
+           style={{ display: 'block', width: '100%', textDecoration: 'none' }}
+           onClick={() => setIsOpen(false)}
+         >
+-          <div style={{ position: 'relative', width: '100%', aspectRatio: '1600 / 750', maxHeight: '350px', overflow: 'hidden' }}>
++          <div style={{ position: 'relative', width: '100%', aspectRatio: isMobile ? '4 / 3' : '1600 / 750', minHeight: isMobile ? '260px' : 'auto', maxHeight: '350px', overflow: 'hidden' }}>
+             <img 
+               src={activeBanner.banner_image.startsWith('http') ? activeBanner.banner_image : `/${activeBanner.banner_image}`} 
+               alt={activeBanner.title || 'Advertisement'} 
+diff --git a/frontend/src/components/FiltersBar.jsx b/frontend/src/components/FiltersBar.jsx
+index 38c0b6f..a2364bf 100644
+--- a/frontend/src/components/FiltersBar.jsx
++++ b/frontend/src/components/FiltersBar.jsx
+@@ -1,5 +1,5 @@
+ import React from 'react';
+-import { Filter, RotateCcw, ShieldAlert, X } from 'lucide-react';
++import { Filter, RotateCcw, X } from 'lucide-react';
+ 
+ export default function FiltersBar({ 
+   type, // 'hostel' or 'room'
+@@ -7,28 +7,34 @@ export default function FiltersBar({
+   setFilters, 
+   resetFilters,
+   isOpen,
+-  setIsOpen
++  setIsOpen,
++  priceBounds
+ }) {
+-  
++  if (!isOpen) return null;
++
++  const minPrice = priceBounds?.minPrice || 0;
++  const maxPrice = priceBounds?.maxPrice || 10000;
++  const currentPriceMax = filters.price_max !== '' ? parseFloat(filters.price_max) : maxPrice;
++
+   const handleGenderChange = (genderVal) => {
+     setFilters(prev => ({
+       ...prev,
+-      gender: prev.gender === genderVal ? '' : genderVal // Toggle filter
++      gender: prev.gender === genderVal ? '' : genderVal
+     }));
+   };
+ 
+   const handleAcChange = (acVal) => {
+     setFilters(prev => ({
+       ...prev,
+-      is_ac: prev.is_ac === acVal ? '' : acVal // Toggle: '' (all), '1' (AC), '0' (Non-AC)
++      is_ac: prev.is_ac === acVal ? '' : acVal
+     }));
+   };
+ 
+-  const handlePriceChange = (e) => {
+-    const { name, value } = e.target;
++  const handlePriceSliderChange = (e) => {
+     setFilters(prev => ({
+       ...prev,
+-      [name]: value
++      price_min: minPrice.toString(),
++      price_max: e.target.value
+     }));
+   };
+ 
+@@ -54,166 +60,196 @@ export default function FiltersBar({
+   };
+ 
+   return (
+-    <aside className={`filter-sidebar glass ${isOpen ? 'open' : ''}`}>
+-      <div className="filter-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
+-          <Filter size={18} style={{ color: 'var(--primary)' }} />
+-          <span>Filters</span>
+-        </div>
+-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
++    <div className="filter-modal-overlay" onClick={() => setIsOpen(false)}>
++      <aside className="filter-modal-content glass" onClick={(e) => e.stopPropagation()}>
++        {/* Header */}
++        <div className="filter-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
++          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }}>
++            <Filter size={18} style={{ color: 'var(--primary)' }} />
++            <span>Filter Stays</span>
++          </div>
+           <button 
+-            onClick={resetFilters}
+-            style={{ background: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', fontWeight: 600 }}
++            onClick={() => setIsOpen(false)}
++            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.25rem', borderRadius: '50%' }}
++            aria-label="Close Filters"
+           >
+-            <RotateCcw size={12} />
+-            <span>Reset</span>
++            <X size={20} />
+           </button>
+-          {setIsOpen && (
+-            <button 
+-              className="mobile-close-filters-btn"
+-              onClick={() => setIsOpen(false)}
+-              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+-            >
+-              <X size={16} />
+-            </button>
+-          )}
+         </div>
+-      </div>
+ 
+-      {/* Gender Filter */}
+-      <div className="filter-section">
+-        <h4 className="filter-title">Gender Accommodation</h4>
+-        <div className="filter-chips">
+-          <button 
+-            className={`filter-chip ${filters.gender === 'boys' ? 'active' : ''}`}
+-            onClick={() => handleGenderChange('boys')}
+-          >
+-            Boys
+-          </button>
+-          <button 
+-            className={`filter-chip ${filters.gender === 'girls' ? 'active' : ''}`}
+-            onClick={() => handleGenderChange('girls')}
+-          >
+-            Girls
+-          </button>
++        <div className="filter-modal-body">
++          {/* Gender Filter */}
++          <div className="filter-section">
++            <h4 className="filter-title">Gender Accommodation</h4>
++            <div className="filter-chips">
++              <button 
++                className={`filter-chip ${filters.gender === 'boys' ? 'active' : ''}`}
++                onClick={() => handleGenderChange('boys')}
++              >
++                Boys
++              </button>
++              <button 
++                className={`filter-chip ${filters.gender === 'girls' ? 'active' : ''}`}
++                onClick={() => handleGenderChange('girls')}
++              >
++                Girls
++              </button>
++              {type === 'room' && (
++                <button 
++                  className={`filter-chip ${filters.gender === 'unisex' ? 'active' : ''}`}
++                  onClick={() => handleGenderChange('unisex')}
++                >
++                  Unisex PG
++                </button>
++              )}
++            </div>
++          </div>
++
++          {/* AC / Non-AC Filter */}
++          <div className="filter-section">
++            <h4 className="filter-title">Room Condition</h4>
++            <div className="filter-chips">
++              <button 
++                className={`filter-chip ${filters.is_ac === '1' ? 'active' : ''}`}
++                onClick={() => handleAcChange('1')}
++              >
++                AC Rooms
++              </button>
++              <button 
++                className={`filter-chip ${filters.is_ac === '0' ? 'active' : ''}`}
++                onClick={() => handleAcChange('0')}
++              >
++                Non-AC Rooms
++              </button>
++            </div>
++          </div>
++
++          {/* Price Range Filter (Dynamic Range Bar) */}
++          <div className="filter-section">
++            <h4 className="filter-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
++              <span>Max Price Range</span>
++              <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.95rem' }}>
++                ₹{minPrice} - ₹{currentPriceMax}
++              </span>
++            </h4>
++            <input 
++              type="range" 
++              min={minPrice} 
++              max={maxPrice} 
++              step="100"
++              value={currentPriceMax}
++              onChange={handlePriceSliderChange}
++              style={{ width: '100%', accentColor: 'var(--primary)', cursor: 'pointer', margin: '0.5rem 0' }}
++            />
++            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
++              <span>₹{minPrice}</span>
++              <span>₹{maxPrice}</span>
++            </div>
++          </div>
++
++          {/* Beds per room Filter */}
++          <div className="filter-section">
++            <h4 className="filter-title">Sharing Option</h4>
++            <div className="filter-chips">
++              {[1, 2, 3, 4, 5, 6].map((bedNum) => (
++                <button 
++                  key={bedNum}
++                  className={`filter-chip ${filters.beds_per_room === bedNum.toString() ? 'active' : ''}`}
++                  onClick={() => handleBedsChange(bedNum.toString())}
++                >
++                  {bedNum} Sharing
++                </button>
++              ))}
++            </div>
++          </div>
++
++          {/* Hostel specific filters */}
++          {type === 'hostel' && (
++            <div className="filter-section">
++              <h4 className="filter-title">Hostel Ownership</h4>
++              <div className="filter-chips">
++                <button 
++                  className={`filter-chip ${filters.college === 'true' ? 'active' : ''}`}
++                  onClick={() => handleCollegeChange('true')}
++                >
++                  College Affiliated
++                </button>
++                <button 
++                  className={`filter-chip ${filters.college === 'false' ? 'active' : ''}`}
++                  onClick={() => handleCollegeChange('false')}
++                >
++                  Private Hostels
++                </button>
++              </div>
++            </div>
++          )}
++
++          {/* Room specific filters */}
+           {type === 'room' && (
+-            <button 
+-              className={`filter-chip ${filters.gender === 'unisex' ? 'active' : ''}`}
+-              onClick={() => handleGenderChange('unisex')}
+-            >
+-              Unisex PG
+-            </button>
++            <div className="filter-section">
++              <h4 className="filter-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
++                <span>Max Distance</span>
++                <span style={{ color: 'var(--primary)' }}>{filters.distance_max ? `${filters.distance_max} km` : 'Any'}</span>
++              </h4>
++              <input 
++                type="range" 
++                min="0.2" 
++                max="5" 
++                step="0.1"
++                value={filters.distance_max || '5'}
++                onChange={handleDistanceChange}
++                style={{ width: '100%', accentColor: 'var(--primary)' }}
++              />
++              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
++                <span>0.2 km</span>
++                <span>5.0 km</span>
++              </div>
++            </div>
+           )}
+         </div>
+-      </div>
+ 
+-      {/* AC / Non-AC Filter */}
+-      <div className="filter-section">
+-        <h4 className="filter-title">Room Condition</h4>
+-        <div className="filter-chips">
++        {/* Footer with Apply / Reset buttons */}
++        <div className="filter-modal-footer" style={{ display: 'flex', gap: '0.75rem', marginTop: '1.75rem', borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
+           <button 
+-            className={`filter-chip ${filters.is_ac === '1' ? 'active' : ''}`}
+-            onClick={() => handleAcChange('1')}
++            onClick={resetFilters}
++            className="filter-reset-btn"
++            style={{ 
++              flex: 1, 
++              padding: '0.65rem 1.25rem', 
++              borderRadius: 'var(--radius-full)', 
++              fontWeight: 600, 
++              cursor: 'pointer',
++              background: 'transparent',
++              border: '1px solid var(--border)',
++              color: 'var(--text-secondary)',
++              display: 'flex',
++              alignItems: 'center',
++              justifyContent: 'center',
++              gap: '0.35rem'
++            }}
+           >
+-            AC Rooms
++            <RotateCcw size={14} />
++            <span>Reset</span>
+           </button>
+           <button 
+-            className={`filter-chip ${filters.is_ac === '0' ? 'active' : ''}`}
+-            onClick={() => handleAcChange('0')}
++            onClick={() => setIsOpen(false)}
++            className="filter-apply-btn"
++            style={{ 
++              flex: 1, 
++              padding: '0.65rem 1.25rem', 
++              borderRadius: 'var(--radius-full)', 
++              fontWeight: 700, 
++              cursor: 'pointer',
++              background: 'var(--primary)',
++              color: 'white',
++              border: 'none',
++              boxShadow: '0 4px 12px var(--primary-glow)'
++            }}
+           >
+-            Non-AC Rooms
++            Apply Filters
+           </button>
+         </div>
+-      </div>
+-
+-      {/* Price Range Filter */}
+-      <div className="filter-section">
+-        <h4 className="filter-title">Price Range (₹)</h4>
+-        <div className="price-range-inputs">
+-          <input 
+-            type="number" 
+-            name="price_min"
+-            value={filters.price_min}
+-            onChange={handlePriceChange}
+-            placeholder="Min" 
+-            className="price-input"
+-            min="0"
+-          />
+-          <span style={{ color: 'var(--text-secondary)' }}>to</span>
+-          <input 
+-            type="number" 
+-            name="price_max"
+-            value={filters.price_max}
+-            onChange={handlePriceChange}
+-            placeholder="Max" 
+-            className="price-input"
+-            min="0"
+-          />
+-        </div>
+-      </div>
+-
+-      {/* Beds per room Filter (Common for both Hostels & Rooms) */}
+-      <div className="filter-section">
+-        <h4 className="filter-title">Sharing Option</h4>
+-        <div className="filter-chips">
+-          {[1, 2, 3, 4, 5, 6].map((bedNum) => (
+-            <button 
+-              key={bedNum}
+-              className={`filter-chip ${filters.beds_per_room === bedNum.toString() ? 'active' : ''}`}
+-              onClick={() => handleBedsChange(bedNum.toString())}
+-            >
+-              {bedNum} Sharing
+-            </button>
+-          ))}
+-        </div>
+-      </div>
+-
+-      {/* Hostel specific filters */}
+-      {type === 'hostel' && (
+-        <div className="filter-section">
+-          <h4 className="filter-title">Hostel Ownership</h4>
+-          <div className="filter-chips">
+-            <button 
+-              className={`filter-chip ${filters.college === 'true' ? 'active' : ''}`}
+-              onClick={() => handleCollegeChange('true')}
+-            >
+-              College Affiliated
+-            </button>
+-            <button 
+-              className={`filter-chip ${filters.college === 'false' ? 'active' : ''}`}
+-              onClick={() => handleCollegeChange('false')}
+-            >
+-              Private Hostels
+-            </button>
+-          </div>
+-        </div>
+-      )}
+-
+-      {/* Room specific filters */}
+-      {type === 'room' && (
+-        <>
+-          {/* Distance Filter */}
+-          <div className="filter-section">
+-            <h4 className="filter-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
+-              <span>Max Distance</span>
+-              <span style={{ color: 'var(--primary)' }}>{filters.distance_max ? `${filters.distance_max} km` : 'Any'}</span>
+-            </h4>
+-            <input 
+-              type="range" 
+-              min="0.2" 
+-              max="5" 
+-              step="0.1"
+-              value={filters.distance_max || '5'}
+-              onChange={handleDistanceChange}
+-              style={{ width: '100%', accentColor: 'var(--primary)' }}
+-            />
+-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+-              <span>0.2 km</span>
+-              <span>5.0 km</span>
+-            </div>
+-          </div>
+-        </>
+-      )}
+-    </aside>
++      </aside>
++    </div>
+   );
+ }
+diff --git a/frontend/src/components/InlineBanner.jsx b/frontend/src/components/InlineBanner.jsx
+index 80a262b..d2da825 100644
+--- a/frontend/src/components/InlineBanner.jsx
++++ b/frontend/src/components/InlineBanner.jsx
+@@ -53,7 +53,7 @@ export default function InlineBanner({ banners }) {
+ 
+   return (
+     <div className="inline-banner-wrapper animate-fade">
+-      <div className="inline-banner-card" style={{ position: 'relative', width: '100%', height: '180px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
++      <div className="inline-banner-card" style={{ position: 'relative', width: '100%', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+         
+         {activeBanner.redirect_link && activeBanner.redirect_link !== '#' ? (
+           <a 
+diff --git a/frontend/src/index.css b/frontend/src/index.css
+index c815b26..7902f8f 100644
+--- a/frontend/src/index.css
++++ b/frontend/src/index.css
+@@ -662,14 +662,66 @@ button, input, select, textarea {
+ 
+ /* FILTER SIDEBAR PANEL */
+ .filter-sidebar {
+-  width: 300px;
+-  flex-shrink: 0;
+-  border-radius: var(--radius-md);
++  display: none !important;
++}
++
++/* Filter Modal Popup Overlay */
++.filter-modal-overlay {
++  position: fixed;
++  top: 0;
++  left: 0;
++  width: 100vw;
++  height: 100vh;
++  background-color: rgba(15, 23, 42, 0.4);
++  backdrop-filter: blur(8px);
++  z-index: 99999;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  animation: fadeIn 0.3s ease-out;
+   padding: 1.5rem;
+-  max-height: calc(100vh - 120px);
+-  position: sticky;
+-  top: 95px;
++}
++
++.filter-modal-content {
++  width: 480px;
++  max-width: 100%;
++  border-radius: var(--radius-lg);
++  border: 1px solid var(--border);
++  box-shadow: var(--shadow-lg);
++  background: rgba(255, 255, 255, 0.9); /* Frosty light mode theme */
++  color: var(--text-primary);
++  max-height: 90vh;
++  display: flex;
++  flex-direction: column;
++  animation: filterModalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
++  padding: 2rem;
++  overflow: hidden;
++}
++
++.filter-modal-body {
+   overflow-y: auto;
++  flex-grow: 1;
++  padding-right: 0.5rem;
++}
++
++/* Custom Scrollbar for Modal Body */
++.filter-modal-body::-webkit-scrollbar {
++  width: 6px;
++}
++.filter-modal-body::-webkit-scrollbar-track {
++  background: transparent;
++}
++.filter-modal-body::-webkit-scrollbar-thumb {
++  background: var(--border);
++  border-radius: var(--radius-full);
++}
++.filter-modal-body::-webkit-scrollbar-thumb:hover {
++  background: var(--primary);
++}
++
++@keyframes filterModalSlideUp {
++  from { opacity: 0; transform: translateY(30px); }
++  to { opacity: 1; transform: translateY(0); }
+ }
+ 
+ /* Custom Scrollbar for Filter Sidebar */
+@@ -1585,9 +1637,9 @@ button, input, select, textarea {
+   border-color: var(--girls-color);
+ }
+ 
+-/* Mobile Filter Buttons */
+-.mobile-filter-toggle-btn {
+-  display: none;
++/* Filter Buttons */
++.filter-toggle-btn {
++  display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   padding: 0.75rem 1.5rem;
+@@ -1601,10 +1653,11 @@ button, input, select, textarea {
+   box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+ }
+ 
+-.mobile-filter-toggle-btn:hover {
++.filter-toggle-btn:hover {
+   border-color: var(--primary);
+   color: var(--primary);
+   background: var(--primary-light);
++  transform: translateY(-1px);
+ }
+ 
+ .mobile-close-filters-btn {
+@@ -1648,9 +1701,6 @@ button, input, select, textarea {
+   .filter-sidebar.open {
+     display: block;
+   }
+-  .mobile-filter-toggle-btn {
+-    display: flex;
+-  }
+   .mobile-close-filters-btn {
+     display: flex;
+   }
+@@ -1727,14 +1777,15 @@ button, input, select, textarea {
+   
+   /* Banner slider adjustment for mobile view */
+   .banner-slider {
+-    aspect-ratio: 1600 / 750;
++    aspect-ratio: 16 / 10;
++    min-height: 240px;
+     height: auto;
+   }
+   .banner-content {
+-    padding: 1.5rem;
++    padding: 1.25rem;
+   }
+   .banner-title {
+-    font-size: 1.6rem;
++    font-size: 1.4rem;
+   }
+   
+   /* Scroll card adjustments */
+@@ -1800,7 +1851,7 @@ button, input, select, textarea {
+ .inline-banner-card {
+   position: relative;
+   width: 100%;
+-  height: 180px;
++  height: 135px;
+   border-radius: var(--radius-md);
+   overflow: hidden;
+   border: 1px solid var(--border);
+@@ -1962,15 +2013,15 @@ button, input, select, textarea {
+ 
+ @media (max-width: 768px) {
+   .inline-banner-card {
+-    height: 150px;
++    height: 100px;
+   }
+   .inline-banner-content-overlay {
+-    padding: 1.5rem;
++    padding: 1rem 1.25rem;
+     background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 50%, rgba(15, 23, 42, 0.75) 100%);
+   }
+   .inline-banner-title {
+-    font-size: 1.25rem;
+-    max-width: 80%;
++    font-size: 1.1rem;
++    max-width: 85%;
+   }
+ }
+ 
+diff --git a/frontend/src/pages/HostelsList.jsx b/frontend/src/pages/HostelsList.jsx
+index 1f87662..9628ba2 100644
+--- a/frontend/src/pages/HostelsList.jsx
++++ b/frontend/src/pages/HostelsList.jsx
+@@ -20,6 +20,7 @@ export default function HostelsList({
+   const [banners, setBanners] = useState([]);
+   const [showMobileFilters, setShowMobileFilters] = useState(false);
+   const [showGoTop, setShowGoTop] = useState(false);
++  const [priceBounds, setPriceBounds] = useState({ minPrice: 0, maxPrice: 10000 });
+ 
+   const resetFilters = () => {
+     setFilters(initialFilters);
+@@ -52,7 +53,19 @@ export default function HostelsList({
+         console.error('Error loading inline banners:', error);
+       }
+     }
++    async function fetchPriceBounds() {
++      try {
++        const res = await fetch(`${API_BASE_URL}/api/hostels/price-bounds`);
++        const data = await res.json();
++        if (data.minPrice !== undefined && data.maxPrice !== undefined) {
++          setPriceBounds({ minPrice: data.minPrice, maxPrice: data.maxPrice });
++        }
++      } catch (error) {
++        console.error('Error fetching hostel price bounds:', error);
++      }
++    }
+     fetchBanners();
++    fetchPriceBounds();
+   }, []);
+ 
+   useEffect(() => {
+@@ -103,6 +116,7 @@ export default function HostelsList({
+         resetFilters={resetFilters}
+         isOpen={showMobileFilters}
+         setIsOpen={setShowMobileFilters}
++        priceBounds={priceBounds}
+       />
+ 
+       {/* Main Listings Column */}
+@@ -130,7 +144,7 @@ export default function HostelsList({
+             />
+           </div>
+           <button 
+-            className="mobile-filter-toggle-btn"
++            className="filter-toggle-btn"
+             onClick={() => setShowMobileFilters(!showMobileFilters)}
+           >
+             <Filter size={18} />
+@@ -157,14 +171,24 @@ export default function HostelsList({
+           </div>
+         ) : (
+           <div className="grid-layout">
+-            {filteredHostelsList.map((hostel) => (
+-              <ListingCard 
+-                key={`hostel-${hostel.id}`}
+-                item={hostel}
+-                type="hostel"
+-                onClick={() => handleSelectHostel(hostel.id)}
+-              />
++            {filteredHostelsList.map((hostel, index) => (
++              <React.Fragment key={`hostel-wrapper-${hostel.id}`}>
++                <ListingCard 
++                  key={`hostel-${hostel.id}`}
++                  item={hostel}
++                  type="hostel"
++                  onClick={() => handleSelectHostel(hostel.id)}
++                />
++                {/* Render inline banner after the 4th item (index === 3) */}
++                {index === 3 && banners.length > 0 && (
++                  <InlineBanner banners={banners} />
++                )}
++              </React.Fragment>
+             ))}
++            {/* If list is shorter than 4 items, render at the end */}
++            {filteredHostelsList.length > 0 && filteredHostelsList.length < 4 && banners.length > 0 && (
++              <InlineBanner banners={banners} />
++            )}
+           </div>
+         )}
+       </div>
+diff --git a/frontend/src/pages/RoomsList.jsx b/frontend/src/pages/RoomsList.jsx
+index c9d0c24..f00aa18 100644
+--- a/frontend/src/pages/RoomsList.jsx
++++ b/frontend/src/pages/RoomsList.jsx
+@@ -19,6 +19,7 @@ export default function RoomsList({
+   const [loading, setLoading] = useState(true);
+   const [banners, setBanners] = useState([]);
+   const [showMobileFilters, setShowMobileFilters] = useState(false);
++  const [priceBounds, setPriceBounds] = useState({ minPrice: 0, maxPrice: 10000 });
+ 
+   const resetFilters = () => {
+     setFilters(initialFilters);
+@@ -35,7 +36,19 @@ export default function RoomsList({
+         console.error('Error loading inline banners:', error);
+       }
+     }
++    async function fetchPriceBounds() {
++      try {
++        const res = await fetch(`${API_BASE_URL}/api/rooms/price-bounds`);
++        const data = await res.json();
++        if (data.minPrice !== undefined && data.maxPrice !== undefined) {
++          setPriceBounds({ minPrice: data.minPrice, maxPrice: data.maxPrice });
++        }
++      } catch (error) {
++        console.error('Error fetching room price bounds:', error);
++      }
++    }
+     fetchBanners();
++    fetchPriceBounds();
+   }, []);
+ 
+   useEffect(() => {
+@@ -86,6 +99,7 @@ export default function RoomsList({
+         resetFilters={resetFilters}
+         isOpen={showMobileFilters}
+         setIsOpen={setShowMobileFilters}
++        priceBounds={priceBounds}
+       />
+ 
+       {/* Main Listings Column */}
+@@ -113,7 +127,7 @@ export default function RoomsList({
+             />
+           </div>
+           <button 
+-            className="mobile-filter-toggle-btn"
++            className="filter-toggle-btn"
+             onClick={() => setShowMobileFilters(!showMobileFilters)}
+           >
+             <Filter size={18} />
+@@ -140,14 +154,24 @@ export default function RoomsList({
+           </div>
+         ) : (
+           <div className="grid-layout">
+-            {filteredRoomsList.map((room) => (
+-              <ListingCard 
+-                key={`room-${room.id}`}
+-                item={room}
+-                type="room"
+-                onClick={() => handleSelectRoom(room.id)}
+-              />
++            {filteredRoomsList.map((room, index) => (
++              <React.Fragment key={`room-wrapper-${room.id}`}>
++                <ListingCard 
++                  key={`room-${room.id}`}
++                  item={room}
++                  type="room"
++                  onClick={() => handleSelectRoom(room.id)}
++                />
++                {/* Render inline banner after the 4th item (index === 3) */}
++                {index === 3 && banners.length > 0 && (
++                  <InlineBanner banners={banners} />
++                )}
++              </React.Fragment>
+             ))}
++            {/* If list is shorter than 4 items, render at the end */}
++            {filteredRoomsList.length > 0 && filteredRoomsList.length < 4 && banners.length > 0 && (
++              <InlineBanner banners={banners} />
++            )}
+           </div>
+         )}
+       </div>
+diff --git a/frontend/vite.config.js b/frontend/vite.config.js
+index 7a67bdb..4c57034 100644
+--- a/frontend/vite.config.js
++++ b/frontend/vite.config.js
+@@ -9,11 +9,11 @@ export default defineConfig({
+     port: 3000,
+     proxy: {
+       '/api': {
+-        target: 'http://localhost:5000',
++        target: 'http://localhost:5001',
+         changeOrigin: true,
+       },
+       '/Uploads': {
+-        target: 'http://localhost:5000',
++        target: 'http://localhost:5001',
+         changeOrigin: true,
+       }
+     }
+-- 
+2.15.0
+
