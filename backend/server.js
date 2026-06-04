@@ -30,7 +30,12 @@ app.use('/api/banners', bannersRouter);
 app.use('/api/hostels', hostelsRouter);
 app.use('/api/rooms', roomsRouter);
 
-// Health Check / Default Route
+// Health Check endpoint for Keep-Alive pinger (cron-job.org)
+app.get('/api/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Default Route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Nivas Finder Platform API.' });
 });
