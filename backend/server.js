@@ -6,6 +6,7 @@ import adminRouter, { seedDefaultAdmin } from './routes/admin.js';
 import bannersRouter from './routes/banners.js';
 import hostelsRouter from './routes/hostels.js';
 import roomsRouter from './routes/rooms.js';
+import authRouter from './routes/auth.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/banners', bannersRouter);
 app.use('/api/hostels', hostelsRouter);
 app.use('/api/rooms', roomsRouter);
+app.use('/api/auth', authRouter);
 
 // Health Check endpoint for Keep-Alive pinger (cron-job.org)
 app.get('/api/health', (req, res) => {

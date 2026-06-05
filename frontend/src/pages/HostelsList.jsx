@@ -8,13 +8,15 @@ import logoImg from '../assets/logo.jpeg';
 
 export default function HostelsList({ 
   setPage, 
-  setDetailId, 
-  setDetailType,
+  openDetail,
   filters,
   setFilters,
   search,
   setSearch,
-  initialFilters
+  initialFilters,
+  userToken,
+  triggerLike,
+  triggerShare
 }) {
   const [hostels, setHostels] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +75,6 @@ export default function HostelsList({
     async function fetchFilteredHostels() {
       try {
         setLoading(true);
-        // Build query string
         const params = new URLSearchParams();
         if (filters.gender) params.append('gender', filters.gender);
         if (filters.is_ac) params.append('is_ac', filters.is_ac);
@@ -82,7 +83,12 @@ export default function HostelsList({
         if (filters.beds_per_room) params.append('beds_per_room', filters.beds_per_room);
         if (filters.college) params.append('college', filters.college);
 
-        const res = await fetch(`${API_BASE_URL}/api/hostels?${params.toString()}`);
+        const headers = {};
+        if (userToken) {
+          headers['Authorization'] = `Bearer ${userToken}`;
+        }
+
+        const res = await fetch(`${API_BASE_URL}/api/hostels?${params.toString()}`, { headers });
         const data = await res.json();
         setHostels(data);
       } catch (error) {
@@ -93,12 +99,18 @@ export default function HostelsList({
     }
 
     fetchFilteredHostels();
-  }, [filters]);
+  }, [filters, userToken]);
 
   const handleSelectHostel = (id) => {
-    setDetailId(id);
-    setDetailType('hostel');
-    setPage('detail');
+    openDetail(id, 'hostel');
+  };
+
+  const handleToggleLike = (id, type) => {
+    triggerLike(id, type, (liked, likesCount) => {
+      setHostels(prev => 
+        prev.map(item => item.id === id ? { ...item, is_liked: liked, likes_count: likesCount } : item)
+      );
+    });
   };
 
   // Local Search Filter
@@ -173,7 +185,8 @@ export default function HostelsList({
                     width: '100%', 
                     height: '100%', 
                     objectFit: 'cover', 
-                    animation: 'morph-shape 6s ease-in-out infinite, pulse-slow 2s ease-in-out infinite' 
+                    borderRadius: '50%',
+                    animation: 'pulse-slow 2s ease-in-out infinite' 
                   }} 
                 />
               </div>
@@ -190,20 +203,6 @@ export default function HostelsList({
               @keyframes ping-slow {
                 0% { transform: scale(0.95); opacity: 0.8; }
                 70%, 100% { transform: scale(1.4); opacity: 0; }
-              }
-              @keyframes morph-shape {
-                0%, 100% {
-                  clip-path: polygon(50% 0%, 79.4% 9.5%, 97.6% 34.5%, 97.6% 65.5%, 79.4% 90.5%, 50% 100%, 20.6% 90.5%, 2.4% 65.5%, 2.4% 34.5%, 20.6% 9.5%);
-                  border-radius: 50%;
-                }
-                33% {
-                  clip-path: polygon(50% 0%, 100% 0%, 100% 50%, 100% 100%, 50% 100%, 50% 100%, 0% 100%, 0% 50%, 0% 0%, 0% 0%);
-                  border-radius: 0%;
-                }
-                66% {
-                  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-                  border-radius: 0%;
-                }
               }
             `}</style>
           </div>
@@ -227,6 +226,8 @@ export default function HostelsList({
                   item={hostel}
                   type="hostel"
                   onClick={() => handleSelectHostel(hostel.id)}
+                  triggerLike={handleToggleLike}
+                  triggerShare={triggerShare}
                 />
                 {/* Render inline banner after the 4th item (index === 3) */}
                 {index === 3 && banners.length > 0 && (
@@ -263,7 +264,7 @@ export default function HostelsList({
             boxShadow: '0 4px 16px rgba(99, 102, 241, 0.4)',
             zIndex: 1000,
             transition: 'all 0.25s ease-in-out',
-            animation: 'fadeIn 0.2s'
+            animation: 'fadeIn 0.25s'
           }}
           aria-label="Scroll to top"
           onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.6)'; }}

@@ -6,7 +6,7 @@ import ListingCard from '../components/ListingCard';
 import { API_BASE_URL } from '../config';
 import logoImg from '../assets/logo.jpeg';
 
-export default function Home({ setPage, setDetailId, setDetailType, setHostelFilters, initialHostelFilters }) {
+export default function Home({ setPage, openDetail, setHostelFilters, initialHostelFilters, userToken, triggerLike, triggerShare }) {
   const [banners, setBanners] = useState([]);
   const [sponsoredHostels, setSponsoredHostels] = useState([]);
   const [nearbyRooms, setNearbyRooms] = useState([]);
@@ -19,7 +19,12 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
     async function fetchData() {
       try {
         setLoading(true);
-        // 1. Fetch Banners (Array safeguarded)
+        const headers = {};
+        if (userToken) {
+          headers['Authorization'] = `Bearer ${userToken}`;
+        }
+
+        // 1. Fetch Banners
         const bannersRes = await fetch(`${API_BASE_URL}/api/banners`);
         const bannersJson = await bannersRes.json();
         const bannersData = Array.isArray(bannersJson) ? bannersJson : [];
@@ -27,27 +32,27 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
         setBanners(mainBanners.length > 0 ? mainBanners : bannersData);
 
         // 2. Fetch Sponsored Hostels
-        const sponsoredRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=true&limit=6`);
+        const sponsoredRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=true&limit=6`, { headers });
         const sponsoredJson = await sponsoredRes.json();
         setSponsoredHostels(Array.isArray(sponsoredJson) ? sponsoredJson : []);
 
-        // 3. Fetch Hostels - Load Home Data Only (Limit to 6)
-        const hostelsRes = await fetch(`${API_BASE_URL}/api/hostels?limit=6`);
+        // 3. Fetch Hostels (Limit to 6)
+        const hostelsRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=false&limit=6`, { headers });
         const hostelsJson = await hostelsRes.json();
         setAllHostels(Array.isArray(hostelsJson) ? hostelsJson : []);
 
-        // 4. Fetch PG Rooms - Load Home Data Only (Limit to 6)
+        // 4. Fetch PG Rooms (Limit to 6)
         const roomsRes = await fetch(`${API_BASE_URL}/api/rooms?limit=6`);
         const roomsJson = await roomsRes.json();
         setAllRooms(Array.isArray(roomsJson) ? roomsJson : []);
 
-        // 5. Fetch Nearby Rooms directly from API - Load Home Data Only (Limit to 6, under 1.2km)
+        // 5. Fetch Nearby Rooms (Limit to 6, under 1.2km)
         const nearbyRes = await fetch(`${API_BASE_URL}/api/rooms?distance_max=1.2&limit=6`);
         const nearbyJson = await nearbyRes.json();
         setNearbyRooms(Array.isArray(nearbyJson) ? nearbyJson : []);
 
-        // 6. Fetch College Hostels directly from API - Load Home Data Only (Limit to 6)
-        const collegeRes = await fetch(`${API_BASE_URL}/api/hostels?college=true&limit=6`);
+        // 6. Fetch College Hostels (Limit to 6)
+        const collegeRes = await fetch(`${API_BASE_URL}/api/hostels?college=true&limit=6`, { headers });
         const collegeJson = await collegeRes.json();
         setCollegeHostels(Array.isArray(collegeJson) ? collegeJson : []);
       } catch (error) {
@@ -58,13 +63,7 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
     }
 
     fetchData();
-  }, []);
-
-  const handleSelectListing = (id, type) => {
-    setDetailId(id);
-    setDetailType(type);
-    setPage('detail');
-  };
+  }, [userToken]);
 
   if (loading) {
     return (
@@ -86,7 +85,8 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
                 width: '100%', 
                 height: '100%', 
                 objectFit: 'cover', 
-                animation: 'morph-shape 6s ease-in-out infinite, pulse-slow 2s ease-in-out infinite' 
+                borderRadius: '50%',
+                animation: 'pulse-slow 2s ease-in-out infinite' 
               }} 
             />
           </div>
@@ -104,38 +104,40 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
             0% { transform: scale(0.95); opacity: 0.8; }
             70%, 100% { transform: scale(1.4); opacity: 0; }
           }
-          @keyframes morph-shape {
-            0%, 100% {
-              clip-path: polygon(50% 0%, 79.4% 9.5%, 97.6% 34.5%, 97.6% 65.5%, 79.4% 90.5%, 50% 100%, 20.6% 90.5%, 2.4% 65.5%, 2.4% 34.5%, 20.6% 9.5%);
-              border-radius: 50%;
-            }
-            33% {
-              clip-path: polygon(50% 0%, 100% 0%, 100% 50%, 100% 100%, 50% 100%, 50% 100%, 0% 100%, 0% 50%, 0% 0%, 0% 0%);
-              border-radius: 0%;
-            }
-            66% {
-              clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-              border-radius: 0%;
-            }
-          }
         `}</style>
       </div>
     );
   }
+  const handleToggleLike = (id, type) => {
+    triggerLike(id, type, (liked, likesCount) => {
+      const updateListItem = (list) => 
+        list.map(item => item.id === id ? { ...item, is_liked: liked, likes_count: likesCount } : item);
+
+      if (type === 'hostel') {
+        setSponsoredHostels(prev => updateListItem(prev));
+        setAllHostels(prev => updateListItem(prev));
+        setCollegeHostels(prev => updateListItem(prev));
+      } else {
+        setNearbyRooms(prev => updateListItem(prev));
+        setAllRooms(prev => updateListItem(prev));
+      }
+    });
+  };
 
   const mainBanners = banners.filter(b => b.main_display === 1 || b.main_display === true);
-  const inBetweenBanners = banners.filter(b => b.in_between === 1 || b.in_between === true);
 
   return (
     <div className="animate-fade">
       {/* 1. Hero Banner Section */}
       <HeroBanner banners={mainBanners} />
 
-      {/* 2. Sponsored Hostels Section (Double Row on Mobile) */}
+      {/* 2. Sponsored Hostels Section */}
       <SponsoredHostels 
         hostels={sponsoredHostels.slice(0, 6)} 
-        onSelectHostel={(id) => handleSelectListing(id, 'hostel')} 
+        onSelectHostel={(id) => openDetail(id, 'hostel')} 
         onViewAll={() => setPage('hostels')}
+        triggerLike={handleToggleLike}
+        triggerShare={triggerShare}
       />
 
       {/* Quick Navigation Quick Links */}
@@ -158,7 +160,7 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
         </button>
       </div>
 
-      {/* 3. Nearby Rooms Section (< 1.2km to SRKR College) */}
+      {/* 3. Nearby Rooms Section */}
       {nearbyRooms.length > 0 && (
         <section style={{ margin: '2rem 0' }}>
           <div className="section-header">
@@ -177,7 +179,9 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
                 key={room.id}
                 item={room}
                 type="room"
-                onClick={() => handleSelectListing(room.id, 'room')}
+                onClick={() => openDetail(room.id, 'room')}
+                triggerLike={handleToggleLike}
+                triggerShare={triggerShare}
               />
             ))}
             <div className="view-more-card" onClick={() => setPage('rooms')}>
@@ -209,7 +213,9 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
                 key={hostel.id}
                 item={hostel}
                 type="hostel"
-                onClick={() => handleSelectListing(hostel.id, 'hostel')}
+                onClick={() => openDetail(hostel.id, 'hostel')}
+                triggerLike={handleToggleLike}
+                triggerShare={triggerShare}
               />
             ))}
             <div className="view-more-card" onClick={() => setPage('hostels')}>
@@ -241,7 +247,9 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
                 key={room.id}
                 item={room}
                 type="room"
-                onClick={() => handleSelectListing(room.id, 'room')}
+                onClick={() => openDetail(room.id, 'room')}
+                triggerLike={handleToggleLike}
+                triggerShare={triggerShare}
               />
             ))}
             <div className="view-more-card" onClick={() => setPage('rooms')}>
@@ -254,7 +262,7 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
         </section>
       )}
 
-      {/* 4b. College Affiliated Hostels Section (Now at the bottom of the home page) */}
+      {/* 4b. College Affiliated Hostels Section */}
       {collegeHostels.length > 0 && (
         <section style={{ margin: '2rem 0', paddingBottom: '3rem' }}>
           <div className="section-header">
@@ -278,7 +286,9 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
                 key={hostel.id}
                 item={hostel}
                 type="hostel"
-                onClick={() => handleSelectListing(hostel.id, 'hostel')}
+                onClick={() => openDetail(hostel.id, 'hostel')}
+                triggerLike={handleToggleLike}
+                triggerShare={triggerShare}
               />
             ))}
             <div className="view-more-card" onClick={() => {
@@ -298,5 +308,3 @@ export default function Home({ setPage, setDetailId, setDetailType, setHostelFil
     </div>
   );
 }
-
-

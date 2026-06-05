@@ -1,6 +1,6 @@
 import express from 'express';
 import pool from '../config/db.js';
-import { verifyAdmin } from '../middleware/auth.js';
+import { verifyAdmin, verifyUser, optionalUser } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import fs from 'fs';
@@ -50,7 +50,7 @@ const parseRoom = (room) => {
 };
 
 // GET all rooms with filters
-router.get('/', async (req, res) => {
+router.get('/', optionalUser, async (req, res) => {
   const { 
     admin, 
     gender, 
@@ -64,6 +64,7 @@ router.get('/', async (req, res) => {
   } = req.query;
 
   const isAdmin = admin === 'true';
+  const userId = req.user ? req.user.userId : null;
 
   try {
     let query = `
@@ -80,12 +81,14 @@ router.get('/', async (req, res) => {
         r.distance_from_srkr, 
         r.status, 
         r.facilities_json,
-        rp.photo AS primary_photo 
+        rp.photo AS primary_photo,
+        (SELECT COUNT(*) FROM user_interactions WHERE item_id = r.id AND item_type = 'room' AND interaction_type = 'like') AS likes_count,
+        ? IS NOT NULL AND EXISTS(SELECT 1 FROM user_interactions WHERE item_id = r.id AND item_type = 'room' AND user_id = ? AND interaction_type = 'like') AS is_liked
       FROM rooms r
       LEFT JOIN room_photos rp ON r.id = rp.room_id AND rp.is_primary = 1
       WHERE 1=1
     `;
-    const params = [];
+    const params = [userId, userId];
 
     // Filter status for clients
     if (!isAdmin) {
@@ -162,11 +165,20 @@ router.get('/price-bounds', async (req, res) => {
 });
 
 // GET single room detail (public)
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalUser, async (req, res) => {
   const { id } = req.params;
+  const userId = req.user ? req.user.userId : null;
 
   try {
-    const [rooms] = await pool.query('SELECT * FROM rooms WHERE id = ?', [id]);
+    const [rooms] = await pool.query(`
+      SELECT 
+        r.*, 
+        (SELECT COUNT(*) FROM user_interactions WHERE item_id = r.id AND item_type = 'room' AND interaction_type = 'like') AS likes_count,
+        ? IS NOT NULL AND EXISTS(SELECT 1 FROM user_interactions WHERE item_id = r.id AND item_type = 'room' AND user_id = ? AND interaction_type = 'like') AS is_liked
+      FROM rooms r 
+      WHERE r.id = ?
+    `, [userId, userId, id]);
+
     if (rooms.length === 0) {
       return res.status(404).json({ error: 'Room / PG not found.' });
     }
@@ -529,6 +541,87 @@ router.post('/:id/click', async (req, res) => {
       return res.status(404).json({ error: 'Room not found.' });
     }
     res.json({ success: true, message: 'Room click tracked successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/rooms/:id/like - Toggle room like status
+router.post('/:id/like', verifyUser, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.userId;
+
+  try {
+    // Check if room exists
+    const [rooms] = await pool.query('SELECT id FROM rooms WHERE id = ?', [id]);
+    if (rooms.length === 0) {
+      return res.status(404).json({ error: 'Room not found.' });
+    }
+
+    // Check if user already liked
+    const [existing] = await pool.query(
+      "SELECT id FROM user_interactions WHERE user_id = ? AND item_id = ? AND item_type = 'room' AND interaction_type = 'like'",
+      [userId, id]
+    );
+
+    let liked = false;
+    if (existing.length > 0) {
+      await pool.query(
+        "DELETE FROM user_interactions WHERE user_id = ? AND item_id = ? AND item_type = 'room' AND interaction_type = 'like'",
+        [userId, id]
+      );
+    } else {
+      await pool.query(
+        "INSERT INTO user_interactions (user_id, item_id, item_type, interaction_type) VALUES (?, ?, 'room', 'like')",
+        [userId, id]
+      );
+      liked = true;
+    }
+
+    // Get updated count
+    const [countResult] = await pool.query(
+      "SELECT COUNT(*) AS likes_count FROM user_interactions WHERE item_id = ? AND item_type = 'room' AND interaction_type = 'like'",
+      [id]
+    );
+
+    res.json({
+      success: true,
+      liked,
+      likes_count: countResult[0].likes_count
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/rooms/:id/share - Log room share interaction
+router.post('/:id/share', verifyUser, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.userId;
+
+  try {
+    // Check if room exists
+    const [rooms] = await pool.query('SELECT id FROM rooms WHERE id = ?', [id]);
+    if (rooms.length === 0) {
+      return res.status(404).json({ error: 'Room not found.' });
+    }
+
+    // Log the share interaction
+    await pool.query(
+      "INSERT IGNORE INTO user_interactions (user_id, item_id, item_type, interaction_type) VALUES (?, ?, 'room', 'share')",
+      [userId, id]
+    );
+
+    // Get updated count
+    const [countResult] = await pool.query(
+      "SELECT COUNT(*) AS shares_count FROM user_interactions WHERE item_id = ? AND item_type = 'room' AND interaction_type = 'share'",
+      [id]
+    );
+
+    res.json({
+      success: true,
+      shares_count: countResult[0].shares_count
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

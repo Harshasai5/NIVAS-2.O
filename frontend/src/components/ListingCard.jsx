@@ -1,7 +1,7 @@
-import React from 'react';
-import { Shield, Sparkles, MapPin, Wind, UserCheck, PhoneCall } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, Sparkles, MapPin, Wind, UserCheck, PhoneCall, Heart, Share2 } from 'lucide-react';
 
-export default function ListingCard({ item, type, onClick }) {
+export default function ListingCard({ item, type, onClick, triggerLike, triggerShare }) {
   // Extract fields based on type
   const id = item.id;
   const name = type === 'hostel' ? item.hostel_name : item.room_name;
@@ -16,10 +16,35 @@ export default function ListingCard({ item, type, onClick }) {
   const isSponsored = type === 'hostel' && item.sponsor_order > 0;
   
   // Resolve primary photo
-  // Serve via static uploads directory route proxied by vite
   const photoUrl = item.primary_photo 
     ? (item.primary_photo.startsWith('http') ? item.primary_photo : `/${item.primary_photo}`) 
     : 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=600&auto=format&fit=cover';
+
+  // Like stats state
+  const [liked, setLiked] = useState(item.is_liked === 1 || item.is_liked === true);
+  const [likesCount, setLikesCount] = useState(item.likes_count || 0);
+
+  useEffect(() => {
+    setLiked(item.is_liked === 1 || item.is_liked === true);
+    setLikesCount(item.likes_count || 0);
+  }, [item.is_liked, item.likes_count]);
+
+  const handleLikeClick = (e) => {
+    e.stopPropagation();
+    if (triggerLike) {
+      triggerLike(id, type, (newLiked, newCount) => {
+        setLiked(newLiked);
+        setLikesCount(newCount);
+      });
+    }
+  };
+
+  const handleShareClick = (e) => {
+    e.stopPropagation();
+    if (triggerShare) {
+      triggerShare(item, type);
+    }
+  };
 
   return (
     <article 
@@ -101,12 +126,55 @@ export default function ListingCard({ item, type, onClick }) {
           </div>
         </div>
 
-        <div className="card-meta-row" style={{ justifyContent: 'center', paddingTop: '0.75rem' }}>
-          <div className="card-beds" style={{ fontSize: '0.8rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+        {/* Updated metadata row with Like & Share actions */}
+        <div className="card-meta-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+          <div className="card-beds" style={{ fontSize: '0.78rem', display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
             <span>Beds: {beds} sharing | </span>
             <span className="card-beds-count" style={{ color: 'var(--unisex-color)', fontWeight: 700 }}>
-              {availableBeds} Beds Available
+              {availableBeds} Avail
             </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <button 
+              onClick={handleLikeClick}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: liked ? '#f87171' : 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.2rem',
+                transition: 'transform 0.15s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              title={type === 'hostel' ? "Like Hostel" : "Like Room"}
+            >
+              <Heart size={16} fill={liked ? '#f87171' : 'transparent'} />
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: liked ? '#f87171' : 'var(--text-muted)' }}>{likesCount}</span>
+            </button>
+
+            <button 
+              onClick={handleShareClick}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0.2rem',
+                transition: 'transform 0.15s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              title={type === 'hostel' ? "Share Hostel" : "Share Room"}
+            >
+              <Share2 size={16} />
+            </button>
           </div>
         </div>
       </div>

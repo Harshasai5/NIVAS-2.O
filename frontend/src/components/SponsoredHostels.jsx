@@ -2,7 +2,7 @@ import React from 'react';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import ListingCard from './ListingCard';
 
-export default function SponsoredHostels({ hostels, onSelectHostel, onViewAll }) {
+export default function SponsoredHostels({ hostels, onSelectHostel, onViewAll, triggerLike, triggerShare }) {
   if (!hostels || hostels.length === 0) return null;
 
   // Split sponsored hostels into two rows for the mobile 2-row layout
@@ -34,6 +34,8 @@ export default function SponsoredHostels({ hostels, onSelectHostel, onViewAll })
               item={hostel} 
               type="hostel" 
               onClick={() => onSelectHostel(hostel.id)} 
+              triggerLike={triggerLike}
+              triggerShare={triggerShare}
             />
           ))}
         </div>
@@ -47,6 +49,8 @@ export default function SponsoredHostels({ hostels, onSelectHostel, onViewAll })
                 item={hostel} 
                 type="hostel" 
                 onClick={() => onSelectHostel(hostel.id)} 
+                triggerLike={triggerLike}
+                triggerShare={triggerShare}
               />
             ))}
           </div>

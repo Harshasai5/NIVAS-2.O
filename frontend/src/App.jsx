@@ -8,6 +8,9 @@ import DetailView from './pages/DetailView';
 import AdminLogin from './pages/AdminLogin';
 import AdminRegister from './pages/AdminRegister';
 import AdminDashboard from './pages/AdminDashboard';
+import AuthModal from './components/AuthModal';
+import ShareModal from './components/ShareModal';
+import LikedPage from './pages/LikedPage';
 import { API_BASE_URL } from './config';
 
 export default function App() {
@@ -15,8 +18,20 @@ export default function App() {
   const [detailId, setDetailId] = useState(null);
   const [detailType, setDetailType] = useState('hostel'); // 'hostel' or 'room'
   const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken') || null);
+  
+  // User Authentication states
+  const [userToken, setUserToken] = useState(localStorage.getItem('userToken') || null);
+  const [userEmail, setUserEmail] = useState(localStorage.getItem('userEmail') || null);
+  const [userUsername, setUserUsername] = useState(localStorage.getItem('userUsername') || null);
 
-  // Global filters/search states so they stay alive across detail routing navigations
+  // Modal states
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState('login'); // 'login' or 'register'
+  const [authSuccessCallback, setAuthSuccessCallback] = useState(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareHostel, setShareHostel] = useState(null);
+
+  // Global filters/search states
   const initialHostelFilters = {
     gender: '',
     is_ac: '',
@@ -55,31 +70,54 @@ export default function App() {
   }, []);
 
   // Pathname routing helper
-  const navigateTo = (path, pageName) => {
+  const navigateTo = (path, pageName, queryParams = '') => {
     const formattedPath = path.startsWith('/NIVAS-2.O') ? path : `/NIVAS-2.O${path}`;
-    window.history.pushState(null, '', formattedPath);
+    const fullPath = formattedPath + queryParams;
+    window.history.pushState(null, '', fullPath);
     setPage(pageName);
   };
 
-  // Monitor location changes (including backward/forward arrows)
+  // Monitor location changes
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlId = searchParams.get('id');
+      const urlType = searchParams.get('type');
+
+      if (urlId) {
+        setDetailId(parseInt(urlId));
+      }
+      if (urlType) {
+        setDetailType(urlType);
+      }
+
       if (path === '/NIVAS-2.O/kalix-nivas-login' || path === '/kalix-nivas-login') {
         setPage('kalix-nivas-login');
       } else if (path === '/NIVAS-2.O/admin-register' || path === '/admin-register') {
         setPage('admin-register');
       } else if (path === '/NIVAS-2.O/admin-dashboard' || path === '/admin-dashboard') {
         setPage('admin-dashboard');
+      } else if (path === '/NIVAS-2.O/login' || path === '/login') {
+        setPage('home');
+        setAuthModalOpen(true);
+        setAuthModalTab('login');
+        window.history.replaceState(null, '', '/NIVAS-2.O/home');
+      } else if (path === '/NIVAS-2.O/register' || path === '/register') {
+        setPage('home');
+        setAuthModalOpen(true);
+        setAuthModalTab('register');
+        window.history.replaceState(null, '', '/NIVAS-2.O/home');
       } else if (path === '/NIVAS-2.O/hostels' || path === '/hostels') {
         setPage('hostels');
       } else if (path === '/NIVAS-2.O/rooms' || path === '/rooms') {
         setPage('rooms');
+      } else if (path === '/NIVAS-2.O/likes' || path === '/likes') {
+        setPage('likes');
       } else if (path === '/NIVAS-2.O/detail' || path === '/detail') {
         setPage('detail');
       } else {
         setPage('home');
-        // If they visit direct domain root, keep path showing /NIVAS-2.O/home cleanly
         if (
           window.location.pathname === '/' || 
           window.location.pathname === '' || 
@@ -94,33 +132,25 @@ export default function App() {
     };
 
     window.addEventListener('popstate', handlePopState);
-    
-    // Trigger on startup to parse URL directly
     handlePopState();
-
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Validate admin token on startup
+  // Validate admin session
   useEffect(() => {
     async function verifySession() {
       if (!adminToken) return;
-
       try {
         const res = await fetch(`${API_BASE_URL}/api/admin/verify`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${adminToken}` }
         });
-        
-        if (!res.ok) {
-          throw new Error('Session expired');
-        }
+        if (!res.ok) throw new Error('Session expired');
       } catch (error) {
         console.warn('🛡️ Admin session verification failed. Logging out.');
         logoutAdmin();
       }
     }
-
     verifySession();
   }, [adminToken]);
 
@@ -129,6 +159,99 @@ export default function App() {
     localStorage.removeItem('adminUsername');
     setAdminToken(null);
     navigateTo('/home', 'home');
+  };
+
+  const logoutUser = () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userUsername');
+    setUserToken(null);
+    setUserEmail(null);
+    setUserUsername(null);
+    // Reload current page components to refresh likes counts
+    const currentPage = page;
+    setPage('');
+    setTimeout(() => setPage(currentPage), 10);
+  };
+
+  const openDetail = (id, type) => {
+    setDetailId(id);
+    setDetailType(type);
+    navigateTo('/detail', 'detail', `?id=${id}&type=${type}`);
+  };
+
+  // Auth Trigger Actions
+  const triggerLike = (itemId, type = 'hostel', callback) => {
+    if (!userToken) {
+      setAuthSuccessCallback(() => () => {
+        // Retry execution with fresh token
+        const freshToken = localStorage.getItem('userToken');
+        executeLike(itemId, type, freshToken, callback);
+      });
+      setAuthModalOpen(true);
+    } else {
+      executeLike(itemId, type, userToken, callback);
+    }
+  };
+
+  const executeLike = async (itemId, type, token, callback) => {
+    try {
+      const pathType = type === 'room' ? 'rooms' : 'hostels';
+      const res = await fetch(`${API_BASE_URL}/api/${pathType}/${itemId}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (res.ok && callback) {
+        callback(data.liked, data.likes_count);
+      }
+    } catch (err) {
+      console.error('Error toggling like:', err);
+    }
+  };
+
+  const logShareToBackend = async (itemId, type) => {
+    try {
+      const pathType = type === 'room' ? 'rooms' : 'hostels';
+      const token = localStorage.getItem('userToken');
+      if (!token) return;
+      await fetch(`${API_BASE_URL}/api/${pathType}/${itemId}/share`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    } catch (err) {
+      console.error('Error logging share:', err);
+    }
+  };
+
+  const triggerShare = (item, type = 'hostel') => {
+    const itemWithType = { ...item, type };
+    if (!userToken) {
+      setAuthSuccessCallback(() => () => {
+        setShareHostel(itemWithType);
+        setShareModalOpen(true);
+        logShareToBackend(item.id, type);
+      });
+      setAuthModalOpen(true);
+    } else {
+      setShareHostel(itemWithType);
+      setShareModalOpen(true);
+      logShareToBackend(item.id, type);
+    }
+  };
+
+  const handleLoginSuccess = (token, email, username) => {
+    setUserToken(token);
+    setUserEmail(email);
+    setUserUsername(username);
+    if (authSuccessCallback) {
+      authSuccessCallback();
+      setAuthSuccessCallback(null);
+    }
   };
 
   // Scroll to top on page navigation
@@ -145,11 +268,19 @@ export default function App() {
           let path = '/home';
           if (pageName === 'hostels') path = '/hostels';
           else if (pageName === 'rooms') path = '/rooms';
+          else if (pageName === 'likes') path = '/likes';
           else if (pageName === 'admin-dashboard') path = '/admin-dashboard';
           navigateTo(path, pageName);
         }} 
         adminToken={adminToken}
         logoutAdmin={logoutAdmin}
+        userEmail={userEmail}
+        userUsername={userUsername}
+        logoutUser={logoutUser}
+        openLoginModal={(tab = 'login') => {
+          setAuthModalOpen(true);
+          setAuthModalTab(tab);
+        }}
       />
 
       {/* Pages switcher wrapper */}
@@ -162,36 +293,42 @@ export default function App() {
               else if (pageName === 'rooms') path = '/rooms';
               navigateTo(path, pageName);
             }} 
-            setDetailId={setDetailId} 
-            setDetailType={setDetailType} 
+            openDetail={openDetail}
             setHostelFilters={setHostelFilters}
             initialHostelFilters={initialHostelFilters}
+            userToken={userToken}
+            triggerLike={triggerLike}
+            triggerShare={triggerShare}
           />
         )}
         
         {page === 'hostels' && (
           <HostelsList 
             setPage={(pageName) => navigateTo(`/${pageName}`, pageName)} 
-            setDetailId={setDetailId} 
-            setDetailType={setDetailType} 
+            openDetail={openDetail}
             filters={hostelFilters}
             setFilters={setHostelFilters}
             search={hostelSearch}
             setSearch={setHostelSearch}
             initialFilters={initialHostelFilters}
+            userToken={userToken}
+            triggerLike={triggerLike}
+            triggerShare={triggerShare}
           />
         )}
         
         {page === 'rooms' && (
           <RoomsList 
             setPage={(pageName) => navigateTo(`/${pageName}`, pageName)} 
-            setDetailId={setDetailId} 
-            setDetailType={setDetailType} 
+            openDetail={openDetail}
             filters={roomFilters}
             setFilters={setRoomFilters}
             search={roomSearch}
             setSearch={setRoomSearch}
             initialFilters={initialRoomFilters}
+            userToken={userToken}
+            triggerLike={triggerLike}
+            triggerShare={triggerShare}
           />
         )}
 
@@ -200,6 +337,24 @@ export default function App() {
             id={detailId} 
             type={detailType} 
             setPage={(pageName) => navigateTo(`/${pageName}`, pageName)} 
+            userToken={userToken}
+            triggerLike={triggerLike}
+            triggerShare={triggerShare}
+          />
+        )}
+
+        {page === 'likes' && (
+          <LikedPage 
+            setPage={(pageName) => {
+              let path = '/home';
+              if (pageName === 'hostels') path = '/hostels';
+              else if (pageName === 'rooms') path = '/rooms';
+              navigateTo(path, pageName);
+            }}
+            openDetail={openDetail}
+            userToken={userToken}
+            triggerLike={triggerLike}
+            triggerShare={triggerShare}
           />
         )}
 
@@ -231,6 +386,8 @@ export default function App() {
             />
           )
         )}
+
+        {/* Auth routes handled via popup modal */}
       </main>
 
       {/* Clean elegant footer */}
@@ -243,11 +400,32 @@ export default function App() {
       {page !== 'kalix-nivas-login' && page !== 'admin-register' && page !== 'admin-dashboard' && (
         <AdPopup banners={inBetweenBanners} />
       )}
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={authModalOpen} 
+        onClose={() => {
+          setAuthModalOpen(false);
+          setAuthSuccessCallback(null);
+        }} 
+        onLoginSuccess={handleLoginSuccess}
+        initialTab={authModalTab}
+      />
+
+      {/* Share Modal */}
+      <ShareModal 
+        isOpen={shareModalOpen} 
+        onClose={() => {
+          setShareModalOpen(false);
+          setShareHostel(null);
+        }}
+        hostel={shareHostel}
+      />
     </div>
   );
 }
 
-// Global, beautiful, premium, closeable 3-minute ad pop-up modal component
+// Global ad pop-up modal component
 function AdPopup({ banners }) {
   const [activeBanner, setActiveBanner] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -270,13 +448,11 @@ function AdPopup({ banners }) {
 
     selectRandomBanner();
 
-    // 180 seconds interval = 3 minutes
     const intervalId = setInterval(() => {
       selectRandomBanner();
       setIsOpen(true);
     }, 180000);
 
-    // Initial load pop-up: show after 4 seconds for elegant entry transition
     const initialTimeoutId = setTimeout(() => {
       setIsOpen(true);
     }, 4000);
@@ -296,12 +472,12 @@ function AdPopup({ banners }) {
       left: 0,
       width: '100vw',
       height: '100vh',
-      backgroundColor: 'rgba(15, 23, 42, 0.75)', // sleek slate/dark-mode backdrop
+      backgroundColor: 'rgba(15, 23, 42, 0.75)',
       backdropFilter: 'blur(12px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 999999, // cover everything
+      zIndex: 999999,
       animation: 'fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
       padding: '1.5rem'
     }}>
@@ -313,10 +489,9 @@ function AdPopup({ banners }) {
         overflow: 'hidden',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7)',
-        background: 'rgba(30, 41, 59, 0.85)', // beautiful dark aesthetic
+        background: 'rgba(30, 41, 59, 0.85)',
         animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
       }}>
-        {/* Close Button X */}
         <button 
           onClick={() => setIsOpen(false)}
           style={{
@@ -361,7 +536,6 @@ function AdPopup({ banners }) {
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=600&auto=format&fit=cover'; }}
             />
-            {/* Deep elegant gradient overlay */}
             <div style={{
               position: 'absolute',
               bottom: 0,

@@ -1,13 +1,18 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import pool from './config/db.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function populateImagesFromDummy() {
   console.log('⏳ Starting image population from dummy_img to Uploads...');
   
-  const dummyImgDir = 'C:\\Users\\pabol_3zbs0kx\\OneDrive\\Desktop\\NIVAS-2.O\\dummy_img';
-  const hostelsUploadDir = 'C:\\Users\\pabol_3zbs0kx\\OneDrive\\Desktop\\NIVAS-2.O\\Uploads\\Hostels';
-  const roomsUploadDir = 'C:\\Users\\pabol_3zbs0kx\\OneDrive\\Desktop\\NIVAS-2.O\\Uploads\\Rooms';
+  const rootDir = path.resolve(__dirname, '..');
+  const dummyImgDir = path.join(rootDir, 'dummy_img');
+  const hostelsUploadDir = path.join(rootDir, 'Uploads', 'Hostels');
+  const roomsUploadDir = path.join(rootDir, 'Uploads', 'Rooms');
 
   try {
     // 1. Fetch all files from dummy_img
@@ -51,6 +56,8 @@ async function populateImagesFromDummy() {
         for (const file of files) {
           fs.unlinkSync(path.join(dir, file));
         }
+      } else {
+        fs.mkdirSync(dir, { recursive: true });
       }
     };
     clearDir(hostelsUploadDir);

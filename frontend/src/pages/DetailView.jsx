@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { ArrowLeft, MapPin, Phone, Wind, UserCheck, CheckCircle2, AlertTriangle, MessageSquare, ChevronLeft, ChevronRight, X, Map } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Wind, UserCheck, CheckCircle2, AlertTriangle, MessageSquare, ChevronLeft, ChevronRight, X, Map, Heart, Share2 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import logoImg from '../assets/logo.jpeg';
 
@@ -33,24 +33,34 @@ const GoogleMapsIcon = ({ size = 20 }) => (
   </svg>
 );
 
-export default function DetailView({ id, type, setPage }) {
+export default function DetailView({ id, type, setPage, userToken, triggerLike, triggerShare }) {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   
-  // Ref to prevent duplicate click tracking calls on double mounts (StrictMode / re-renders)
+  // Like states
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+
+  // Ref to prevent duplicate click tracking calls on double mounts
   const trackedRef = useRef(null);
 
   useEffect(() => {
     async function fetchDetail() {
       try {
         setLoading(true);
+        const headers = {};
+        if (userToken) {
+          headers['Authorization'] = `Bearer ${userToken}`;
+        }
         const endpoint = type === 'hostel' ? `${API_BASE_URL}/api/hostels/${id}` : `${API_BASE_URL}/api/rooms/${id}`;
-        const res = await fetch(endpoint);
+        const res = await fetch(endpoint, { headers });
         if (!res.ok) throw new Error('Listing not found');
         const data = await res.json();
         setItem(data);
+        setLiked(data.is_liked === 1 || data.is_liked === true);
+        setLikesCount(data.likes_count || 0);
       } catch (error) {
         console.error('Error fetching detail:', error);
       } finally {
@@ -61,7 +71,6 @@ export default function DetailView({ id, type, setPage }) {
     if (id) {
       fetchDetail();
       
-      // Track specific hostel or room click counter exactly once per card click/view session
       const trackKey = `${type}-${id}`;
       if (trackedRef.current !== trackKey) {
         trackedRef.current = trackKey;
@@ -69,7 +78,7 @@ export default function DetailView({ id, type, setPage }) {
           .catch(err => console.warn('Failed to track click:', err));
       }
     }
-  }, [id, type]);
+  }, [id, type, userToken]);
 
   if (loading) {
     return (
@@ -91,7 +100,8 @@ export default function DetailView({ id, type, setPage }) {
                 width: '100%', 
                 height: '100%', 
                 objectFit: 'cover', 
-                animation: 'morph-shape 6s ease-in-out infinite, pulse-slow 2s ease-in-out infinite' 
+                borderRadius: '50%',
+                animation: 'pulse-slow 2s ease-in-out infinite' 
               }} 
             />
           </div>
@@ -108,20 +118,6 @@ export default function DetailView({ id, type, setPage }) {
           @keyframes ping-slow {
             0% { transform: scale(0.95); opacity: 0.8; }
             70%, 100% { transform: scale(1.4); opacity: 0; }
-          }
-          @keyframes morph-shape {
-            0%, 100% {
-              clip-path: polygon(50% 0%, 79.4% 9.5%, 97.6% 34.5%, 97.6% 65.5%, 79.4% 90.5%, 50% 100%, 20.6% 90.5%, 2.4% 65.5%, 2.4% 34.5%, 20.6% 9.5%);
-              border-radius: 50%;
-            }
-            33% {
-              clip-path: polygon(50% 0%, 100% 0%, 100% 50%, 100% 100%, 50% 100%, 50% 100%, 0% 100%, 0% 50%, 0% 0%, 0% 0%);
-              border-radius: 0%;
-            }
-            66% {
-              clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-              border-radius: 0%;
-            }
           }
         `}</style>
       </div>
@@ -178,6 +174,21 @@ export default function DetailView({ id, type, setPage }) {
     setLightboxIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
   };
 
+  const handleLikeClick = () => {
+    if (triggerLike) {
+      triggerLike(id, type, (newLiked, newCount) => {
+        setLiked(newLiked);
+        setLikesCount(newCount);
+      });
+    }
+  };
+
+  const handleShareClick = () => {
+    if (triggerShare) {
+      triggerShare(item, type);
+    }
+  };
+
   return (
     <div className="detail-container animate-fade">
       {/* Back navigation */}
@@ -189,8 +200,8 @@ export default function DetailView({ id, type, setPage }) {
       {/* Header Info */}
       <div className="detail-header">
         <div className="detail-title-col">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <h1 className="detail-name">{name}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', width: '100%' }}>
+            <h1 className="detail-name" style={{ margin: 0 }}>{name}</h1>
             <span className={`card-gender-badge gender-${gender}`} style={{ position: 'static' }}>
               <UserCheck size={12} />
               <span>{gender === 'boys' ? 'Boys Only' : gender === 'girls' ? 'Girls Only' : 'Unisex PG'}</span>
@@ -206,9 +217,61 @@ export default function DetailView({ id, type, setPage }) {
                 College Hostels
               </span>
             )}
+
+            {/* Like and Share Actions */}
+            <div className="detail-actions-inline" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+              <button
+                onClick={handleLikeClick}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  background: liked ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid',
+                  borderColor: liked ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 'var(--radius-full)',
+                  padding: '0.5rem 1rem',
+                  color: liked ? '#f87171' : 'var(--text-secondary)',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = liked ? '#f87171' : 'var(--primary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = liked ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255, 255, 255, 0.1)'; }}
+              >
+                <Heart size={16} fill={liked ? '#f87171' : 'transparent'} />
+                <span>{likesCount} Likes</span>
+              </button>
+
+              <button
+                onClick={handleShareClick}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: 'var(--radius-full)',
+                  padding: '0.5rem 1rem',
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; }}
+              >
+                <Share2 size={16} />
+                <span>Share</span>
+              </button>
+            </div>
           </div>
           
-          <div className="detail-address-row">
+          <div className="detail-address-row" style={{ marginTop: '0.75rem' }}>
             <GoogleMapsIcon size={18} />
             <span>{item.address || 'Near SRKR College, Bhimavaram'}</span>
             {distance !== null && (

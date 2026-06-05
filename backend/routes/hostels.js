@@ -1,6 +1,6 @@
 import express from 'express';
 import pool from '../config/db.js';
-import { verifyAdmin } from '../middleware/auth.js';
+import { verifyAdmin, verifyUser, optionalUser } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import fs from 'fs';
@@ -50,7 +50,7 @@ const parseHostel = (hostel) => {
 };
 
 // GET all hostels with filters
-router.get('/', async (req, res) => {
+router.get('/', optionalUser, async (req, res) => {
   const { 
     admin, 
     gender, 
@@ -65,6 +65,7 @@ router.get('/', async (req, res) => {
   } = req.query;
 
   const isAdmin = admin === 'true';
+  const userId = req.user ? req.user.userId : null;
 
   try {
     let query = `
@@ -82,12 +83,14 @@ router.get('/', async (req, res) => {
         h.is_college_hostel, 
         h.status, 
         h.facilities_json,
-        hp.photo AS primary_photo 
+        hp.photo AS primary_photo,
+        (SELECT COUNT(*) FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND interaction_type = 'like') AS likes_count,
+        ? IS NOT NULL AND EXISTS(SELECT 1 FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND user_id = ? AND interaction_type = 'like') AS is_liked
       FROM hostels h
       LEFT JOIN hostel_photos hp ON h.id = hp.hostel_id AND hp.is_primary = 1
       WHERE 1=1
     `;
-    const params = [];
+    const params = [userId, userId];
 
     // Filter status for clients
     if (!isAdmin) {
@@ -136,6 +139,8 @@ router.get('/', async (req, res) => {
     // Sponsored only filter
     if (sponsored === 'true') {
       query += " AND h.sponsor_order > 0";
+    } else if (sponsored === 'false') {
+      query += " AND (h.sponsor_order = 0 OR h.sponsor_order IS NULL)";
     }
 
     // Sorting: Sponsored first, then by sponsor_order, then newest
@@ -173,11 +178,20 @@ router.get('/price-bounds', async (req, res) => {
 });
 
 // GET single hostel detail (public)
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalUser, async (req, res) => {
   const { id } = req.params;
+  const userId = req.user ? req.user.userId : null;
 
   try {
-    const [hostels] = await pool.query('SELECT * FROM hostels WHERE id = ?', [id]);
+    const [hostels] = await pool.query(`
+      SELECT 
+        h.*, 
+        (SELECT COUNT(*) FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND interaction_type = 'like') AS likes_count,
+        ? IS NOT NULL AND EXISTS(SELECT 1 FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND user_id = ? AND interaction_type = 'like') AS is_liked
+      FROM hostels h 
+      WHERE h.id = ?
+    `, [userId, userId, id]);
+
     if (hostels.length === 0) {
       return res.status(404).json({ error: 'Hostel not found.' });
     }
@@ -540,6 +554,87 @@ router.post('/:id/click', async (req, res) => {
       return res.status(404).json({ error: 'Hostel not found.' });
     }
     res.json({ success: true, message: 'Hostel click tracked successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/hostels/:id/like - Toggle like status
+router.post('/:id/like', verifyUser, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.userId;
+
+  try {
+    // Check if hostel exists
+    const [hostels] = await pool.query('SELECT id FROM hostels WHERE id = ?', [id]);
+    if (hostels.length === 0) {
+      return res.status(404).json({ error: 'Hostel not found.' });
+    }
+
+    // Check if user already liked
+    const [existing] = await pool.query(
+      "SELECT id FROM user_interactions WHERE user_id = ? AND item_id = ? AND item_type = 'hostel' AND interaction_type = 'like'",
+      [userId, id]
+    );
+
+    let liked = false;
+    if (existing.length > 0) {
+      await pool.query(
+        "DELETE FROM user_interactions WHERE user_id = ? AND item_id = ? AND item_type = 'hostel' AND interaction_type = 'like'",
+        [userId, id]
+      );
+    } else {
+      await pool.query(
+        "INSERT INTO user_interactions (user_id, item_id, item_type, interaction_type) VALUES (?, ?, 'hostel', 'like')",
+        [userId, id]
+      );
+      liked = true;
+    }
+
+    // Get updated count
+    const [countResult] = await pool.query(
+      "SELECT COUNT(*) AS likes_count FROM user_interactions WHERE item_id = ? AND item_type = 'hostel' AND interaction_type = 'like'",
+      [id]
+    );
+
+    res.json({
+      success: true,
+      liked,
+      likes_count: countResult[0].likes_count
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/hostels/:id/share - Log share interaction
+router.post('/:id/share', verifyUser, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.userId;
+
+  try {
+    // Check if hostel exists
+    const [hostels] = await pool.query('SELECT id FROM hostels WHERE id = ?', [id]);
+    if (hostels.length === 0) {
+      return res.status(404).json({ error: 'Hostel not found.' });
+    }
+
+    // Log the share interaction
+    await pool.query(
+      "INSERT IGNORE INTO user_interactions (user_id, item_id, item_type, interaction_type) VALUES (?, ?, 'hostel', 'share')",
+      [userId, id]
+    );
+
+    // Get updated count
+    const [countResult] = await pool.query(
+      "SELECT COUNT(*) AS shares_count FROM user_interactions WHERE item_id = ? AND item_type = 'hostel' AND interaction_type = 'share'",
+      [id]
+    );
+
+    res.json({
+      success: true,
+      shares_count: countResult[0].shares_count
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

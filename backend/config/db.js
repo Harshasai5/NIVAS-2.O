@@ -48,6 +48,72 @@ async function testConnection() {
       await pool.query("ALTER TABLE rooms ADD COLUMN room_options_json TEXT DEFAULT NULL");
       console.log("✨ Appended 'room_options_json' column to 'rooms' table successfully.");
     }
+
+    // Ensure 'users' table exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    `);
+    console.log("✨ Verified 'users' table exists.");
+
+    // Migrate users table with username and password columns
+    const [userUsernameCols] = await pool.query("SHOW COLUMNS FROM users LIKE 'username'");
+    if (userUsernameCols.length === 0) {
+      await pool.query("ALTER TABLE users ADD COLUMN username VARCHAR(255) DEFAULT NULL UNIQUE");
+      console.log("✨ Appended 'username' column to 'users' table successfully.");
+    }
+
+    const [userPasswordCols] = await pool.query("SHOW COLUMNS FROM users LIKE 'password'");
+    if (userPasswordCols.length === 0) {
+      await pool.query("ALTER TABLE users ADD COLUMN password VARCHAR(255) DEFAULT NULL");
+      console.log("✨ Appended 'password' column to 'users' table successfully.");
+    }
+
+    // Ensure 'otp_codes' table exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS otp_codes (
+        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        code VARCHAR(6) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    `);
+    console.log("✨ Verified 'otp_codes' table exists.");
+
+    // Ensure 'user_interactions' table exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_interactions (
+        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        item_id INT NOT NULL,
+        item_type ENUM('hostel', 'room') NOT NULL,
+        interaction_type ENUM('like', 'share') NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY user_item_interaction (user_id, item_id, item_type, interaction_type),
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    `);
+    console.log("✨ Verified 'user_interactions' table exists.");
+
+    // Migrate existing likes from old hostel_likes table if it still exists
+    try {
+      const [likesTable] = await pool.query("SHOW TABLES LIKE 'hostel_likes'");
+      if (likesTable.length > 0) {
+        console.log("✨ Migrating old 'hostel_likes' records to 'user_interactions'...");
+        await pool.query(`
+          INSERT IGNORE INTO user_interactions (user_id, item_id, item_type, interaction_type, created_at)
+          SELECT user_id, hostel_id, 'hostel', 'like', created_at FROM hostel_likes
+        `);
+        await pool.query("DROP TABLE hostel_likes");
+        console.log("✨ Dropped old 'hostel_likes' table successfully.");
+      }
+    } catch (err) {
+      console.warn("⚠️ Failed to migrate or drop hostel_likes:", err.message);
+    }
   } catch (error) {
     console.error('❌ Failed to connect to MySQL database:', error.message);
     console.error('👉 Please make sure MySQL is running on', process.env.DB_HOST, 'and database', process.env.DB_NAME, 'exists.');
