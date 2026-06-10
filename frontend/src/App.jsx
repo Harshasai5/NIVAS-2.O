@@ -429,6 +429,8 @@ export default function App() {
 function AdPopup({ banners }) {
   const [activeBanner, setActiveBanner] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [showNote, setShowNote] = useState(false);
+  const [closeButtonVisible, setCloseButtonVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -437,33 +439,169 @@ function AdPopup({ banners }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const selectRandomBanner = React.useCallback(() => {
-    if (!banners || banners.length === 0) return;
-    const randomIndex = Math.floor(Math.random() * banners.length);
-    setActiveBanner(banners[randomIndex]);
-  }, [banners]);
-
   useEffect(() => {
-    if (!banners || banners.length === 0) return;
-
-    selectRandomBanner();
-
-    const intervalId = setInterval(() => {
-      selectRandomBanner();
-      setIsOpen(true);
-    }, 180000);
-
+    // Show note popup immediately (1s delay after page load)
     const initialTimeoutId = setTimeout(() => {
+      setShowNote(true);
       setIsOpen(true);
-    }, 4000);
+      
+      // Close button appears after 4 seconds
+      const closeButtonTimeoutId = setTimeout(() => {
+        setCloseButtonVisible(true);
+      }, 4000);
+    }, 1000);
+
+    // Standard banner ad interval every 3 minutes (only if banners exist)
+    let intervalId;
+    if (banners && banners.length > 0) {
+      const randomIndex = Math.floor(Math.random() * banners.length);
+      setActiveBanner(banners[randomIndex]);
+
+      intervalId = setInterval(() => {
+        const nextIndex = Math.floor(Math.random() * banners.length);
+        setActiveBanner(banners[nextIndex]);
+        setShowNote(false);
+        setIsOpen(true);
+      }, 180000);
+    }
 
     return () => {
-      clearInterval(intervalId);
       clearTimeout(initialTimeoutId);
+      if (intervalId) clearInterval(intervalId);
     };
-  }, [banners, selectRandomBanner]);
+  }, [banners]);
 
-  if (!activeBanner || !isOpen) return null;
+  if (!isOpen) return null;
+
+  // Render Note Popup
+  if (showNote) {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+        backdropFilter: 'blur(16px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 999999,
+        animation: 'fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+        padding: '1.5rem'
+      }}>
+        <div className="glass" style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '550px',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid rgba(239, 68, 68, 0.25)',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.35)',
+          background: '#ffffff',
+          padding: '2.5rem 2rem',
+          animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.5rem',
+          textAlign: 'left'
+        }}>
+          {closeButtonVisible && (
+            <button 
+              onClick={() => setIsOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '0.85rem',
+                right: '0.85rem',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                color: '#ef4444',
+                borderRadius: '50%',
+                width: '2.2rem',
+                height: '2.2rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 100,
+                transition: 'all 0.2s ease-in-out'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+              title="Close Note"
+              aria-label="Close Note"
+            >
+              <X size={16} />
+            </button>
+          )}
+
+          {/* English Note Section */}
+          <div style={{ color: '#ef4444', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <h3 style={{ 
+              fontSize: '1.25rem', 
+              fontWeight: 800, 
+              fontFamily: 'var(--font-display)', 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.03em', 
+              margin: 0,
+              color: '#ef4444'
+            }}>
+              Remember these points before use:
+            </h3>
+            <ul style={{ 
+              margin: 0, 
+              paddingLeft: '1.2rem', 
+              fontSize: '0.95rem', 
+              fontWeight: 600, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0.5rem',
+              lineHeight: '1.4',
+              color: '#ef4444',
+              listStyleType: 'decimal'
+            }}>
+              <li>Contact owner before visiting the hostel.</li>
+              <li>The prices may differ from the website to original.</li>
+            </ul>
+          </div>
+
+          {/* Divider */}
+          <div style={{ borderTop: '1px dashed rgba(239, 68, 68, 0.2)' }} />
+
+          {/* Telugu Note Section */}
+          <div style={{ color: '#ef4444', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <h3 style={{ 
+              fontSize: '1.2rem', 
+              fontWeight: 800, 
+              margin: 0,
+              lineHeight: '1.4',
+              color: '#ef4444'
+            }}>
+              ఉపయోగించే ముందు ఈ పాయింట్లను గుర్తుంచుకోండి:
+            </h3>
+            <ul style={{ 
+              margin: 0, 
+              paddingLeft: '1.2rem', 
+              fontSize: '0.95rem', 
+              fontWeight: 600, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0.5rem',
+              lineHeight: '1.5',
+              color: '#ef4444',
+              listStyleType: 'decimal'
+            }}>
+              <li>హాస్టల్ సందర్శించే ముందు యజమానిని సంప్రదించండి.</li>
+              <li>వెబ్సైట్ లో ధరలకు మరియు అసలు ధరలకు తేడా ఉండవచ్చు.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render Advertisement Popup
+  if (!activeBanner) return null;
 
   return (
     <div style={{
