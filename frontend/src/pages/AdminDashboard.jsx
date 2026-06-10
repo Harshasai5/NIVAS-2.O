@@ -137,7 +137,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
         is_college_hostel: 0,
         available_beds: 10,
         total_beds: 30,
-        status: 'active'
+        status: 'active',
+        installments: 1
       });
     } else if (type === 'room') {
       setFormData({
@@ -832,6 +833,17 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                         max="4"
                       />
                     </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Number of Fee Installments</label>
+                      <input 
+                        type="number" 
+                        value={formData.installments !== undefined ? formData.installments : 1} 
+                        onChange={(e) => setFormData({ ...formData, installments: parseInt(e.target.value) })} 
+                        className="form-input" 
+                        min="1"
+                      />
+                    </div>
                   </>
                 ) : (
                   <>
@@ -1300,6 +1312,17 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                       className="form-input" 
                       min="0"
                       max="4"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Number of Fee Installments</label>
+                    <input 
+                      type="number" 
+                      value={formData.installments !== undefined ? formData.installments : 1} 
+                      onChange={(e) => setFormData({ ...formData, installments: parseInt(e.target.value) })} 
+                      className="form-input" 
+                      min="1"
                     />
                   </div>
                 </>

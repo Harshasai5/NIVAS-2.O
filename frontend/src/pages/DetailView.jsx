@@ -285,6 +285,12 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
             <div className="beds-label" style={{ marginBottom: '0.2rem' }}>Starting Price</div>
             <div className="detail-price-amt">₹{Math.round(price)}</div>
             <div className="beds-label" style={{ marginTop: '0.2rem' }}>{priceLabel}</div>
+            {type === 'hostel' && item.installments !== undefined && item.installments > 0 && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.65rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700 }}>Fee Division</span>
+                <span style={{ fontWeight: 600, color: 'var(--unisex-color)' }}>{item.installments} {item.installments === 1 ? 'installment' : 'installments'} to pay</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -474,6 +480,16 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                 <span className="beds-label" style={{ color: 'var(--text-secondary)' }}>bed sharing</span>
               </div>
             </div>
+
+            {type === 'hostel' && item.installments !== undefined && item.installments > 0 && (
+              <div className="beds-status-widget" style={{ marginTop: '-0.75rem', marginBottom: '1.5rem' }}>
+                <div className="beds-label">Fee Installments</div>
+                <div className="beds-value-row">
+                  <span className="beds-val-large">{item.installments}</span>
+                  <span className="beds-label" style={{ color: 'var(--text-secondary)' }}>{item.installments === 1 ? 'installment' : 'installments'}</span>
+                </div>
+              </div>
+            )}
 
             <div className="action-buttons-group">
               <a 

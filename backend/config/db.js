@@ -29,6 +29,12 @@ async function testConnection() {
       console.log("✨ Appended 'clicks' column to 'hostels' table successfully.");
     }
 
+    const [hostelInstCols] = await pool.query("SHOW COLUMNS FROM hostels LIKE 'installments'");
+    if (hostelInstCols.length === 0) {
+      await pool.query("ALTER TABLE hostels ADD COLUMN installments INT DEFAULT 1");
+      console.log("✨ Appended 'installments' column to 'hostels' table successfully.");
+    }
+
     const [roomCols] = await pool.query("SHOW COLUMNS FROM rooms LIKE 'clicks'");
     if (roomCols.length === 0) {
       await pool.query("ALTER TABLE rooms ADD COLUMN clicks INT DEFAULT 0");

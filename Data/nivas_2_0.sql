@@ -85,6 +85,7 @@ CREATE TABLE `hostels` (
   `available_beds` int(11) DEFAULT 0,
   `total_beds` int(11) DEFAULT 0,
   `status` enum('active','inactive') DEFAULT 'active',
+  `installments` int(11) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

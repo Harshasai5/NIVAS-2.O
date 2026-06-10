@@ -29,7 +29,8 @@ async function seedDatabase() {
         sponsor_order: 1,
         is_college_hostel: 0,
         available_beds: 15,
-        total_beds: 60
+        total_beds: 60,
+        installments: 2
       },
       {
         hostel_name: 'Sri Gayatri Girls Hostel',
@@ -45,7 +46,8 @@ async function seedDatabase() {
         sponsor_order: 2,
         is_college_hostel: 0,
         available_beds: 8,
-        total_beds: 45
+        total_beds: 45,
+        installments: 3
       },
       {
         hostel_name: 'Elite Boys Luxury PG & Hostel',
@@ -263,9 +265,9 @@ async function seedDatabase() {
       const h = hostelsData[i];
       const [res] = await pool.query(
         `INSERT INTO hostels 
-         (hostel_name, gender, price_starting, is_ac, beds_per_room, phone, google_maps_link, address, facilities_json, rules_json, sponsor_order, is_college_hostel, available_beds, total_beds, status) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
-        [h.hostel_name, h.gender, h.price_starting, h.is_ac, h.beds_per_room, h.phone, h.google_maps_link, h.address, h.facilities_json, h.rules_json, h.sponsor_order, h.is_college_hostel, h.available_beds, h.total_beds]
+         (hostel_name, gender, price_starting, is_ac, beds_per_room, phone, google_maps_link, address, facilities_json, rules_json, sponsor_order, is_college_hostel, available_beds, total_beds, status, installments) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)`,
+        [h.hostel_name, h.gender, h.price_starting, h.is_ac, h.beds_per_room, h.phone, h.google_maps_link, h.address, h.facilities_json, h.rules_json, h.sponsor_order, h.is_college_hostel, h.available_beds, h.total_beds, h.installments || 1]
       );
       
       const hostelId = res.insertId;

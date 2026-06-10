@@ -83,6 +83,7 @@ router.get('/', optionalUser, async (req, res) => {
         h.is_college_hostel, 
         h.status, 
         h.facilities_json,
+        h.installments,
         hp.photo AS primary_photo,
         (SELECT COUNT(*) FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND interaction_type = 'like') AS likes_count,
         ? IS NOT NULL AND EXISTS(SELECT 1 FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND user_id = ? AND interaction_type = 'like') AS is_liked
@@ -228,7 +229,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
     is_college_hostel,
     available_beds,
     total_beds,
-    status
+    status,
+    installments
   } = req.body;
 
   if (!hostel_name || !gender || !price_starting || !phone) {
@@ -259,8 +261,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
 
     const [result] = await conn.query(
       `INSERT INTO hostels 
-       (hostel_name, gender, price_starting, is_ac, beds_per_room, phone, google_maps_link, address, facilities_json, rules_json, sponsor_order, is_college_hostel, available_beds, total_beds, status, room_options_json) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (hostel_name, gender, price_starting, is_ac, beds_per_room, phone, google_maps_link, address, facilities_json, rules_json, sponsor_order, is_college_hostel, available_beds, total_beds, status, room_options_json, installments) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         hostel_name,
         gender,
@@ -277,7 +279,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
         available_beds ? parseInt(available_beds) : 0,
         total_beds ? parseInt(total_beds) : 0,
         status || 'active',
-        room_options_json
+        room_options_json,
+        installments ? parseInt(installments) : 1
       ]
     );
 
@@ -334,7 +337,8 @@ router.put('/:id', verifyAdmin, async (req, res) => {
     is_college_hostel,
     available_beds,
     total_beds,
-    status
+    status,
+    installments
   } = req.body;
 
   try {
@@ -374,7 +378,8 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         available_beds = ?, 
         total_beds = ?, 
         status = ?,
-        room_options_json = ? 
+        room_options_json = ?,
+        installments = ?
       WHERE id = ?`,
       [
         hostel_name !== undefined ? hostel_name : existing[0].hostel_name,
@@ -393,6 +398,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         total_beds !== undefined ? parseInt(total_beds) : existing[0].total_beds,
         status !== undefined ? status : existing[0].status,
         room_options_json,
+        installments !== undefined ? parseInt(installments) : existing[0].installments,
         id
       ]
     );
