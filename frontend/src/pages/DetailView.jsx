@@ -226,22 +226,22 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.4rem',
-                  background: liked ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                  background: liked ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 0, 0, 0.02)',
                   border: '1px solid',
-                  borderColor: liked ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+                  borderColor: liked ? 'rgba(239, 68, 68, 0.3)' : 'var(--border)',
                   borderRadius: 'var(--radius-full)',
                   padding: '0.5rem 1rem',
-                  color: liked ? '#f87171' : 'var(--text-secondary)',
+                  color: liked ? '#ef4444' : 'var(--text-secondary)',
                   fontWeight: 700,
                   fontSize: '0.85rem',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  boxShadow: 'var(--shadow-sm)'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = liked ? '#f87171' : 'var(--primary)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = liked ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255, 255, 255, 0.1)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = liked ? '#ef4444' : 'var(--primary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = liked ? 'rgba(239, 68, 68, 0.3)' : 'var(--border)'; }}
               >
-                <Heart size={16} fill={liked ? '#f87171' : 'transparent'} />
+                <Heart size={16} fill={liked ? '#ef4444' : 'transparent'} />
                 <span>{likesCount} Likes</span>
               </button>
 
@@ -251,19 +251,19 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.4rem',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(0, 0, 0, 0.02)',
+                  border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-full)',
                   padding: '0.5rem 1rem',
-                  color: 'white',
+                  color: 'var(--text-secondary)',
                   fontWeight: 700,
                   fontSize: '0.85rem',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  boxShadow: 'var(--shadow-sm)'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
               >
                 <Share2 size={16} />
                 <span>Share</span>

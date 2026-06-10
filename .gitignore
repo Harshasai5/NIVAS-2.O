@@ -31,3 +31,7 @@ logs/
 *.sw?
 .DS_Store
 Thumbs.db
+
+# Backup zip archives
+*.zip
+

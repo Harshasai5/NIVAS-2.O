@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Sparkles, Search, Inbox, Filter, ArrowUp } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
-import InlineBanner from '../components/InlineBanner';
 import { API_BASE_URL } from '../config';
 import logoImg from '../assets/logo.jpeg';
 
@@ -20,7 +19,6 @@ export default function HostelsList({
 }) {
   const [hostels, setHostels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [banners, setBanners] = useState([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showGoTop, setShowGoTop] = useState(false);
   const [priceBounds, setPriceBounds] = useState({ minPrice: 0, maxPrice: 10000 });
@@ -47,15 +45,6 @@ export default function HostelsList({
   };
 
   useEffect(() => {
-    async function fetchBanners() {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/banners`);
-        const data = await res.json();
-        setBanners(data.filter(b => b.in_between === 1 || b.in_between === true));
-      } catch (error) {
-        console.error('Error loading inline banners:', error);
-      }
-    }
     async function fetchPriceBounds() {
       try {
         const res = await fetch(`${API_BASE_URL}/api/hostels/price-bounds`);
@@ -67,7 +56,6 @@ export default function HostelsList({
         console.error('Error fetching hostel price bounds:', error);
       }
     }
-    fetchBanners();
     fetchPriceBounds();
   }, []);
 
@@ -219,26 +207,16 @@ export default function HostelsList({
           </div>
         ) : (
           <div className="grid-layout">
-            {filteredHostelsList.map((hostel, index) => (
-              <React.Fragment key={`hostel-wrapper-${hostel.id}`}>
-                <ListingCard 
-                  key={`hostel-${hostel.id}`}
-                  item={hostel}
-                  type="hostel"
-                  onClick={() => handleSelectHostel(hostel.id)}
-                  triggerLike={handleToggleLike}
-                  triggerShare={triggerShare}
-                />
-                {/* Render inline banner after the 4th item (index === 3) */}
-                {index === 3 && banners.length > 0 && (
-                  <InlineBanner banners={banners} />
-                )}
-              </React.Fragment>
+            {filteredHostelsList.map((hostel) => (
+              <ListingCard 
+                key={`hostel-${hostel.id}`}
+                item={hostel}
+                type="hostel"
+                onClick={() => handleSelectHostel(hostel.id)}
+                triggerLike={handleToggleLike}
+                triggerShare={triggerShare}
+              />
             ))}
-            {/* If list is shorter than 4 items, render at the end */}
-            {filteredHostelsList.length > 0 && filteredHostelsList.length < 4 && banners.length > 0 && (
-              <InlineBanner banners={banners} />
-            )}
           </div>
         )}
       </div>

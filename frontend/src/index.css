@@ -1732,11 +1732,9 @@ button, input, select, textarea {
   width: 100%;
   padding: 1.5rem 5%;
   gap: 1.25rem;
-  background: var(--bg-card-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: #ffffff;
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   z-index: 99;
   animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
@@ -2128,3 +2126,41 @@ button, input, select, textarea {
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
+
+/* --- BLACKSHADE NAVBAR SYSTEM --- */
+.navbar {
+  background: #000000 !important; /* Pure Black */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+.navbar .nav-item {
+  color: rgba(255, 255, 255, 0.8) !important; /* Readable white text */
+}
+
+.navbar .nav-item:hover,
+.navbar .nav-item.active {
+  color: #ffffff !important; /* Pure white on hover/active */
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.nav-mobile-toggle {
+  color: #ffffff !important; /* White burger toggle icon */
+}
+
+.mobile-nav-menu {
+  background: #000000 !important; /* Pure Black */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.mobile-nav-menu .nav-item {
+  color: rgba(255, 255, 255, 0.9) !important; /* Bright white links */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.mobile-nav-menu .nav-item.active {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
