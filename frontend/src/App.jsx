@@ -674,25 +674,6 @@ function AdPopup({ banners }) {
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=600&auto=format&fit=cover'; }}
             />
-            <div style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              width: '100%',
-              padding: '2.5rem 1.5rem 1.5rem 1.5rem',
-              background: 'linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0) 100%)',
-              color: 'white'
-            }}>
-              <span className="card-sponsor-badge" style={{ position: 'static', marginBottom: '0.6rem', display: 'inline-flex', background: 'var(--primary)', color: 'white', padding: '0.2rem 0.6rem', boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)', border: 'none' }}>
-                <Sparkles size={11} />
-                <span style={{ marginLeft: '0.3rem', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Featured Offer</span>
-              </span>
-              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, margin: '0.2rem 0 0.8rem 0', fontFamily: 'var(--font-display)', lineHeight: '1.3', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{activeBanner.title || 'Nivas Accommodations'}</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--primary)', fontSize: '0.88rem', fontWeight: 700, transition: 'all 0.2s' }}>
-                <span>Learn More & Explore</span>
-                <ArrowRight size={15} />
-              </div>
-            </div>
           </div>
         </a>
       </div>
