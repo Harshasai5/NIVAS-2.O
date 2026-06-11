@@ -72,15 +72,7 @@ export default function InlineBanner({ banners }) {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
               }}
-            >
-              <div className="inline-banner-content-overlay">
-                {activeBanner.title && <h3 className="inline-banner-title">{activeBanner.title}</h3>}
-                <button className="inline-banner-action-btn">
-                  <span>Learn More</span>
-                  <ArrowRight size={14} style={{ marginLeft: '0.25rem' }} />
-                </button>
-              </div>
-            </div>
+            />
           </a>
         ) : (
           <div 
@@ -92,14 +84,7 @@ export default function InlineBanner({ banners }) {
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
-          >
-            <div className="inline-banner-content-overlay">
-              {activeBanner.title && <h3 className="inline-banner-title">{activeBanner.title}</h3>}
-              <button className="inline-banner-action-btn" style={{ pointerEvents: 'none' }}>
-                <span>Advertisement</span>
-              </button>
-            </div>
-          </div>
+          />
         )}
 
         {/* Close button X */}

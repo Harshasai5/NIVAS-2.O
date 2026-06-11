@@ -52,20 +52,7 @@ export default function HeroBanner({ banners }) {
                 key={banner.id} 
                 className="banner-slide"
                 style={{ backgroundImage: `url(${imageUrl})` }}
-              >
-                <div className="banner-content">
-                  <span className="banner-tag">
-                    {index % 2 === 0 ? 'Featured Listing' : 'Premium Offer'}
-                  </span>
-                  <h1 className="banner-title">{banner.title || 'Nivas Accommodations'}</h1>
-                  {banner.redirect_link && (
-                    <a href={banner.redirect_link} className="banner-link">
-                      <span>Explore Now</span>
-                      <ChevronRight size={16} />
-                    </a>
-                  )}
-                </div>
-              </div>
+              />
             );
           })}
         </div>

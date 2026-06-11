@@ -70,6 +70,42 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
           }}
         />
 
+        {/* Available Beds Badge */}
+        {availableBeds !== undefined && availableBeds !== null && (
+          <div 
+            className="card-avail-badge" 
+            style={{ 
+              position: 'absolute', 
+              top: '1rem', 
+              left: isSponsored ? '6.8rem' : '1rem', 
+              background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--girls-color)', 
+              color: 'white', 
+              padding: '0.3rem 0.7rem', 
+              borderRadius: 'var(--radius-full)', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              zIndex: 10, 
+              backdropFilter: 'blur(5px)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.3rem',
+              boxShadow: 'var(--shadow-sm)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.02em'
+            }}
+          >
+            <span className="avail-pulse-dot" style={{ 
+              display: 'inline-block', 
+              width: '6px', 
+              height: '6px', 
+              borderRadius: '50%', 
+              background: 'white', 
+              opacity: 0.9 
+            }} />
+            <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'Filled'}</span>
+          </div>
+        )}
+
         {/* Gender Badge */}
         <div className={`card-gender-badge gender-${gender}`}>
           <UserCheck size={12} />
@@ -129,10 +165,7 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
         {/* Updated metadata row with Like & Share actions */}
         <div className="card-meta-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
           <div className="card-beds" style={{ fontSize: '0.78rem', display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-            <span>Beds: {beds} sharing | </span>
-            <span className="card-beds-count" style={{ color: 'var(--unisex-color)', fontWeight: 700 }}>
-              {availableBeds} Avail
-            </span>
+            <span>Beds: {beds} sharing</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>

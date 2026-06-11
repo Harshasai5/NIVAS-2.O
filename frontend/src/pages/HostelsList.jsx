@@ -153,6 +153,42 @@ export default function HostelsList({
           </button>
         </div>
 
+        {/* Quick Sharing Filters (Circular Category Buttons) */}
+        <div className="quick-filters-container">
+          {[
+            { value: '', label: 'All Sharing', display: 'All' },
+            { value: '3', label: '3 Bed Share', display: '3 Bed' },
+            { value: '4', label: '4 Bed Share', display: '4 Bed' },
+            { value: '6', label: '6 Bed Share', display: '6 Bed' }
+          ].map((item, index) => {
+            const isActive = filters.beds_per_room === item.value;
+            return (
+              <div 
+                key={index} 
+                className={`quick-filter-item ${isActive ? 'active' : ''}`}
+                onClick={() => setFilters(prev => ({ ...prev, beds_per_room: item.value }))}
+              >
+                {/* Circle Container */}
+                <div className="quick-filter-circle">
+                  <span className="number">
+                    {item.display.split(' ')[0]}
+                  </span>
+                  {item.display.split(' ')[1] && (
+                    <span className="label-sub">
+                      {item.display.split(' ')[1]}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Text Label */}
+                <span className="quick-filter-label">
+                  {item.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Grid List */}
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50vh', gap: '2rem' }}>

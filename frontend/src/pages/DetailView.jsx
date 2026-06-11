@@ -38,6 +38,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   
   // Like states
   const [liked, setLiked] = useState(false);
@@ -298,12 +299,56 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
       {/* Interactive Gallery Layout */}
       {/* Asymmetric grid: large photo left, two stacked thumbnails right */}
       <div className="gallery-layout">
-        <div className="gallery-main" onClick={() => openLightbox(0)}>
-          <img src={photos[0]} alt="Primary View" className="gallery-img" loading="lazy" />
+        <div className="gallery-main" onClick={() => openLightbox(activePhotoIndex)}>
+          <img src={photos[activePhotoIndex]} alt="Main View" className="gallery-img" loading="lazy" />
+          
+          {/* Mobile/Tablet Controls: Dots and Arrows */}
+          {photos.length > 1 && (
+            <>
+              {/* Prev / Next Arrows */}
+              <button 
+                className="gallery-nav-btn prev"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActivePhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
+                }}
+                aria-label="Previous Photo"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button 
+                className="gallery-nav-btn next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActivePhotoIndex((prev) => (prev + 1) % photos.length);
+                }}
+                aria-label="Next Photo"
+              >
+                <ChevronRight size={18} />
+              </button>
+
+              {/* Navigation Dots */}
+              <div className="gallery-dots">
+                {photos.map((_, idx) => (
+                  <span 
+                    key={idx}
+                    className={`gallery-dot ${activePhotoIndex === idx ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActivePhotoIndex(idx);
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
         
         <div className="gallery-thumb-grid">
-          <div className="gallery-img-box" onClick={() => openLightbox(1 % photos.length)}>
+          <div 
+            className={`gallery-img-box ${activePhotoIndex === 1 % photos.length ? 'active' : ''}`} 
+            onClick={(e) => { e.stopPropagation(); setActivePhotoIndex(1 % photos.length); }}
+          >
             <img 
               src={photos[1 % photos.length]} 
               alt="Thumbnail 1" 
@@ -313,7 +358,10 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
             />
           </div>
           
-          <div className="gallery-img-box" onClick={() => openLightbox(2 % photos.length)}>
+          <div 
+            className={`gallery-img-box ${activePhotoIndex === 2 % photos.length ? 'active' : ''}`} 
+            onClick={(e) => { e.stopPropagation(); setActivePhotoIndex(2 % photos.length); }}
+          >
             <img 
               src={photos[2 % photos.length]} 
               alt="Thumbnail 2" 
@@ -322,7 +370,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               onError={(e) => { e.target.src = photos[0]; }}
             />
             {photos.length > 3 && (
-              <div className="gallery-more-overlay">
+              <div className="gallery-more-overlay" onClick={(e) => { e.stopPropagation(); openLightbox(3); }}>
                 <span>+{photos.length - 3}</span>
                 <span style={{ fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', marginTop: '0.2rem' }}>More Photos</span>
               </div>

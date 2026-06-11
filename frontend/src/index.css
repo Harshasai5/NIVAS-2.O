@@ -97,6 +97,16 @@ button, input, select, textarea {
   50% { box-shadow: 0 0 25px rgba(99, 102, 241, 0.35); }
 }
 
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.avail-pulse-dot {
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
 .animate-fade {
   animation: fadeIn 0.4s ease-out forwards;
 }
@@ -220,10 +230,7 @@ button, input, select, textarea {
 }
 
 .banner-slide::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(10, 10, 12, 0.95) 15%, rgba(10, 10, 12, 0.4) 60%, rgba(10, 10, 12, 0) 100%);
+  display: none;
 }
 
 .banner-content {
@@ -321,13 +328,13 @@ button, input, select, textarea {
   width: 10px;
   height: 10px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: var(--transition);
 }
 
 .banner-dot.active {
-  background: var(--primary);
+  background: #ffffff;
   width: 24px;
 }
 
@@ -335,7 +342,7 @@ button, input, select, textarea {
 .section-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   margin-bottom: 1.5rem;
   padding: 0 5%;
 }
@@ -359,18 +366,24 @@ button, input, select, textarea {
 }
 
 .section-action {
-  color: var(--primary);
-  font-weight: 600;
-  display: flex;
+  background: var(--primary);
+  color: white !important;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: var(--transition);
+  box-shadow: 0 4px 10px var(--primary-glow);
 }
 
 .section-action:hover {
-  color: var(--primary-hover);
-  transform: translateX(3px);
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px var(--primary-glow);
 }
 
 /* HORIZONTAL SCROLL CAROUSELS (MOBILE RESPONSIVE STYLE) */
@@ -2164,3 +2177,196 @@ button, input, select, textarea {
   font-weight: 700 !important;
 }
 
+/* QUICK SHARING FILTERS SECTION */
+.quick-filters-container {
+  display: flex;
+  gap: 1.75rem;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  padding: 0.5rem 0.25rem 0.75rem 0.25rem;
+  overflow-x: auto;
+  width: 100%;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.quick-filters-container::-webkit-scrollbar {
+  display: none; /* Safari/Chrome */
+}
+
+.quick-filter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-filter-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.quick-filter-circle .number {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.quick-filter-circle .label-sub {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+  margin-top: 0.05rem;
+}
+
+.quick-filter-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+/* Active State Styles */
+.quick-filter-item.active .quick-filter-circle {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 8px 20px var(--primary-glow);
+  transform: scale(1.05);
+}
+
+.quick-filter-item.active .quick-filter-circle .label-sub {
+  opacity: 0.9;
+}
+
+.quick-filter-item.active .quick-filter-label {
+  color: var(--primary);
+}
+
+/* Hover States for Inactive Items */
+.quick-filter-item:not(.active):hover .quick-filter-circle {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px var(--primary-glow);
+}
+
+.quick-filter-item:not(.active):hover .quick-filter-label {
+  color: var(--primary);
+}
+
+/* INTERACTIVE PHOTO GALLERY SLIDER */
+.gallery-main {
+  position: relative;
+  overflow: hidden;
+}
+
+.gallery-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(4px);
+  padding: 0;
+}
+
+.gallery-nav-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.gallery-nav-btn.prev {
+  left: 0.75rem;
+}
+
+.gallery-nav-btn.next {
+  right: 0.75rem;
+}
+
+.gallery-dots {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.45rem;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.3);
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(4px);
+}
+
+.gallery-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-dot.active {
+  background: #ffffff;
+  width: 18px;
+  border-radius: var(--radius-full);
+}
+
+/* Gallery main hover controls on desktop */
+@media (min-width: 768px) {
+  .gallery-nav-btn {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0.95);
+  }
+  .gallery-main:hover .gallery-nav-btn {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(-50%) scale(1);
+  }
+  .gallery-dots {
+    display: none; /* Thumbnails are visible on desktop */
+  }
+  
+  /* Selected active thumbnail border styling */
+  .gallery-img-box {
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+  }
+  .gallery-img-box.active {
+    border-color: var(--primary);
+    transform: scale(0.98);
+  }
+}
