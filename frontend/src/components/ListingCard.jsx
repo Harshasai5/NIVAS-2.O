@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Sparkles, MapPin, Wind, UserCheck, PhoneCall, Heart, Share2 } from 'lucide-react';
+import { Shield, Sparkles, MapPin, Wind, UserCheck, PhoneCall, Bookmark, Share2 } from 'lucide-react';
 
 export default function ListingCard({ item, type, onClick, triggerLike, triggerShare }) {
   // Extract fields based on type
@@ -52,13 +52,6 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
       style={{ border: '1px solid var(--border)', cursor: 'pointer' }}
       onClick={onClick}
     >
-      {isSponsored && (
-        <div className="card-sponsor-badge">
-          <Sparkles size={12} />
-          <span>Featured</span>
-        </div>
-      )}
-
       <div className="card-image-wrapper">
         <img 
           src={photoUrl} 
@@ -69,42 +62,6 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
             e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=600&auto=format&fit=cover';
           }}
         />
-
-        {/* Available Beds Badge */}
-        {availableBeds !== undefined && availableBeds !== null && (
-          <div 
-            className="card-avail-badge" 
-            style={{ 
-              position: 'absolute', 
-              top: '1rem', 
-              left: isSponsored ? '6.8rem' : '1rem', 
-              background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--girls-color)', 
-              color: 'white', 
-              padding: '0.3rem 0.7rem', 
-              borderRadius: 'var(--radius-full)', 
-              fontSize: '0.72rem', 
-              fontWeight: 700, 
-              zIndex: 10, 
-              backdropFilter: 'blur(5px)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.3rem',
-              boxShadow: 'var(--shadow-sm)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.02em'
-            }}
-          >
-            <span className="avail-pulse-dot" style={{ 
-              display: 'inline-block', 
-              width: '6px', 
-              height: '6px', 
-              borderRadius: '50%', 
-              background: 'white', 
-              opacity: 0.9 
-            }} />
-            <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'Filled'}</span>
-          </div>
-        )}
 
         {/* Gender Badge */}
         <div className={`card-gender-badge gender-${gender}`}>
@@ -147,10 +104,89 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
             </span>
           </div>
           
-          <div className="card-price-row">
-            <span className="card-price">₹{Math.round(price)}</span>
-            <span className="card-price-label">{priceLabel}</span>
-          </div>
+          {type === 'hostel' ? (
+            <div className="card-hostel-info-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              {/* Beds Left */}
+              {availableBeds !== undefined && availableBeds !== null ? (
+                <div 
+                  className="card-avail-badge" 
+                  style={{ 
+                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--girls-color)', 
+                    color: 'white', 
+                    padding: '0.25rem 0.6rem', 
+                    borderRadius: 'var(--radius-full)', 
+                    fontSize: '0.72rem', 
+                    fontWeight: 700, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.25rem',
+                    boxShadow: 'var(--shadow-sm)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.02em',
+                    flexShrink: 0
+                  }}
+                >
+                  <span className="avail-pulse-dot" style={{ 
+                    display: 'inline-block', 
+                    width: '5px', 
+                    height: '5px', 
+                    borderRadius: '50%', 
+                    background: 'white', 
+                    opacity: 0.9 
+                  }} />
+                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'Filled'}</span>
+                </div>
+              ) : (
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Status N/A</div>
+              )}
+
+              {/* Installments */}
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                {item.installments && item.installments > 0 
+                  ? `${item.installments} Installments` 
+                  : '1 Installment'}
+              </div>
+            </div>
+          ) : (
+            /* Normal pricing for Rooms */
+            <div className="card-price-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                <span className="card-price">₹{Math.round(price)}</span>
+                <span className="card-price-label">{priceLabel}</span>
+              </div>
+              
+              {availableBeds !== undefined && availableBeds !== null && (
+                <div 
+                  className="card-avail-badge" 
+                  style={{ 
+                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--girls-color)', 
+                    color: 'white', 
+                    padding: '0.25rem 0.6rem', 
+                    borderRadius: 'var(--radius-full)', 
+                    fontSize: '0.68rem', 
+                    fontWeight: 700, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.25rem',
+                    boxShadow: 'var(--shadow-sm)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.02em',
+                    flexShrink: 0
+                  }}
+                >
+                  <span className="avail-pulse-dot" style={{ 
+                    display: 'inline-block', 
+                    width: '5px', 
+                    height: '5px', 
+                    borderRadius: '50%', 
+                    background: 'white', 
+                    opacity: 0.9 
+                  }} />
+                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'Filled'}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="card-facilities">
             {item.facilities && item.facilities.slice(0, 3).map((fac, idx) => (
@@ -162,10 +198,10 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
           </div>
         </div>
 
-        {/* Updated metadata row with Like & Share actions */}
+        {/* Updated metadata row with Save & Share actions */}
         <div className="card-meta-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
           <div className="card-beds" style={{ fontSize: '0.78rem', display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-            <span>Beds: {beds} sharing</span>
+            <span>{beds} sharing</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -174,7 +210,7 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: liked ? '#f87171' : 'var(--text-muted)',
+                color: liked ? 'var(--primary)' : 'var(--text-muted)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -184,10 +220,10 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
               }}
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              title={type === 'hostel' ? "Like Hostel" : "Like Room"}
+              title={type === 'hostel' ? "Save Hostel" : "Save Room"}
             >
-              <Heart size={16} fill={liked ? '#f87171' : 'transparent'} />
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: liked ? '#f87171' : 'var(--text-muted)' }}>{likesCount}</span>
+              <Bookmark size={16} fill={liked ? 'var(--primary)' : 'transparent'} />
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: liked ? 'var(--primary)' : 'var(--text-muted)' }}>{liked ? 'Saved' : 'Save'}</span>
             </button>
 
             <button 

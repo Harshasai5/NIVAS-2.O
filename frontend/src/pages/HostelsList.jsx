@@ -157,9 +157,9 @@ export default function HostelsList({
         <div className="quick-filters-container">
           {[
             { value: '', label: 'All Sharing', display: 'All' },
-            { value: '3', label: '3 Bed Share', display: '3 Bed' },
-            { value: '4', label: '4 Bed Share', display: '4 Bed' },
-            { value: '6', label: '6 Bed Share', display: '6 Bed' }
+            { value: '3', label: '3 members per room', display: '3 Sharing' },
+            { value: '4', label: '4 members per room', display: '4 Sharing' },
+            { value: '6', label: '6 members per room', display: '6 Sharing' }
           ].map((item, index) => {
             const isActive = filters.beds_per_room === item.value;
             return (

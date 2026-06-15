@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { ArrowLeft, MapPin, Phone, Wind, UserCheck, CheckCircle2, AlertTriangle, MessageSquare, ChevronLeft, ChevronRight, X, Map, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Wind, UserCheck, CheckCircle2, AlertTriangle, MessageSquare, ChevronLeft, ChevronRight, X, Map, Bookmark, Share2 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import logoImg from '../assets/logo.jpeg';
 
@@ -219,7 +219,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               </span>
             )}
 
-            {/* Like and Share Actions */}
+            {/* Save and Share Actions */}
             <div className="detail-actions-inline" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
               <button
                 onClick={handleLikeClick}
@@ -227,23 +227,23 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.4rem',
-                  background: liked ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 0, 0, 0.02)',
+                  background: liked ? 'rgba(99, 102, 241, 0.15)' : 'rgba(0, 0, 0, 0.02)',
                   border: '1px solid',
-                  borderColor: liked ? 'rgba(239, 68, 68, 0.3)' : 'var(--border)',
+                  borderColor: liked ? 'rgba(99, 102, 241, 0.3)' : 'var(--border)',
                   borderRadius: 'var(--radius-full)',
                   padding: '0.5rem 1rem',
-                  color: liked ? '#ef4444' : 'var(--text-secondary)',
+                  color: liked ? 'var(--primary)' : 'var(--text-secondary)',
                   fontWeight: 700,
                   fontSize: '0.85rem',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   boxShadow: 'var(--shadow-sm)'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = liked ? '#ef4444' : 'var(--primary)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = liked ? 'rgba(239, 68, 68, 0.3)' : 'var(--border)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = liked ? 'rgba(99, 102, 241, 0.3)' : 'var(--border)'; }}
               >
-                <Heart size={16} fill={liked ? '#ef4444' : 'transparent'} />
-                <span>{likesCount} Likes</span>
+                <Bookmark size={16} fill={liked ? 'var(--primary)' : 'transparent'} />
+                <span>{liked ? 'Saved' : 'Save'}</span>
               </button>
 
               <button
@@ -271,23 +271,53 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               </button>
             </div>
           </div>
-          
-          <div className="detail-address-row" style={{ marginTop: '0.75rem' }}>
-            <GoogleMapsIcon size={18} />
-            <span>{item.address || 'Near SRKR College, Bhimavaram'}</span>
-            {distance !== null && (
-              <span style={{ color: 'var(--unisex-color)', fontWeight: 700 }}>• {distance} km to SRKR Engineering College</span>
-            )}
-          </div>
         </div>
 
         <div className="detail-pricing-col">
-          <div className="detail-price-box">
-            <div className="beds-label" style={{ marginBottom: '0.2rem' }}>Starting Price</div>
-            <div className="detail-price-amt">₹{Math.round(price)}</div>
-            <div className="beds-label" style={{ marginTop: '0.2rem' }}>{priceLabel}</div>
+          <div className="detail-price-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            {type === 'hostel' ? (
+              <>
+                <div className="beds-label" style={{ marginBottom: '0.4rem', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Occupancy Status</div>
+                <div 
+                  className="card-avail-badge" 
+                  style={{ 
+                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--girls-color)', 
+                    color: 'white', 
+                    padding: '0.35rem 0.75rem', 
+                    borderRadius: 'var(--radius-full)', 
+                    fontSize: '0.8rem', 
+                    fontWeight: 700, 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '0.3rem',
+                    boxShadow: 'var(--shadow-sm)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.02em',
+                    margin: '0.15rem 0 0.35rem 0'
+                  }}
+                >
+                  <span className="avail-pulse-dot" style={{ 
+                    display: 'inline-block', 
+                    width: '6px', 
+                    height: '6px', 
+                    borderRadius: '50%', 
+                    background: 'white', 
+                    opacity: 0.9 
+                  }} />
+                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'Filled'}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="beds-label" style={{ marginBottom: '0.2rem' }}>Starting Price</div>
+                <div className="detail-price-amt">₹{Math.round(price)}</div>
+                <div className="beds-label" style={{ marginTop: '0.2rem' }}>{priceLabel}</div>
+              </>
+            )}
+            
             {type === 'hostel' && item.installments !== undefined && item.installments > 0 && (
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.65rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+              <div style={{ width: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.65rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700 }}>Fee Division</span>
                 <span style={{ fontWeight: 600, color: 'var(--unisex-color)' }}>{item.installments} {item.installments === 1 ? 'installment' : 'installments'} to pay</span>
               </div>
@@ -525,7 +555,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               <div className="beds-label">Room Sharing</div>
               <div className="beds-value-row">
                 <span className="beds-val-large">{beds}</span>
-                <span className="beds-label" style={{ color: 'var(--text-secondary)' }}>bed sharing</span>
+                <span className="beds-label" style={{ color: 'var(--text-secondary)' }}>members per room</span>
               </div>
             </div>
 

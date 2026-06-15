@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Hotel, Key, ShieldAlert, Sparkles, Menu, X, User, LogOut, LogIn, Heart } from 'lucide-react';
+import { Home, Hotel, Key, ShieldAlert, Sparkles, Menu, X, User, LogOut, LogIn, Bookmark } from 'lucide-react';
 import logoImg from '../assets/logo.jpeg';
 
 export default function Navbar({ activePage, setPage, adminToken, logoutAdmin, userEmail, userUsername, logoutUser, openLoginModal }) {
@@ -67,8 +67,8 @@ export default function Navbar({ activePage, setPage, adminToken, logoutAdmin, u
               className={`nav-item ${activePage === 'likes' ? 'active' : ''}`}
               onClick={() => navigateTo('likes')}
             >
-              <Heart size={18} fill={activePage === 'likes' ? 'var(--primary)' : 'transparent'} />
-              <span>Liked</span>
+              <Bookmark size={18} fill={activePage === 'likes' ? 'var(--primary)' : 'transparent'} />
+              <span>Saved</span>
             </div>
           )}
         </nav>
@@ -295,8 +295,8 @@ export default function Navbar({ activePage, setPage, adminToken, logoutAdmin, u
                       transition: 'all 0.2s'
                     }}
                   >
-                    <Heart size={12} fill={activePage === 'likes' ? 'var(--primary)' : 'transparent'} />
-                    <span>Liked</span>
+                    <Bookmark size={12} fill={activePage === 'likes' ? 'var(--primary)' : 'transparent'} />
+                    <span>Saved</span>
                   </button>
                   <button 
                     onClick={() => {

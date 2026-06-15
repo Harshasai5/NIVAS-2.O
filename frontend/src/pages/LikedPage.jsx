@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, ArrowLeft, Inbox, Hotel, Key } from 'lucide-react';
+import { Bookmark, ArrowLeft, Inbox, Hotel, Key } from 'lucide-react';
 import ListingCard from '../components/ListingCard';
 import { API_BASE_URL } from '../config';
 import logoImg from '../assets/logo.jpeg';
@@ -91,8 +91,8 @@ export default function LikedPage({
         </button>
 
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Heart size={28} fill="#f87171" style={{ color: '#f87171' }} />
-          <span>Liked</span>
+          <Bookmark size={28} fill="var(--primary)" style={{ color: 'var(--primary)' }} />
+          <span>Saved Stays</span>
         </h1>
       </div>
 
@@ -124,10 +124,10 @@ export default function LikedPage({
       ) : bothEmpty ? (
         /* Both empty Fallback State */
         <div className="no-results" style={{ padding: '4rem 1.5rem', margin: '1rem 0' }}>
-          <Heart size={48} className="no-results-icon" style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
-          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.35rem', fontWeight: 700, margin: '0.75rem 0 0.5rem 0' }}>no liked hostels and rooms</h3>
+          <Bookmark size={48} className="no-results-icon" style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.35rem', fontWeight: 700, margin: '0.75rem 0 0.5rem 0' }}>No saved hostels and rooms</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '380px', margin: '0 auto 1.5rem auto', lineHeight: '1.5' }}>
-            You haven't liked any listings yet. Explore properties and tap the heart icon to save them here.
+            You haven't saved any listings yet. Explore properties and tap the bookmark icon to save them here.
           </p>
           <button onClick={() => setPage('home')} className="nav-button" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
             <ArrowLeft size={16} />
@@ -197,10 +197,10 @@ export default function LikedPage({
             <div className="no-results" style={{ padding: '3.5rem 1.5rem', border: '1px dashed var(--border)' }}>
               <Inbox size={40} className="no-results-icon" style={{ opacity: 0.6 }} />
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 700, margin: '0.5rem 0 0.25rem 0' }}>
-                {activeTab === 'hostels' ? 'No liked hostels' : 'No liked rooms'}
+                {activeTab === 'hostels' ? 'No saved hostels' : 'No saved rooms'}
               </h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', maxWidth: '320px', margin: '0 auto 1.5rem auto' }}>
-                You haven't added any {activeTab === 'hostels' ? 'hostels' : 'rooms/PGs'} to your liked list yet.
+                You haven't added any {activeTab === 'hostels' ? 'hostels' : 'rooms/PGs'} to your saved list yet.
               </p>
               <button onClick={() => setPage(activeTab)} className="nav-button" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', padding: '0.5rem 1rem' }}>
                 <span>Browse {activeTab === 'hostels' ? 'Hostels' : 'PG & Rooms'}</span>

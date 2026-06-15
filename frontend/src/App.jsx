@@ -1,9 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, ArrowRight } from 'lucide-react';
 import Navbar from './components/Navbar';
+
+const LinkedinIcon = ({ size = 16, className }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect x="2" y="9" width="4" height="12" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
+import deepakImg from './assets/deepak.png';
+import revanthImg from './assets/revanth.png';
+import harshaImg from './assets/harsha.jpg';
+import sudarsanImg from './assets/sudarsan.png';
 import Home from './pages/Home';
-import HostelsList from './pages/HostelsList';
 import RoomsList from './pages/RoomsList';
+import HostelsList from './pages/HostelsList';
 import DetailView from './pages/DetailView';
 import AdminLogin from './pages/AdminLogin';
 import AdminRegister from './pages/AdminRegister';
@@ -391,9 +414,201 @@ export default function App() {
       </main>
 
       {/* Clean elegant footer */}
-      <footer style={{ background: 'var(--bg-card)', borderTop: '1px solid var(--border)', padding: '2rem 5%', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 'auto' }}>
-        <p>© 2026 Nivas Accommodations. developed by KaliX technologies</p>
-        <p style={{ marginTop: '0.25rem', fontSize: '0.75rem' }}>- SRKR Students.</p>
+      <footer style={{ 
+        background: 'var(--bg-card)', 
+        borderTop: '1px solid var(--border)', 
+        padding: '3rem 5%', 
+        color: 'var(--text-secondary)', 
+        fontSize: '0.85rem', 
+        marginTop: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2.5rem'
+      }}>
+        {/* Footer Top Header */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>Meet the Team</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>The developers and designers behind Nivas Accommodations</p>
+        </div>
+
+        {/* Team Scroll Container */}
+        <div 
+          className="scroll-container" 
+          style={{ 
+            width: '100%', 
+            maxWidth: '1200px', 
+            margin: '0 auto',
+            padding: '1rem 0.5rem',
+            display: 'flex',
+            gap: '1.5rem',
+            overflowX: 'auto'
+          }}
+        >
+          {[
+            {
+              name: "Pabolu Sai Harsha",
+              initials: "PH",
+              image: harshaImg,
+              role: "Ideate, Research & Development",
+              linkedin: "https://www.linkedin.com/in/sai-harsha-pabolu-84b361310"
+            },
+            {
+              name: "Madabhushi Sri Ranga Sudarsan",
+              initials: "MS",
+              image: sudarsanImg,
+              role: "Software Development & Data Collection",
+              linkedin: "https://www.linkedin.com/in/sudarsan-madabhushi-448994351?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+            },
+            {
+              name: "Boddeti Devi Naga Venkata Sai Deepak",
+              initials: "BD",
+              image: deepakImg,
+              role: "UI/UX Designer & Software Developer",
+              linkedin: "https://www.linkedin.com/in/deepakboddeti/"
+            },
+            {
+              name: "Karri Revanth Ratan Reddy",
+              initials: "KR",
+              image: revanthImg,
+              role: "Technical Support & Data Structuring",
+              linkedin: "https://www.linkedin.com/in/revanth-ratan-reddy-karri-139aab2a4"
+            }
+          ].map((member, idx) => (
+            <div 
+              key={idx} 
+              className="glass" 
+              style={{ 
+                minWidth: '260px', 
+                maxWidth: '280px', 
+                padding: '1.75rem', 
+                borderRadius: 'var(--radius-md)', 
+                border: '1px solid var(--border)',
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                textAlign: 'center',
+                gap: '0.75rem',
+                transition: 'all 0.3s ease-in-out',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(99, 102, 241, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              {/* Circular Profile Avatar Image or Initials */}
+              {member.image ? (
+                <img 
+                  src={member.image} 
+                  alt={member.name}
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
+                    border: '2px solid rgba(255, 255, 255, 0.25)',
+                    marginBottom: '0.25rem'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--primary), var(--unisex-color))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 800,
+                  fontSize: '1.25rem',
+                  boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
+                  border: '2px solid rgba(255, 255, 255, 0.25)',
+                  marginBottom: '0.25rem'
+                }}>
+                  {member.initials}
+                </div>
+              )}
+
+              <h4 style={{ 
+                fontFamily: 'var(--font-display)', 
+                fontSize: '1rem', 
+                fontWeight: 700, 
+                color: 'var(--text-primary)',
+                margin: 0 
+              }}>
+                {member.name}
+              </h4>
+              <p style={{ 
+                color: 'var(--text-muted)', 
+                fontSize: '0.75rem', 
+                textTransform: 'uppercase', 
+                fontWeight: 700, 
+                letterSpacing: '0.04em',
+                margin: 0,
+                lineHeight: '1.4'
+              }}>
+                {member.role}
+              </p>
+              <a 
+                href={member.linkedin} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ 
+                  color: '#0077b5', 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  padding: '0.45rem',
+                  borderRadius: '50%',
+                  background: 'rgba(0, 119, 181, 0.08)',
+                  border: '1px solid rgba(0, 119, 181, 0.25)',
+                  transition: 'all 0.2s ease-in-out',
+                  marginTop: '0.25rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#ffffff';
+                  e.currentTarget.style.borderColor = '#0077b5';
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.background = '#0077b5';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#0077b5';
+                  e.currentTarget.style.borderColor = 'rgba(0, 119, 181, 0.25)';
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.background = 'rgba(0, 119, 181, 0.08)';
+                }}
+                title={`Connect with ${member.name} on LinkedIn`}
+                aria-label={`LinkedIn Profile for ${member.name}`}
+              >
+                <LinkedinIcon size={16} />
+              </a>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer Bottom copyright */}
+        <div style={{ 
+          borderTop: '1px solid var(--border)', 
+          paddingTop: '1.5rem', 
+          textAlign: 'center', 
+          color: 'var(--text-muted)', 
+          fontSize: '0.78rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem'
+        }}>
+          <p>© 2026 Nivas Accommodations. developed by KaliX technologies</p>
+          <p style={{ fontSize: '0.72rem' }}>- Proudly created by SRKR Students.</p>
+        </div>
       </footer>
 
       {/* Global ad pop-up overlay (no ads on admin pages) */}
@@ -496,8 +711,8 @@ function AdPopup({ banners }) {
           width: '100%',
           maxWidth: '550px',
           borderRadius: 'var(--radius-lg)',
-          border: '1px solid rgba(239, 68, 68, 0.25)',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.35)',
+          border: '1px solid var(--border)',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.15)',
           background: '#ffffff',
           padding: '2.5rem 2rem',
           animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -513,9 +728,9 @@ function AdPopup({ banners }) {
                 position: 'absolute',
                 top: '0.85rem',
                 right: '0.85rem',
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                color: '#ef4444',
+                background: 'rgba(0, 0, 0, 0.05)',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                color: '#000000',
                 borderRadius: '50%',
                 width: '2.2rem',
                 height: '2.2rem',
@@ -526,8 +741,8 @@ function AdPopup({ banners }) {
                 zIndex: 100,
                 transition: 'all 0.2s ease-in-out'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)'; e.currentTarget.style.transform = 'scale(1)'; }}
               title="Close Note"
               aria-label="Close Note"
             >
@@ -535,65 +750,56 @@ function AdPopup({ banners }) {
             </button>
           )}
 
-          {/* English Note Section */}
-          <div style={{ color: '#ef4444', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <h3 style={{ 
-              fontSize: '1.25rem', 
-              fontWeight: 800, 
-              fontFamily: 'var(--font-display)', 
-              textTransform: 'uppercase', 
-              letterSpacing: '0.03em', 
-              margin: 0,
-              color: '#ef4444'
-            }}>
-              Remember these points before use:
-            </h3>
-            <ul style={{ 
-              margin: 0, 
-              paddingLeft: '1.2rem', 
-              fontSize: '0.95rem', 
-              fontWeight: 600, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '0.5rem',
-              lineHeight: '1.4',
-              color: '#ef4444',
-              listStyleType: 'decimal'
-            }}>
-              <li>Contact owner before visiting the hostel.</li>
-              <li>The prices may differ from the website to original.</li>
-            </ul>
-          </div>
+          {/* English & Telugu Note Section */}
+          <div style={{ color: '#000000', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div>
+              <h3 style={{ 
+                fontSize: '1.15rem', 
+                fontWeight: 800, 
+                fontFamily: 'var(--font-display)', 
+                textTransform: 'uppercase', 
+                letterSpacing: '0.03em', 
+                margin: '0 0 0.5rem 0',
+                color: 'var(--primary)'
+              }}>
+                Please Note / గమనిక:
+              </h3>
+              <ul style={{ 
+                margin: 0, 
+                paddingLeft: '1.2rem', 
+                fontSize: '0.95rem', 
+                fontWeight: 600, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '0.4rem',
+                lineHeight: '1.4',
+                color: '#1e293b',
+                listStyleType: 'decimal'
+              }}>
+                <li>Contact hostel owner for price details.</li>
+                <li>Inform hostel owner before visiting hostel.</li>
+              </ul>
+            </div>
 
-          {/* Divider */}
-          <div style={{ borderTop: '1px dashed rgba(239, 68, 68, 0.2)' }} />
+            <div style={{ borderTop: '1px solid var(--border)' }}></div>
 
-          {/* Telugu Note Section */}
-          <div style={{ color: '#ef4444', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              fontWeight: 800, 
-              margin: 0,
-              lineHeight: '1.4',
-              color: '#ef4444'
-            }}>
-              ఉపయోగించే ముందు ఈ పాయింట్లను గుర్తుంచుకోండి:
-            </h3>
-            <ul style={{ 
-              margin: 0, 
-              paddingLeft: '1.2rem', 
-              fontSize: '0.95rem', 
-              fontWeight: 600, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '0.5rem',
-              lineHeight: '1.5',
-              color: '#ef4444',
-              listStyleType: 'decimal'
-            }}>
-              <li>హాస్టల్ సందర్శించే ముందు యజమానిని సంప్రదించండి.</li>
-              <li>వెబ్సైట్ లో ధరలకు మరియు అసలు ధరలకు తేడా ఉండవచ్చు.</li>
-            </ul>
+            <div>
+              <ul style={{ 
+                margin: 0, 
+                paddingLeft: '1.2rem', 
+                fontSize: '0.95rem', 
+                fontWeight: 600, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '0.4rem',
+                lineHeight: '1.5',
+                color: '#1e293b',
+                listStyleType: 'decimal'
+              }}>
+                <li>హాస్టల్ యజమానిని సంప్రదించి ధరల వివరాలు తెలుసుకోండి.</li>
+                <li>హాస్టల్కు వెళ్లే ముందు హాస్టల్ యజమానికి తెలియజేయండి.</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -622,7 +828,7 @@ function AdPopup({ banners }) {
       <div className="glass" style={{
         position: 'relative',
         width: '100%',
-        maxWidth: isMobile ? '100%' : '800px',
+        maxWidth: isMobile ? '100%' : '1600px',
         borderRadius: 'var(--radius-lg)',
         overflow: 'hidden',
         border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -664,7 +870,7 @@ function AdPopup({ banners }) {
           style={{ display: 'block', width: '100%', textDecoration: 'none' }}
           onClick={() => setIsOpen(false)}
         >
-          <div style={{ position: 'relative', width: '100%', aspectRatio: isMobile ? '4 / 3' : '1600 / 750', minHeight: isMobile ? '260px' : 'auto', maxHeight: '350px', overflow: 'hidden' }}>
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '2 / 1', overflow: 'hidden' }}>
             <img 
               src={activeBanner.banner_image.startsWith('http') ? activeBanner.banner_image : `/${activeBanner.banner_image}`} 
               alt={activeBanner.title || 'Advertisement'} 
