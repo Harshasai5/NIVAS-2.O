@@ -202,7 +202,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
               <span>Hostels</span>
             </h2>
             <div className="section-action" onClick={() => setPage('hostels')}>
-              <span>View All Hostels</span>
+              <span>View All</span>
               <ArrowRight size={16} />
             </div>
           </div>
@@ -236,7 +236,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
               <span>Rental PG & Rooms</span>
             </h2>
             <div className="section-action" onClick={() => setPage('rooms')}>
-              <span>View All Rooms</span>
+              <span>View All</span>
               <ArrowRight size={16} />
             </div>
           </div>
