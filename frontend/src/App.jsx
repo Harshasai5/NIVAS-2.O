@@ -751,7 +751,7 @@ function AdPopup({ banners }) {
           )}
 
           {/* English & Telugu Note Section */}
-          <div style={{ color: '#000000', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ color: '#000000', display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'center' }}>
             <div>
               <h3 style={{ 
                 fontSize: '1.15rem', 
@@ -760,21 +760,23 @@ function AdPopup({ banners }) {
                 textTransform: 'uppercase', 
                 letterSpacing: '0.03em', 
                 margin: '0 0 0.5rem 0',
-                color: 'var(--primary)'
+                color: 'var(--primary)',
+                textAlign: 'center'
               }}>
-                Please Note / గమనిక:
+                Note / గమనిక:
               </h3>
               <ul style={{ 
                 margin: 0, 
-                paddingLeft: '1.2rem', 
+                padding: 0, 
                 fontSize: '0.95rem', 
                 fontWeight: 600, 
                 display: 'flex', 
                 flexDirection: 'column', 
-                gap: '0.4rem',
+                gap: '0.5rem',
                 lineHeight: '1.4',
                 color: '#1e293b',
-                listStyleType: 'decimal'
+                listStyleType: 'none',
+                textAlign: 'center'
               }}>
                 <li>Contact hostel owner for price details.</li>
                 <li>Inform hostel owner before visiting hostel.</li>
@@ -786,15 +788,16 @@ function AdPopup({ banners }) {
             <div>
               <ul style={{ 
                 margin: 0, 
-                paddingLeft: '1.2rem', 
+                padding: 0, 
                 fontSize: '0.95rem', 
                 fontWeight: 600, 
                 display: 'flex', 
                 flexDirection: 'column', 
-                gap: '0.4rem',
+                gap: '0.5rem',
                 lineHeight: '1.5',
                 color: '#1e293b',
-                listStyleType: 'decimal'
+                listStyleType: 'none',
+                textAlign: 'center'
               }}>
                 <li>హాస్టల్ యజమానిని సంప్రదించి ధరల వివరాలు తెలుసుకోండి.</li>
                 <li>హాస్టల్కు వెళ్లే ముందు హాస్టల్ యజమానికి తెలియజేయండి.</li>

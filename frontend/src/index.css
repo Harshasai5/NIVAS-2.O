@@ -390,6 +390,7 @@ button:active {
   cursor: pointer;
   transition: var(--transition);
   box-shadow: 0 4px 10px var(--primary-glow);
+  flex-shrink: 0;
 }
 
 .section-action:hover {
@@ -1777,6 +1778,11 @@ button:active {
 }
 
 @media (max-width: 767px) {
+  /* Section title text size for mobile view */
+  .section-title {
+    font-size: 1.3rem;
+  }
+
   /* Header adjustments */
   .navbar {
     padding: 1rem 4%;
