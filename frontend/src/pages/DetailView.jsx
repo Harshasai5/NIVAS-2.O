@@ -271,6 +271,13 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               </button>
             </div>
           </div>
+          <div className="detail-address-row" style={{ marginTop: '0.75rem' }}>
+            <GoogleMapsIcon size={18} />
+            <span>{item.address || 'Near SRKR College, Bhimavaram'}</span>
+            {distance !== null && (
+              <span style={{ color: 'var(--unisex-color)', fontWeight: 700 }}>• {distance} km to {item.associated_college || 'SRKR Engineering College'}</span>
+            )}
+          </div>
         </div>
 
         <div className="detail-pricing-col">

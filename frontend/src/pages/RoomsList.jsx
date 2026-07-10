@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Inbox, Filter } from 'lucide-react';
+import { Search, Inbox, Filter, Info } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
 import { API_BASE_URL } from '../config';
@@ -15,12 +15,15 @@ export default function RoomsList({
   initialFilters,
   userToken,
   triggerLike,
-  triggerShare
+  triggerShare,
+  selectedCollege,
+  setSelectedCollege
 }) {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [priceBounds, setPriceBounds] = useState({ minPrice: 0, maxPrice: 10000 });
+  const [showTeluguInfo, setShowTeluguInfo] = useState(false);
 
   const resetFilters = () => {
     setFilters(initialFilters);
@@ -54,6 +57,7 @@ export default function RoomsList({
         if (filters.price_max) params.append('price_max', filters.price_max);
         if (filters.distance_max) params.append('distance_max', filters.distance_max);
         if (filters.beds_per_room) params.append('beds_per_room', filters.beds_per_room);
+        if (filters.associated_college) params.append('associated_college', filters.associated_college);
 
         const headers = {};
         if (userToken) {
@@ -107,8 +111,85 @@ export default function RoomsList({
       {/* Main Listings Column */}
       <div className="grid-listings-wrapper">
         <div className="grid-listings-header">
-          <div className="detail-title-col">
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800 }}>Explore rental house</h1>
+          <div className="detail-title-col" style={{ width: '100%' }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800 }}>
+              Rooms & PGs near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu' : 'SRKR'}
+            </h1>
+            
+            {/* College selector dropdown */}
+            <div style={{ 
+              marginTop: '1rem',
+              marginBottom: '1rem',
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0.4rem',
+              maxWidth: '400px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <label style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  Select your college
+                </label>
+                <button 
+                  onClick={() => setShowTeluguInfo(!showTeluguInfo)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--primary)',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0.2rem',
+                    borderRadius: '50%',
+                    transition: 'background 0.2s',
+                    outline: 'none'
+                  }}
+                  title="to find hostel near ur college"
+                  aria-label="College filter info"
+                >
+                  <Info size={16} />
+                </button>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  to find hostel near ur college
+                </span>
+              </div>
+
+              {showTeluguInfo && (
+                <div style={{ 
+                  background: 'var(--primary-glow)', 
+                  borderLeft: '4px solid var(--primary)', 
+                  padding: '0.5rem 0.75rem', 
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.85rem',
+                  color: 'var(--primary)',
+                  fontWeight: 600,
+                  animation: 'fadeIn 0.3s ease'
+                }}>
+                  మీ కాలేజీకి దగ్గరగా ఉన్న హాస్టల్స్ ని కనుగొనండి
+                </div>
+              )}
+
+              <select
+                value={selectedCollege}
+                onChange={(e) => setSelectedCollege(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.6rem 0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text)',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  outline: 'none',
+                  boxShadow: 'var(--shadow-sm)',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="SRKR Engineering">SRKR Engineering</option>
+                <option value="Vishnu engineering college">Vishnu engineering college</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -164,7 +245,7 @@ export default function RoomsList({
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
-              <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '0.02em' }}>Finding rooms near SRKR...</span>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '0.02em' }}>Finding rooms near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu' : 'SRKR'}...</span>
               <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 500 }}>developed by KaliX</span>
             </div>
             <style>{`

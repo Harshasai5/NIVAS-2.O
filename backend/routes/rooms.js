@@ -60,7 +60,8 @@ router.get('/', optionalUser, async (req, res) => {
     distance_max, 
     beds_per_room,
     available_only, 
-    limit 
+    limit,
+    associated_college
   } = req.query;
 
   const isAdmin = admin === 'true';
@@ -81,6 +82,7 @@ router.get('/', optionalUser, async (req, res) => {
         r.distance_from_srkr, 
         r.status, 
         r.facilities_json,
+        r.associated_college,
         rp.photo AS primary_photo,
         (SELECT COUNT(*) FROM user_interactions WHERE item_id = r.id AND item_type = 'room' AND interaction_type = 'like') AS likes_count,
         ? IS NOT NULL AND EXISTS(SELECT 1 FROM user_interactions WHERE item_id = r.id AND item_type = 'room' AND user_id = ? AND interaction_type = 'like') AS is_liked
@@ -127,6 +129,12 @@ router.get('/', optionalUser, async (req, res) => {
     if (beds_per_room) {
       query += " AND r.beds_per_room = ?";
       params.push(parseInt(beds_per_room));
+    }
+
+    // Associated college name filter
+    if (associated_college) {
+      query += " AND r.associated_college = ?";
+      params.push(associated_college);
     }
 
     // Available only filter
@@ -215,7 +223,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
     facilities,
     rules,
     roomOptions,
-    status
+    status,
+    associated_college
   } = req.body;
 
   if (!room_name || !gender || !price_per_person || !phone) {
@@ -246,8 +255,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
 
     const [result] = await conn.query(
       `INSERT INTO rooms 
-       (room_name, gender, price_per_person, is_ac, beds_per_room, filled_count, available_beds, total_beds, distance_from_srkr, phone, google_maps_link, address, facilities_json, rules_json, status, room_options_json) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (room_name, gender, price_per_person, is_ac, beds_per_room, filled_count, available_beds, total_beds, distance_from_srkr, phone, google_maps_link, address, facilities_json, rules_json, status, room_options_json, associated_college) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         room_name,
         gender,
@@ -264,7 +273,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
         facilities_json,
         rules_json,
         status || 'active',
-        room_options_json
+        room_options_json,
+        associated_college || 'SRKR Engineering'
       ]
     );
 
@@ -321,7 +331,8 @@ router.put('/:id', verifyAdmin, async (req, res) => {
     facilities,
     rules,
     roomOptions,
-    status
+    status,
+    associated_college
   } = req.body;
 
   try {
@@ -361,7 +372,8 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         facilities_json = ?, 
         rules_json = ?, 
         status = ?,
-        room_options_json = ? 
+        room_options_json = ?,
+        associated_college = ?
       WHERE id = ?`,
       [
         room_name !== undefined ? room_name : existing[0].room_name,
@@ -380,6 +392,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         rules_json,
         status !== undefined ? status : existing[0].status,
         room_options_json,
+        associated_college !== undefined ? associated_college : existing[0].associated_college,
         id
       ]
     );

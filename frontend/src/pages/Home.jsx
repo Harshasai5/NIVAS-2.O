@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, ArrowRight, Hotel, Key, MapPin, Navigation, X } from 'lucide-react';
+import { Sparkles, ArrowRight, Hotel, Key, MapPin, Navigation, X, Info } from 'lucide-react';
 import HeroBanner from '../components/HeroBanner';
 import SponsoredHostels from '../components/SponsoredHostels';
 import ListingCard from '../components/ListingCard';
 import { API_BASE_URL } from '../config';
 import logoImg from '../assets/logo.jpeg';
 
-export default function Home({ setPage, openDetail, setHostelFilters, initialHostelFilters, userToken, triggerLike, triggerShare }) {
+export default function Home({ setPage, openDetail, setHostelFilters, initialHostelFilters, userToken, triggerLike, triggerShare, selectedCollege, setSelectedCollege }) {
   const [banners, setBanners] = useState([]);
   const [sponsoredHostels, setSponsoredHostels] = useState([]);
   const [nearbyRooms, setNearbyRooms] = useState([]);
@@ -14,6 +14,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
   const [allRooms, setAllRooms] = useState([]);
   const [collegeHostels, setCollegeHostels] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showTeluguInfo, setShowTeluguInfo] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -32,27 +33,27 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
         setBanners(mainBanners.length > 0 ? mainBanners : bannersData);
 
         // 2. Fetch Sponsored Hostels
-        const sponsoredRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=true&limit=6`, { headers });
+        const sponsoredRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=true&limit=6&associated_college=${encodeURIComponent(selectedCollege)}`, { headers });
         const sponsoredJson = await sponsoredRes.json();
         setSponsoredHostels(Array.isArray(sponsoredJson) ? sponsoredJson : []);
 
         // 3. Fetch Hostels (Limit to 6)
-        const hostelsRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=false&limit=6`, { headers });
+        const hostelsRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=false&limit=6&associated_college=${encodeURIComponent(selectedCollege)}`, { headers });
         const hostelsJson = await hostelsRes.json();
         setAllHostels(Array.isArray(hostelsJson) ? hostelsJson : []);
 
         // 4. Fetch PG Rooms (Limit to 6)
-        const roomsRes = await fetch(`${API_BASE_URL}/api/rooms?limit=6`);
+        const roomsRes = await fetch(`${API_BASE_URL}/api/rooms?limit=6&associated_college=${encodeURIComponent(selectedCollege)}`);
         const roomsJson = await roomsRes.json();
         setAllRooms(Array.isArray(roomsJson) ? roomsJson : []);
 
         // 5. Fetch Nearby Rooms (Limit to 6, under 1.2km)
-        const nearbyRes = await fetch(`${API_BASE_URL}/api/rooms?distance_max=1.2&limit=6`);
+        const nearbyRes = await fetch(`${API_BASE_URL}/api/rooms?distance_max=1.2&limit=6&associated_college=${encodeURIComponent(selectedCollege)}`);
         const nearbyJson = await nearbyRes.json();
         setNearbyRooms(Array.isArray(nearbyJson) ? nearbyJson : []);
 
         // 6. Fetch College Hostels (Limit to 6)
-        const collegeRes = await fetch(`${API_BASE_URL}/api/hostels?college=true&limit=6`, { headers });
+        const collegeRes = await fetch(`${API_BASE_URL}/api/hostels?college=true&limit=6&associated_college=${encodeURIComponent(selectedCollege)}`, { headers });
         const collegeJson = await collegeRes.json();
         setCollegeHostels(Array.isArray(collegeJson) ? collegeJson : []);
       } catch (error) {
@@ -63,7 +64,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
     }
 
     fetchData();
-  }, [userToken]);
+  }, [userToken, selectedCollege]);
 
   if (loading) {
     return (
@@ -140,6 +141,81 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
         triggerShare={triggerShare}
       />
 
+      {/* College Selector Section */}
+      <div style={{ 
+        padding: '1.5rem 5% 0.5rem 5%', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '0.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <label style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>
+            Select your college
+          </label>
+          <button 
+            onClick={() => setShowTeluguInfo(!showTeluguInfo)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--primary)',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.2rem',
+              borderRadius: '50%',
+              transition: 'background 0.2s',
+              outline: 'none'
+            }}
+            title="to find hostel near ur college"
+            aria-label="College filter info"
+          >
+            <Info size={18} />
+          </button>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            to find hostel near ur college
+          </span>
+        </div>
+
+        {showTeluguInfo && (
+          <div style={{ 
+            background: 'var(--primary-glow)', 
+            borderLeft: '4px solid var(--primary)', 
+            padding: '0.75rem 1rem', 
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '0.9rem',
+            color: 'var(--primary)',
+            fontWeight: 600,
+            animation: 'fadeIn 0.3s ease'
+          }}>
+            మీ కాలేజీకి దగ్గరగా ఉన్న హాస్టల్స్ ని కనుగొనండి
+          </div>
+        )}
+
+        <select
+          value={selectedCollege}
+          onChange={(e) => setSelectedCollege(e.target.value)}
+          style={{
+            width: '100%',
+            maxWidth: '400px',
+            padding: '0.75rem 1rem',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border)',
+            background: 'var(--bg-card)',
+            color: 'var(--text)',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            outline: 'none',
+            boxShadow: 'var(--shadow-sm)',
+            cursor: 'pointer',
+            marginTop: '0.25rem'
+          }}
+        >
+          <option value="SRKR Engineering">SRKR Engineering</option>
+          <option value="Vishnu engineering college">Vishnu engineering college</option>
+        </select>
+      </div>
+
       {/* Quick Navigation Quick Links */}
       <div style={{ padding: '0 5% 2rem 5%', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
         <button 
@@ -165,7 +241,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
         <section style={{ margin: '2rem 0' }}>
           <div className="section-header">
             <h2 className="section-title">
-              <span>Rooms Near SRKR College</span>
+              <span>Rooms Near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu College' : 'SRKR College'}</span>
             </h2>
             <div className="section-action" onClick={() => setPage('rooms')}>
               <span>View All</span>

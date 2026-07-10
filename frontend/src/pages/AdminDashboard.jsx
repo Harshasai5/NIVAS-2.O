@@ -138,7 +138,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
         available_beds: 10,
         total_beds: 30,
         status: 'active',
-        installments: 1
+        installments: 1,
+        associated_college: 'SRKR Engineering'
       });
     } else if (type === 'room') {
       setFormData({
@@ -154,7 +155,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
         phone: '',
         google_maps_link: '',
         address: '',
-        status: 'active'
+        status: 'active',
+        associated_college: 'SRKR Engineering'
       });
     } else if (type === 'banner') {
       setFormData({
@@ -844,6 +846,18 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                         min="1"
                       />
                     </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Associated College</label>
+                      <select 
+                        value={formData.associated_college || 'SRKR Engineering'} 
+                        onChange={(e) => setFormData({ ...formData, associated_college: e.target.value })} 
+                        className="form-input"
+                      >
+                        <option value="SRKR Engineering">SRKR Engineering</option>
+                        <option value="Vishnu engineering college">Vishnu engineering college</option>
+                      </select>
+                    </div>
                   </>
                 ) : (
                   <>
@@ -948,6 +962,18 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                           className="form-input" 
                           required 
                         />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label">Associated College</label>
+                        <select 
+                          value={formData.associated_college || 'SRKR Engineering'} 
+                          onChange={(e) => setFormData({ ...formData, associated_college: e.target.value })} 
+                          className="form-input"
+                        >
+                          <option value="SRKR Engineering">SRKR Engineering</option>
+                          <option value="Vishnu engineering college">Vishnu engineering college</option>
+                        </select>
                       </div>
                     </div>
                   </>
@@ -1325,6 +1351,18 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                       min="1"
                     />
                   </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Associated College</label>
+                    <select 
+                      value={formData.associated_college || 'SRKR Engineering'} 
+                      onChange={(e) => setFormData({ ...formData, associated_college: e.target.value })} 
+                      className="form-input"
+                    >
+                      <option value="SRKR Engineering">SRKR Engineering</option>
+                      <option value="Vishnu engineering college">Vishnu engineering college</option>
+                    </select>
+                  </div>
                 </>
               )}
 
@@ -1433,6 +1471,18 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                         required 
                       />
                     </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginTop: '1rem' }}>
+                    <label className="form-label">Associated College</label>
+                    <select 
+                      value={formData.associated_college || 'SRKR Engineering'} 
+                      onChange={(e) => setFormData({ ...formData, associated_college: e.target.value })} 
+                      className="form-input"
+                    >
+                      <option value="SRKR Engineering">SRKR Engineering</option>
+                      <option value="Vishnu engineering college">Vishnu engineering college</option>
+                    </select>
                   </div>
                 </>
               )}

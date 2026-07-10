@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, ArrowRight } from 'lucide-react';
+import { X, Sparkles, ArrowRight, Check, Info } from 'lucide-react';
 import Navbar from './components/Navbar';
 
 const LinkedinIcon = ({ size = 16, className }) => (
@@ -55,6 +55,8 @@ export default function App() {
   const [shareHostel, setShareHostel] = useState(null);
 
   // Global filters/search states
+  const [selectedCollege, setSelectedCollege] = useState('SRKR Engineering');
+
   const initialHostelFilters = {
     gender: '',
     is_ac: '',
@@ -62,6 +64,7 @@ export default function App() {
     price_max: '',
     beds_per_room: '',
     college: '',
+    associated_college: 'SRKR Engineering',
   };
   const [hostelFilters, setHostelFilters] = useState(initialHostelFilters);
   const [hostelSearch, setHostelSearch] = useState('');
@@ -73,10 +76,16 @@ export default function App() {
     price_max: '',
     distance_max: '',
     beds_per_room: '',
+    associated_college: 'SRKR Engineering',
   };
   const [roomFilters, setRoomFilters] = useState(initialRoomFilters);
   const [roomSearch, setRoomSearch] = useState('');
   const [inBetweenBanners, setInBetweenBanners] = useState([]);
+
+  useEffect(() => {
+    setHostelFilters(prev => ({ ...prev, associated_college: selectedCollege }));
+    setRoomFilters(prev => ({ ...prev, associated_college: selectedCollege }));
+  }, [selectedCollege]);
 
   useEffect(() => {
     async function fetchBanners() {
@@ -322,6 +331,8 @@ export default function App() {
             userToken={userToken}
             triggerLike={triggerLike}
             triggerShare={triggerShare}
+            selectedCollege={selectedCollege}
+            setSelectedCollege={setSelectedCollege}
           />
         )}
         
@@ -337,6 +348,8 @@ export default function App() {
             userToken={userToken}
             triggerLike={triggerLike}
             triggerShare={triggerShare}
+            selectedCollege={selectedCollege}
+            setSelectedCollege={setSelectedCollege}
           />
         )}
         
@@ -352,6 +365,8 @@ export default function App() {
             userToken={userToken}
             triggerLike={triggerLike}
             triggerShare={triggerShare}
+            selectedCollege={selectedCollege}
+            setSelectedCollege={setSelectedCollege}
           />
         )}
 
@@ -613,7 +628,11 @@ export default function App() {
 
       {/* Global ad pop-up overlay (no ads on admin pages) */}
       {page !== 'kalix-nivas-login' && page !== 'admin-register' && page !== 'admin-dashboard' && (
-        <AdPopup banners={inBetweenBanners} />
+        <AdPopup 
+          banners={inBetweenBanners} 
+          selectedCollege={selectedCollege}
+          setSelectedCollege={setSelectedCollege}
+        />
       )}
 
       {/* Auth Modal */}
@@ -641,12 +660,14 @@ export default function App() {
 }
 
 // Global ad pop-up modal component
-function AdPopup({ banners }) {
+function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
   const [activeBanner, setActiveBanner] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showNote, setShowNote] = useState(false);
   const [closeButtonVisible, setCloseButtonVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [lang, setLang] = useState('en'); // 'en' or 'te'
+  const [showCollegeTooltip, setShowCollegeTooltip] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -750,58 +771,186 @@ function AdPopup({ banners }) {
             </button>
           )}
 
-          {/* English & Telugu Note Section */}
-          <div style={{ color: '#000000', display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'center' }}>
-            <div>
+          {/* Header & Warning Section */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', width: '100%' }}>
               <h3 style={{ 
-                fontSize: '1.15rem', 
+                fontSize: '1.25rem', 
                 fontWeight: 800, 
                 fontFamily: 'var(--font-display)', 
                 textTransform: 'uppercase', 
                 letterSpacing: '0.03em', 
-                margin: '0 0 0.5rem 0',
+                margin: 0,
                 color: 'var(--primary)',
-                textAlign: 'center'
+                lineHeight: 1.3
               }}>
-                Note / గమనిక:
+                {lang === 'en' ? 'Remember these points before use:' : 'ఉపయోగించే ముందు ఈ పాయింట్లను గుర్తుంచుకోండి:'}
               </h3>
-              <ul style={{ 
-                margin: 0, 
-                padding: 0, 
-                fontSize: '0.95rem', 
-                fontWeight: 600, 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '0.5rem',
-                lineHeight: '1.4',
-                color: '#1e293b',
-                listStyleType: 'none',
-                textAlign: 'center'
-              }}>
-                <li>Contact hostel owner for price details.</li>
-                <li>Inform hostel owner before visiting hostel.</li>
-              </ul>
+              <button
+                onClick={() => setLang(lang === 'en' ? 'te' : 'en')}
+                style={{
+                  background: 'var(--primary-glow)',
+                  border: '1px solid rgba(99, 102, 241, 0.2)',
+                  color: 'var(--primary)',
+                  borderRadius: '50%',
+                  width: '2.2rem',
+                  height: '2.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  transition: 'all 0.2s ease-in-out'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--primary-glow)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                title={lang === 'en' ? 'Switch to Telugu / తెలుగు' : 'Switch to English'}
+                aria-label="Toggle Language"
+              >
+                <Info size={16} />
+              </button>
+            </div>
+            <ul style={{ 
+              margin: 0, 
+              padding: 0, 
+              fontSize: '0.95rem', 
+              fontWeight: 600, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0.5rem',
+              lineHeight: '1.4',
+              color: '#1e293b',
+              listStyleType: 'none',
+              textAlign: 'left'
+            }}>
+              {lang === 'en' ? (
+                <>
+                  <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
+                    <span>Contact owner before visiting the hostel.</span>
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
+                    <span>The prices may differ from the website to original.</span>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
+                    <span>హాస్టల్ సందర్శించే ముందు యజమానిని సంప్రదించండి.</span>
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
+                    <span>వెబ్సైట్ లో ధరలకు మరియు అసలు ధరలకు తేడా ఉండవచ్చు.</span>
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--border)' }}></div>
+
+          {/* College Selection Section */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                Select your college
+              </span>
+              <button
+                onClick={() => setShowCollegeTooltip(!showCollegeTooltip)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  transition: 'transform 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                title="Telugu Translation / తెలుగు అనువాదం"
+                aria-label="College Filter Info"
+              >
+                <Info size={16} />
+              </button>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                to find hostel near ur college
+              </span>
             </div>
 
-            <div style={{ borderTop: '1px solid var(--border)' }}></div>
+            {showCollegeTooltip && (
+              <div 
+                className="animate-fade"
+                style={{ 
+                  padding: '0.6rem 0.85rem', 
+                  background: 'var(--primary-glow)', 
+                  borderLeft: '4px solid var(--primary)', 
+                  borderRadius: 'var(--radius-sm)', 
+                  fontSize: '0.85rem', 
+                  color: 'var(--primary)', 
+                  fontWeight: 600,
+                  lineHeight: '1.4'
+                }}
+              >
+                మీ కాలేజీకి దగ్గరగా ఉన్న హాస్టల్స్ ని కనుగొనండి
+              </div>
+            )}
 
-            <div>
-              <ul style={{ 
-                margin: 0, 
-                padding: 0, 
-                fontSize: '0.95rem', 
-                fontWeight: 600, 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '0.5rem',
-                lineHeight: '1.5',
-                color: '#1e293b',
-                listStyleType: 'none',
-                textAlign: 'center'
-              }}>
-                <li>హాస్టల్ యజమానిని సంప్రదించి ధరల వివరాలు తెలుసుకోండి.</li>
-                <li>హాస్టల్కు వెళ్లే ముందు హాస్టల్ యజమానికి తెలియజేయండి.</li>
-              </ul>
+            {/* College Buttons */}
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
+              {[
+                { name: 'SRKR Engineering', label: 'SRKR Engineering' },
+                { name: 'Vishnu engineering college', label: 'Vishnu Engineering' }
+              ].map((college) => {
+                const isSelected = selectedCollege === college.name;
+                return (
+                  <button
+                    key={college.name}
+                    onClick={() => {
+                      setSelectedCollege(college.name);
+                      setIsOpen(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      minWidth: '150px',
+                      padding: '0.75rem 1rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: '2px solid',
+                      borderColor: isSelected ? 'var(--primary)' : 'var(--border)',
+                      background: isSelected ? 'var(--primary-glow)' : 'transparent',
+                      color: isSelected ? 'var(--primary)' : 'var(--text-primary)',
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: isSelected ? '0 4px 12px rgba(99, 102, 241, 0.15)' : 'var(--shadow-sm)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.borderColor = 'var(--primary)';
+                        e.currentTarget.style.color = 'var(--primary)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                        e.currentTarget.style.color = 'var(--text-primary)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }
+                    }}
+                  >
+                    {college.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

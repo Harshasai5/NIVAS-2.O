@@ -81,7 +81,7 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
         {distance !== null && distance !== undefined && (
           <div className="card-distance-badge">
             <MapPin size={12} />
-            <span>{distance} km to SRKR</span>
+            <span>{distance} km to {item.associated_college === 'Vishnu engineering college' ? 'Vishnu' : 'SRKR'}</span>
           </div>
         )}
 

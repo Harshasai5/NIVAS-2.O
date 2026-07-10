@@ -55,6 +55,20 @@ async function testConnection() {
       console.log("✨ Appended 'room_options_json' column to 'rooms' table successfully.");
     }
 
+    // Schema migration: associated_college columns for hostels
+    const [hostelCollCols] = await pool.query("SHOW COLUMNS FROM hostels LIKE 'associated_college'");
+    if (hostelCollCols.length === 0) {
+      await pool.query("ALTER TABLE hostels ADD COLUMN associated_college VARCHAR(255) DEFAULT 'SRKR Engineering'");
+      console.log("✨ Appended 'associated_college' column to 'hostels' table successfully.");
+    }
+
+    // Schema migration: associated_college columns for rooms
+    const [roomCollCols] = await pool.query("SHOW COLUMNS FROM rooms LIKE 'associated_college'");
+    if (roomCollCols.length === 0) {
+      await pool.query("ALTER TABLE rooms ADD COLUMN associated_college VARCHAR(255) DEFAULT 'SRKR Engineering'");
+      console.log("✨ Appended 'associated_college' column to 'rooms' table successfully.");
+    }
+
     // Ensure 'users' table exists
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
