@@ -86,6 +86,7 @@ router.get('/', optionalUser, async (req, res) => {
         h.facilities_json,
         h.installments,
         h.associated_college,
+        h.distance_from_srkr,
         hp.photo AS primary_photo,
         (SELECT COUNT(*) FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND interaction_type = 'like') AS likes_count,
         ? IS NOT NULL AND EXISTS(SELECT 1 FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND user_id = ? AND interaction_type = 'like') AS is_liked

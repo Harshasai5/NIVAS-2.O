@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Inbox, Filter, Info } from 'lucide-react';
+import { Search, Inbox, Filter, Info, Sparkles } from 'lucide-react';
 import FiltersBar from '../components/FiltersBar';
 import ListingCard from '../components/ListingCard';
 import { API_BASE_URL } from '../config';
@@ -23,7 +23,7 @@ export default function RoomsList({
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [priceBounds, setPriceBounds] = useState({ minPrice: 0, maxPrice: 10000 });
-  const [showTeluguInfo, setShowTeluguInfo] = useState(false);
+
 
   const resetFilters = () => {
     setFilters(initialFilters);
@@ -96,195 +96,92 @@ export default function RoomsList({
   );
 
   return (
-    <div className="list-page-container animate-fade">
-      {/* Filters Sidebar */}
-      <FiltersBar 
-        type="room"
-        filters={filters}
-        setFilters={setFilters}
-        resetFilters={resetFilters}
-        isOpen={showMobileFilters}
-        setIsOpen={setShowMobileFilters}
-        priceBounds={priceBounds}
-      />
-
-      {/* Main Listings Column */}
-      <div className="grid-listings-wrapper">
-        <div className="grid-listings-header">
-          <div className="detail-title-col" style={{ width: '100%' }}>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800 }}>
-              Rooms & PGs near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu' : 'SRKR'}
-            </h1>
-            
-            {/* College selector dropdown */}
-            <div style={{ 
-              marginTop: '1rem',
-              marginBottom: '1rem',
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '0.4rem',
-              maxWidth: '400px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <label style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                  Select your college
-                </label>
-                <button 
-                  onClick={() => setShowTeluguInfo(!showTeluguInfo)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--primary)',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0.2rem',
-                    borderRadius: '50%',
-                    transition: 'background 0.2s',
-                    outline: 'none'
-                  }}
-                  title="to find hostel near ur college"
-                  aria-label="College filter info"
-                >
-                  <Info size={16} />
-                </button>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  to find hostel near ur college
-                </span>
-              </div>
-
-              {showTeluguInfo && (
-                <div style={{ 
-                  background: 'var(--primary-glow)', 
-                  borderLeft: '4px solid var(--primary)', 
-                  padding: '0.5rem 0.75rem', 
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.85rem',
-                  color: 'var(--primary)',
-                  fontWeight: 600,
-                  animation: 'fadeIn 0.3s ease'
-                }}>
-                  మీ కాలేజీకి దగ్గరగా ఉన్న హాస్టల్స్ ని కనుగొనండి
-                </div>
-              )}
-
-              <select
-                value={selectedCollege}
-                onChange={(e) => setSelectedCollege(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.6rem 0.85rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)',
-                  background: 'var(--bg-card)',
-                  color: 'var(--text)',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  outline: 'none',
-                  boxShadow: 'var(--shadow-sm)',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="SRKR Engineering">SRKR Engineering</option>
-                <option value="Vishnu engineering college">Vishnu engineering college</option>
-              </select>
-            </div>
-          </div>
+    <div className="list-page-container animate-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '2rem 1rem' }}>
+      <div 
+        className="glass" 
+        style={{ 
+          maxWidth: '600px', 
+          width: '100%', 
+          padding: '3rem 2rem', 
+          borderRadius: 'var(--radius-lg)', 
+          border: '1px solid var(--border)', 
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1.5rem',
+          boxShadow: 'var(--shadow-lg)'
+        }}
+      >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '80px',
+          height: '80px',
+          borderRadius: '50%',
+          background: 'var(--primary-glow)',
+          color: 'var(--primary)'
+        }}>
+          <Sparkles size={40} style={{ animation: 'pulse-slow 2s ease-in-out infinite' }} />
         </div>
 
-        {/* Search Bar */}
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search 
-              size={18} 
-              style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} 
-            />
-            <input 
-              type="text" 
-              placeholder="Search rooms/PGs by name or address..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="form-input"
-              style={{ width: '100%', paddingLeft: '2.8rem', borderRadius: 'var(--radius-full)' }}
-            />
-          </div>
-          <button 
-            className="filter-toggle-btn"
-            onClick={() => setShowMobileFilters(!showMobileFilters)}
-          >
-            <Filter size={18} />
-            <span>Filters</span>
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Launching Soon!!!
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontWeight: 600 }}>
+            Our Room & PG Listing Portal is under construction.
+          </p>
         </div>
 
-        {/* Grid List */}
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '50vh', gap: '2rem' }}>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ position: 'absolute', width: '140px', height: '140px', borderRadius: '50%', border: '2px solid var(--primary-glow)', animation: 'ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite', opacity: 0.8 }} />
-              <div style={{ 
-                width: '110px', 
-                height: '110px', 
-                filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.2))',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <img 
-                  src={logoImg} 
-                  alt="Nivas Logo" 
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover', 
-                    borderRadius: '50%',
-                    animation: 'pulse-slow 2s ease-in-out infinite' 
-                  }} 
-                />
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
-              <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '0.02em' }}>Finding rooms near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu' : 'SRKR'}...</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 500 }}>developed by KaliX</span>
-            </div>
-            <style>{`
-              @keyframes pulse-slow {
-                0%, 100% { transform: scale(1); opacity: 0.95; }
-                50% { transform: scale(1.08); opacity: 1; filter: brightness(1.08); }
-              }
-              @keyframes ping-slow {
-                0% { transform: scale(0.95); opacity: 0.8; }
-                70%, 100% { transform: scale(1.4); opacity: 0; }
-              }
-            `}</style>
+        <div style={{ 
+          width: '100%', 
+          background: 'rgba(255,255,255,0.03)', 
+          border: '1px dashed var(--border)', 
+          borderRadius: 'var(--radius-md)', 
+          padding: '1.25rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem'
+        }}>
+          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            Are you a property owner?
+          </span>
+          <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            If you have rental rooms, PG accommodations, or houses to lease out, list them with us!
+          </span>
+          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--unisex-color)', marginTop: '0.5rem' }}>
+            Contact Us to Partner up:
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+            <a 
+              href="tel:9676268929" 
+              style={{ textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+            >
+              <span>Deepak:</span> <span style={{ color: 'var(--primary)' }}>9676268929</span>
+            </a>
+            <a 
+              href="tel:8919892669" 
+              style={{ textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+            >
+              <span>Harsha:</span> <span style={{ color: 'var(--primary)' }}>8919892669</span>
+            </a>
+            <a 
+              href="tel:9059174370" 
+              style={{ textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+            >
+              <span>Sudarsan:</span> <span style={{ color: 'var(--primary)' }}>9059174370</span>
+            </a>
           </div>
-        ) : filteredRoomsList.length === 0 ? (
-          <div className="no-results">
-            <Inbox size={48} className="no-results-icon" />
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>No Rooms Found</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '360px', margin: '0 auto 1.5rem auto' }}>
-              We couldn't find any rooms or PGs matching your selected filters or search terms. Try adjusting your preferences.
-            </p>
-            <button className="nav-button" onClick={resetFilters}>
-              Reset Filters & Search
-            </button>
-          </div>
-        ) : (
-          <div className="grid-layout">
-            {filteredRoomsList.map((room) => (
-              <ListingCard 
-                key={`room-${room.id}`}
-                item={room}
-                type="room"
-                onClick={() => handleSelectRoom(room.id)}
-                triggerLike={handleToggleLike}
-                triggerShare={triggerShare}
-              />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
+      <style>{`
+        @keyframes pulse-slow {
+          0%, 100% { transform: scale(1); opacity: 0.9; }
+          50% { transform: scale(1.1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -24,7 +24,7 @@ export default function HostelsList({
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showGoTop, setShowGoTop] = useState(false);
   const [priceBounds, setPriceBounds] = useState({ minPrice: 0, maxPrice: 10000 });
-  const [showTeluguInfo, setShowTeluguInfo] = useState(false);
+
 
   const resetFilters = () => {
     setFilters(initialFilters);
@@ -132,80 +132,7 @@ export default function HostelsList({
               Hostels near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu' : 'SRKR'}
             </h1>
             
-            {/* College selector dropdown */}
-            <div style={{ 
-              marginTop: '1rem',
-              marginBottom: '1rem',
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '0.4rem',
-              maxWidth: '400px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <label style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                  Select your college
-                </label>
-                <button 
-                  onClick={() => setShowTeluguInfo(!showTeluguInfo)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--primary)',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0.2rem',
-                    borderRadius: '50%',
-                    transition: 'background 0.2s',
-                    outline: 'none'
-                  }}
-                  title="to find hostel near ur college"
-                  aria-label="College filter info"
-                >
-                  <Info size={16} />
-                </button>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  to find hostel near ur college
-                </span>
-              </div>
 
-              {showTeluguInfo && (
-                <div style={{ 
-                  background: 'var(--primary-glow)', 
-                  borderLeft: '4px solid var(--primary)', 
-                  padding: '0.5rem 0.75rem', 
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.85rem',
-                  color: 'var(--primary)',
-                  fontWeight: 600,
-                  animation: 'fadeIn 0.3s ease'
-                }}>
-                  మీ కాలేజీకి దగ్గరగా ఉన్న హాస్టల్స్ ని కనుగొనండి
-                </div>
-              )}
-
-              <select
-                value={selectedCollege}
-                onChange={(e) => setSelectedCollege(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.6rem 0.85rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)',
-                  background: 'var(--bg-card)',
-                  color: 'var(--text)',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  outline: 'none',
-                  boxShadow: 'var(--shadow-sm)',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="SRKR Engineering">SRKR Engineering</option>
-                <option value="Vishnu engineering college">Vishnu engineering college</option>
-              </select>
-            </div>
           </div>
         </div>
 

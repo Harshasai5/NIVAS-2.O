@@ -46,6 +46,53 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
 
   // Ref to prevent duplicate click tracking calls on double mounts
   const trackedRef = useRef(null);
+  const autoPlayRef = useRef(null);
+  const touchStartX = useRef(null);
+
+  // Resolve Photos list safely at top level
+  const photos = item && item.photos && item.photos.length > 0 
+    ? item.photos.map(p => p.photo.startsWith('http') ? p.photo : `/${p.photo}`) 
+    : ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=1200&auto=format&fit=cover'];
+
+  const resetAutoPlay = () => {
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+    }
+    if (photos && photos.length > 1) {
+      autoPlayRef.current = setInterval(() => {
+        setActivePhotoIndex((prev) => (prev + 1) % photos.length);
+      }, 8000);
+    }
+  };
+
+  useEffect(() => {
+    resetAutoPlay();
+    return () => {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    };
+  }, [photos]);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diffX = touchStartX.current - touchEndX;
+
+    if (Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        // Swipe Left -> Next Photo
+        setActivePhotoIndex((prev) => (prev + 1) % photos.length);
+      } else {
+        // Swipe Right -> Prev Photo
+        setActivePhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
+      }
+      resetAutoPlay();
+    }
+    touchStartX.current = null;
+  };
 
   useEffect(() => {
     async function fetchDetail() {
@@ -146,12 +193,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
   const beds = item.beds_per_room;
   const availableBeds = item.available_beds;
   const totalBeds = item.total_beds;
-  const distance = type === 'room' ? item.distance_from_srkr : null;
-
-  // Resolve Photos list
-  const photos = item.photos && item.photos.length > 0 
-    ? item.photos.map(p => p.photo.startsWith('http') ? p.photo : `/${p.photo}`) 
-    : ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=1200&auto=format&fit=cover'];
+  const distance = item.distance_from_srkr;
 
   // Bed Fill calculation
   const filledBeds = type === 'room' 
@@ -213,11 +255,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                 <span>AC Accommodation</span>
               </span>
             )}
-            {type === 'hostel' && (item.is_college_hostel === 1 || item.is_college_hostel === true) && (
-              <span className="card-college-badge" style={{ position: 'static', background: 'rgba(99, 102, 241, 0.95)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-sm)', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.15)' }}>
-                College Hostels
-              </span>
-            )}
+
 
             {/* Save and Share Actions */}
             <div className="detail-actions-inline" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
@@ -280,8 +318,8 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
           </div>
         </div>
 
-        <div className="detail-pricing-col">
-          <div className="detail-price-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="detail-pricing-col" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end', textAlign: 'left' }}>
+          <div className="detail-price-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '150px', flex: 1 }}>
             {type === 'hostel' ? (
               <>
                 <div className="beds-label" style={{ marginBottom: '0.4rem', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Occupancy Status</div>
@@ -330,13 +368,54 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               </div>
             )}
           </div>
+
+          {/* Proximity/Distance Card */}
+          {(distance !== null && distance !== undefined) && (
+            <div className="detail-price-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '150px', flex: 1 }}>
+              <div className="beds-label" style={{ marginBottom: '0.4rem', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+                College Distance
+              </div>
+              <div 
+                style={{ 
+                  background: 'var(--primary-glow)', 
+                  color: 'var(--primary)', 
+                  padding: '0.35rem 0.75rem', 
+                  borderRadius: 'var(--radius-full)', 
+                  fontSize: '0.8rem', 
+                  fontWeight: 700, 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  gap: '0.3rem',
+                  boxShadow: 'var(--shadow-sm)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.02em',
+                  margin: '0.15rem 0 0.35rem 0'
+                }}
+              >
+                <MapPin size={12} style={{ color: 'var(--primary)' }} />
+                <span>{distance} KM</span>
+              </div>
+              <div style={{ width: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.65rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700 }}>Near To</span>
+                <span style={{ fontWeight: 600, color: 'var(--primary)' }}>
+                  {item.associated_college === 'Vishnu engineering college' ? 'Vishnu' : 'SRKR'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Interactive Gallery Layout */}
       {/* Asymmetric grid: large photo left, two stacked thumbnails right */}
       <div className="gallery-layout">
-        <div className="gallery-main" onClick={() => openLightbox(activePhotoIndex)}>
+        <div 
+          className="gallery-main" 
+          onClick={() => openLightbox(activePhotoIndex)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <img src={photos[activePhotoIndex]} alt="Main View" className="gallery-img" loading="lazy" />
           
           {/* Mobile/Tablet Controls: Dots and Arrows */}
@@ -413,6 +492,73 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Quick Enquiry Section */}
+      <div 
+        className="quick-enquiry-container" 
+        style={{ 
+          margin: '1.5rem 0 2.5rem 0', 
+          padding: '1.25rem', 
+          background: 'var(--bg-card)', 
+          border: '1px solid var(--border)', 
+          borderRadius: 'var(--radius-md)',
+          boxShadow: 'var(--shadow-sm)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.85rem'
+        }}
+      >
+        <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <MessageSquare size={16} style={{ color: 'var(--primary)' }} />
+          Interested? Send a quick enquiry to the owner:
+        </span>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <a 
+            href={`tel:${item.phone}`}
+            className="action-btn action-btn-primary"
+            style={{ 
+              textDecoration: 'none', 
+              flex: 1, 
+              minWidth: '140px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '0.5rem',
+              padding: '0.75rem 1.25rem',
+              fontSize: '0.9rem',
+              fontWeight: 700
+            }}
+          >
+            <Phone size={16} />
+            <span>Call for Enquiry</span>
+          </a>
+          <a 
+            href={`https://wa.me/91${item.phone}?text=Hello, I saw your accommodation listing "${name}" on Nivas Platform and I am interested in it.`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="action-btn action-btn-secondary"
+            style={{ 
+              textDecoration: 'none', 
+              flex: 1, 
+              minWidth: '140px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '0.5rem',
+              padding: '0.75rem 1.25rem',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: '#25D366', 
+              borderColor: '#25D366'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(37, 211, 102, 0.05)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+          >
+            <MessageSquare size={16} />
+            <span>WhatsApp Enquiry</span>
+          </a>
         </div>
       </div>
 

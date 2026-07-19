@@ -163,26 +163,7 @@ export default function FiltersBar({
             </div>
           </div>
 
-          {/* Hostel specific filters */}
-          {type === 'hostel' && (
-            <div className="filter-section">
-              <h4 className="filter-title">Hostel Ownership</h4>
-              <div className="filter-chips">
-                <button 
-                  className={`filter-chip ${filters.college === 'true' ? 'active' : ''}`}
-                  onClick={() => handleCollegeChange('true')}
-                >
-                  College Affiliated
-                </button>
-                <button 
-                  className={`filter-chip ${filters.college === 'false' ? 'active' : ''}`}
-                  onClick={() => handleCollegeChange('false')}
-                >
-                  Private Hostels
-                </button>
-              </div>
-            </div>
-          )}
+
 
           {/* Room specific filters */}
           {type === 'room' && (

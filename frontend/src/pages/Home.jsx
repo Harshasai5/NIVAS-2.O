@@ -14,7 +14,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
   const [allRooms, setAllRooms] = useState([]);
   const [collegeHostels, setCollegeHostels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showTeluguInfo, setShowTeluguInfo] = useState(false);
+
 
   useEffect(() => {
     async function fetchData() {
@@ -134,87 +134,14 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
 
       {/* 2. Sponsored Hostels Section */}
       <SponsoredHostels 
-        hostels={sponsoredHostels.slice(0, 6)} 
+        hostels={sponsoredHostels.slice(0, 8)} 
         onSelectHostel={(id) => openDetail(id, 'hostel')} 
         onViewAll={() => setPage('hostels')}
         triggerLike={handleToggleLike}
         triggerShare={triggerShare}
       />
 
-      {/* College Selector Section */}
-      <div style={{ 
-        padding: '1.5rem 5% 0.5rem 5%', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '0.5rem'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <label style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>
-            Select your college
-          </label>
-          <button 
-            onClick={() => setShowTeluguInfo(!showTeluguInfo)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--primary)',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0.2rem',
-              borderRadius: '50%',
-              transition: 'background 0.2s',
-              outline: 'none'
-            }}
-            title="to find hostel near ur college"
-            aria-label="College filter info"
-          >
-            <Info size={18} />
-          </button>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            to find hostel near ur college
-          </span>
-        </div>
 
-        {showTeluguInfo && (
-          <div style={{ 
-            background: 'var(--primary-glow)', 
-            borderLeft: '4px solid var(--primary)', 
-            padding: '0.75rem 1rem', 
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.9rem',
-            color: 'var(--primary)',
-            fontWeight: 600,
-            animation: 'fadeIn 0.3s ease'
-          }}>
-            మీ కాలేజీకి దగ్గరగా ఉన్న హాస్టల్స్ ని కనుగొనండి
-          </div>
-        )}
-
-        <select
-          value={selectedCollege}
-          onChange={(e) => setSelectedCollege(e.target.value)}
-          style={{
-            width: '100%',
-            maxWidth: '400px',
-            padding: '0.75rem 1rem',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border)',
-            background: 'var(--bg-card)',
-            color: 'var(--text)',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            outline: 'none',
-            boxShadow: 'var(--shadow-sm)',
-            cursor: 'pointer',
-            marginTop: '0.25rem'
-          }}
-        >
-          <option value="SRKR Engineering">SRKR Engineering</option>
-          <option value="Vishnu engineering college">Vishnu engineering college</option>
-        </select>
-      </div>
 
       {/* Quick Navigation Quick Links */}
       <div style={{ padding: '0 5% 2rem 5%', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
@@ -237,38 +164,43 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
       </div>
 
       {/* 3. Nearby Rooms Section */}
-      {nearbyRooms.length > 0 && (
-        <section style={{ margin: '2rem 0' }}>
-          <div className="section-header">
-            <h2 className="section-title">
-              <span>Rooms Near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu College' : 'SRKR College'}</span>
-            </h2>
-            <div className="section-action" onClick={() => setPage('rooms')}>
-              <span>View All</span>
-              <ArrowRight size={16} />
-            </div>
+      <section style={{ margin: '2rem 0' }}>
+        <div className="section-header">
+          <h2 className="section-title">
+            <span>Rooms Near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu College' : 'SRKR College'}</span>
+          </h2>
+          <div className="section-action" onClick={() => setPage('rooms')}>
+            <span>View All</span>
+            <ArrowRight size={16} />
           </div>
+        </div>
 
-          <div className="scroll-container">
-            {nearbyRooms.slice(0, 6).map((room) => (
-              <ListingCard 
-                key={room.id}
-                item={room}
-                type="room"
-                onClick={() => openDetail(room.id, 'room')}
-                triggerLike={handleToggleLike}
-                triggerShare={triggerShare}
-              />
-            ))}
-            <div className="view-more-card" onClick={() => setPage('rooms')}>
-              <div className="view-more-icon">
-                <ArrowRight size={24} />
-              </div>
-              <span style={{ fontWeight: 700 }}>View All Rooms</span>
-            </div>
+        <div className="scroll-container" style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '1rem 0' }}>
+          <div 
+            className="glass"
+            style={{
+              width: '100%',
+              maxWidth: '600px',
+              padding: '2.5rem 1.5rem',
+              borderRadius: 'var(--radius-md)',
+              border: '1px dashed var(--border)',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'rgba(255,255,255,0.01)'
+            }}
+          >
+            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--unisex-color)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              Launching soon!!!
+            </span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              If you have rental rooms or PGs near college, list them with us!
+            </span>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Hostels Section */}
       {allHostels.length > 0 && (
@@ -305,82 +237,44 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
       )}
 
       {/* 5. PG / Room Listings Section */}
-      {allRooms.length > 0 && (
-        <section style={{ margin: '2rem 0' }}>
-          <div className="section-header">
-            <h2 className="section-title">
-              <span>Rental PG & Rooms</span>
-            </h2>
-            <div className="section-action" onClick={() => setPage('rooms')}>
-              <span>View All</span>
-              <ArrowRight size={16} />
-            </div>
+      <section style={{ margin: '2rem 0' }}>
+        <div className="section-header">
+          <h2 className="section-title">
+            <span>Rental PG & Rooms</span>
+          </h2>
+          <div className="section-action" onClick={() => setPage('rooms')}>
+            <span>View All</span>
+            <ArrowRight size={16} />
           </div>
+        </div>
 
-          <div className="scroll-container">
-            {allRooms.slice(0, 6).map((room) => (
-              <ListingCard 
-                key={room.id}
-                item={room}
-                type="room"
-                onClick={() => openDetail(room.id, 'room')}
-                triggerLike={handleToggleLike}
-                triggerShare={triggerShare}
-              />
-            ))}
-            <div className="view-more-card" onClick={() => setPage('rooms')}>
-              <div className="view-more-icon">
-                <ArrowRight size={24} />
-              </div>
-              <span style={{ fontWeight: 700 }}>View All Rooms</span>
-            </div>
+        <div className="scroll-container" style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '1rem 0' }}>
+          <div 
+            className="glass"
+            style={{
+              width: '100%',
+              maxWidth: '600px',
+              padding: '2.5rem 1.5rem',
+              borderRadius: 'var(--radius-md)',
+              border: '1px dashed var(--border)',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'rgba(255,255,255,0.01)'
+            }}
+          >
+            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--unisex-color)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              Launching soon!!!
+            </span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              If you have rental rooms or PGs near college, list them with us!
+            </span>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* 4b. College Affiliated Hostels Section */}
-      {collegeHostels.length > 0 && (
-        <section style={{ margin: '2rem 0', paddingBottom: '3rem' }}>
-          <div className="section-header">
-            <h2 className="section-title">
-              <span>College Hostels</span>
-            </h2>
-            <div className="section-action" onClick={() => {
-              if (setHostelFilters && initialHostelFilters) {
-                setHostelFilters({ ...initialHostelFilters, college: 'true' });
-              }
-              setPage('hostels');
-            }}>
-              <span>View All</span>
-              <ArrowRight size={16} />
-            </div>
-          </div>
-
-          <div className="scroll-container">
-            {collegeHostels.slice(0, 6).map((hostel) => (
-              <ListingCard 
-                key={hostel.id}
-                item={hostel}
-                type="hostel"
-                onClick={() => openDetail(hostel.id, 'hostel')}
-                triggerLike={handleToggleLike}
-                triggerShare={triggerShare}
-              />
-            ))}
-            <div className="view-more-card" onClick={() => {
-              if (setHostelFilters && initialHostelFilters) {
-                setHostelFilters({ ...initialHostelFilters, college: 'true' });
-              }
-              setPage('hostels');
-            }}>
-              <div className="view-more-icon">
-                <ArrowRight size={24} />
-              </div>
-              <span style={{ fontWeight: 700 }}>View All College Hostels</span>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

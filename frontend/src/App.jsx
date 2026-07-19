@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, ArrowRight, Check, Info } from 'lucide-react';
+import { X, Sparkles, ArrowRight, Check, Info, ChevronDown, ChevronUp, Mail, Send, Phone } from 'lucide-react';
 import Navbar from './components/Navbar';
 
 const LinkedinIcon = ({ size = 16, className }) => (
@@ -20,6 +20,27 @@ const LinkedinIcon = ({ size = 16, className }) => (
     <circle cx="4" cy="4" r="2" />
   </svg>
 );
+
+const InstagramIcon = ({ size = 18, className }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+    style={{ flexShrink: 0 }}
+  >
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+  </svg>
+);
+import logoImg from './assets/logo.jpeg';
 import deepakImg from './assets/deepak.png';
 import revanthImg from './assets/revanth.png';
 import harshaImg from './assets/harsha.jpg';
@@ -35,6 +56,78 @@ import AuthModal from './components/AuthModal';
 import ShareModal from './components/ShareModal';
 import LikedPage from './pages/LikedPage';
 import { API_BASE_URL } from './config';
+
+function ContactForm() {
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`${API_BASE_URL}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (!res.ok) throw new Error('Failed to send message');
+      setSuccess(true);
+      setFormData({ name: '', email: '', message: '' });
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (err) {
+      setError('Failed to send. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
+      <input 
+        type="text" 
+        placeholder="Your Name" 
+        value={formData.name} 
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)' }}
+        disabled={loading}
+      />
+      <input 
+        type="email" 
+        placeholder="Your Email" 
+        value={formData.email} 
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)' }}
+        disabled={loading}
+      />
+      <textarea 
+        placeholder="Your Message" 
+        rows="3"
+        value={formData.message} 
+        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+        style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)', color: 'var(--text-primary)', resize: 'vertical' }}
+        disabled={loading}
+      />
+      <button 
+        type="submit" 
+        className="action-btn action-btn-primary" 
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.65rem', border: 'none', cursor: 'pointer' }}
+        disabled={loading}
+      >
+        <Send size={14} />
+        <span>{loading ? 'Sending...' : 'Send Mail'}</span>
+      </button>
+      {success && <span style={{ color: '#34A853', fontSize: '0.8rem', fontWeight: 600 }}>Message sent successfully!</span>}
+      {error && <span style={{ color: 'var(--girls-color)', fontSize: '0.8rem', fontWeight: 600 }}>{error}</span>}
+    </form>
+  );
+}
 
 export default function App() {
   const [page, setPage] = useState('home');
@@ -56,6 +149,7 @@ export default function App() {
 
   // Global filters/search states
   const [selectedCollege, setSelectedCollege] = useState('SRKR Engineering');
+  const [showTeam, setShowTeam] = useState(false);
 
   const initialHostelFilters = {
     gender: '',
@@ -441,173 +535,294 @@ export default function App() {
         gap: '2.5rem'
       }}>
         {/* Footer Top Header */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>Meet the Team</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>The developers and designers behind Nivas Accommodations</p>
+        <div 
+          onClick={() => setShowTeam(!showTeam)}
+          style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            gap: '0.5rem', 
+            textAlign: 'center',
+            cursor: 'pointer',
+            userSelect: 'none'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+              Meet the Team
+            </h2>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '1.8rem',
+              height: '1.8rem',
+              borderRadius: '50%',
+              background: 'var(--primary-glow)',
+              color: 'var(--primary)',
+              transition: 'transform 0.25s ease'
+            }}>
+              {showTeam ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </div>
+          </div>
+          {showTeam && (
+            <p className="animate-fade" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
+              The developers and designers behind Nivas Accommodations
+            </p>
+          )}
         </div>
 
         {/* Team Scroll Container */}
-        <div 
-          className="scroll-container" 
-          style={{ 
-            width: '100%', 
-            maxWidth: '1200px', 
-            margin: '0 auto',
-            padding: '1rem 0.5rem',
-            display: 'flex',
-            gap: '1.5rem',
-            overflowX: 'auto'
-          }}
-        >
-          {[
-            {
-              name: "Pabolu Sai Harsha",
-              initials: "PH",
-              image: harshaImg,
-              role: "Ideate, Research & Development",
-              linkedin: "https://www.linkedin.com/in/sai-harsha-pabolu-84b361310"
-            },
-            {
-              name: "Madabhushi Sri Ranga Sudarsan",
-              initials: "MS",
-              image: sudarsanImg,
-              role: "Software Development & Data Collection",
-              linkedin: "https://www.linkedin.com/in/sudarsan-madabhushi-448994351?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-            },
-            {
-              name: "Boddeti Devi Naga Venkata Sai Deepak",
-              initials: "BD",
-              image: deepakImg,
-              role: "UI/UX Designer & Software Developer",
-              linkedin: "https://www.linkedin.com/in/deepakboddeti/"
-            },
-            {
-              name: "Karri Revanth Ratan Reddy",
-              initials: "KR",
-              image: revanthImg,
-              role: "Technical Support & Data Structuring",
-              linkedin: "https://www.linkedin.com/in/revanth-ratan-reddy-karri-139aab2a4"
-            }
-          ].map((member, idx) => (
-            <div 
-              key={idx} 
-              className="glass" 
-              style={{ 
-                minWidth: '260px', 
-                maxWidth: '280px', 
-                padding: '1.75rem', 
-                borderRadius: 'var(--radius-md)', 
-                border: '1px solid var(--border)',
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                textAlign: 'center',
-                gap: '0.75rem',
-                transition: 'all 0.3s ease-in-out',
-                flexShrink: 0
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)';
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(99, 102, 241, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              {/* Circular Profile Avatar Image or Initials */}
-              {member.image ? (
-                <img 
-                  src={member.image} 
-                  alt={member.name}
-                  style={{
+        {showTeam && (
+          <div 
+            className="scroll-container animate-fade" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '1200px', 
+              margin: '0 auto',
+              padding: '1rem 0.5rem',
+              display: 'flex',
+              gap: '1.5rem',
+              overflowX: 'auto'
+            }}
+          >
+            {[
+              {
+                name: "Pabolu Sai Harsha",
+                initials: "PH",
+                image: harshaImg,
+                role: "Ideate, Research & Development",
+                linkedin: "https://www.linkedin.com/in/sai-harsha-pabolu-84b361310"
+              },
+              {
+                name: "Madabhushi Sri Ranga Sudarsan",
+                initials: "MS",
+                image: sudarsanImg,
+                role: "Software Development & Data Collection",
+                linkedin: "https://www.linkedin.com/in/sudarsan-madabhushi-448994351?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+              },
+              {
+                name: "Boddeti Devi Naga Venkata Sai Deepak",
+                initials: "BD",
+                image: deepakImg,
+                role: "UI/UX Designer & Software Developer",
+                linkedin: "https://www.linkedin.com/in/deepakboddeti/"
+              },
+              {
+                name: "Karri Revanth Ratan Reddy",
+                initials: "KR",
+                image: revanthImg,
+                role: "Technical Support & Data Structuring",
+                linkedin: "https://www.linkedin.com/in/revanth-ratan-reddy-karri-139aab2a4"
+              }
+            ].map((member, idx) => (
+              <div 
+                key={idx} 
+                className="glass" 
+                style={{ 
+                  minWidth: '260px', 
+                  maxWidth: '280px', 
+                  padding: '1.75rem', 
+                  borderRadius: 'var(--radius-md)', 
+                  border: '1px solid var(--border)',
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  gap: '0.75rem',
+                  transition: 'all 0.3s ease-in-out',
+                  flexShrink: 0
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--primary)';
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(99, 102, 241, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {/* Circular Profile Avatar Image or Initials */}
+                {member.image ? (
+                  <img 
+                    src={member.image} 
+                    alt={member.name}
+                    style={{
+                      width: '64px',
+                      height: '64px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
+                      border: '2px solid rgba(255, 255, 255, 0.25)',
+                      marginBottom: '0.25rem'
+                    }}
+                  />
+                ) : (
+                  <div style={{
                     width: '64px',
                     height: '64px',
                     borderRadius: '50%',
-                    objectFit: 'cover',
+                    background: 'linear-gradient(135deg, var(--primary), var(--unisex-color))',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: 800,
+                    fontSize: '1.25rem',
                     boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
                     border: '2px solid rgba(255, 255, 255, 0.25)',
                     marginBottom: '0.25rem'
-                  }}
-                />
-              ) : (
-                <div style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, var(--primary), var(--unisex-color))',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontWeight: 800,
-                  fontSize: '1.25rem',
-                  boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
-                  border: '2px solid rgba(255, 255, 255, 0.25)',
-                  marginBottom: '0.25rem'
-                }}>
-                  {member.initials}
-                </div>
-              )}
+                  }}>
+                    {member.initials}
+                  </div>
+                )}
 
-              <h4 style={{ 
-                fontFamily: 'var(--font-display)', 
-                fontSize: '1rem', 
-                fontWeight: 700, 
-                color: 'var(--text-primary)',
-                margin: 0 
-              }}>
-                {member.name}
-              </h4>
-              <p style={{ 
-                color: 'var(--text-muted)', 
-                fontSize: '0.75rem', 
-                textTransform: 'uppercase', 
-                fontWeight: 700, 
-                letterSpacing: '0.04em',
-                margin: 0,
-                lineHeight: '1.4'
-              }}>
-                {member.role}
-              </p>
+                <h4 style={{ 
+                  fontFamily: 'var(--font-display)', 
+                  fontSize: '1rem', 
+                  fontWeight: 700, 
+                  color: 'var(--text-primary)',
+                  margin: 0 
+                }}>
+                  {member.name}
+                </h4>
+                <p style={{ 
+                  color: 'var(--text-muted)', 
+                  fontSize: '0.75rem', 
+                  textTransform: 'uppercase', 
+                  fontWeight: 700, 
+                  letterSpacing: '0.04em',
+                  margin: 0,
+                  lineHeight: '1.4'
+                }}>
+                  {member.role}
+                </p>
+                <a 
+                  href={member.linkedin} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ 
+                    color: '#0077b5', 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    padding: '0.45rem',
+                    borderRadius: '50%',
+                    background: 'rgba(0, 119, 181, 0.08)',
+                    border: '1px solid rgba(0, 119, 181, 0.25)',
+                    transition: 'all 0.25s ease-in-out',
+                    marginTop: '0.25rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#ffffff';
+                    e.currentTarget.style.borderColor = '#0077b5';
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                    e.currentTarget.style.background = '#0077b5';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#0077b5';
+                    e.currentTarget.style.borderColor = 'rgba(0, 119, 181, 0.25)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.background = 'rgba(0, 119, 181, 0.08)';
+                  }}
+                  title={`Connect with ${member.name} on LinkedIn`}
+                  aria-label={`LinkedIn Profile for ${member.name}`}
+                >
+                  <LinkedinIcon size={16} />
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Footer Info & Contact Columns */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '2.5rem',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          width: '100%',
+          borderTop: '1px solid var(--border)',
+          paddingTop: '2.5rem'
+        }}>
+          {/* Column 1: About & Social */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <img src={logoImg} alt="Nivas Logo" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>NIVAS</span>
+            </div>
+            <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', margin: 0 }}>
+              Find the perfect hostels, PGs, and rooms near your college. Verified listings with transparent details and direct contact.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Follow us on Instagram</span>
               <a 
-                href={member.linkedin} 
+                href="https://www.instagram.com/nivas_accommodation?igsh=MXN2dWl5bHJibmdtcA==" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 style={{ 
-                  color: '#0077b5', 
                   display: 'inline-flex', 
                   alignItems: 'center', 
-                  justifyContent: 'center',
-                  padding: '0.45rem',
-                  borderRadius: '50%',
-                  background: 'rgba(0, 119, 181, 0.08)',
-                  border: '1px solid rgba(0, 119, 181, 0.25)',
-                  transition: 'all 0.2s ease-in-out',
-                  marginTop: '0.25rem'
+                  gap: '0.5rem', 
+                  color: '#E1306C', 
+                  fontWeight: 700, 
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  transition: 'opacity 0.2s',
+                  width: 'fit-content'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#ffffff';
-                  e.currentTarget.style.borderColor = '#0077b5';
-                  e.currentTarget.style.transform = 'scale(1.1)';
-                  e.currentTarget.style.background = '#0077b5';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#0077b5';
-                  e.currentTarget.style.borderColor = 'rgba(0, 119, 181, 0.25)';
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.background = 'rgba(0, 119, 181, 0.08)';
-                }}
-                title={`Connect with ${member.name} on LinkedIn`}
-                aria-label={`LinkedIn Profile for ${member.name}`}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = 0.8; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = 1; }}
               >
-                <LinkedinIcon size={16} />
+                <InstagramIcon size={18} />
+                <span>@nivas_accommodation</span>
               </a>
             </div>
-          ))}
+          </div>
+
+          {/* Column 2: Contact Info */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Contact Us</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                <Mail size={18} style={{ color: 'var(--primary)', marginTop: '0.15rem' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>Email Address</span>
+                  <a href="mailto:nivasaccommodations@gmail.com" style={{ color: 'var(--text-primary)', fontWeight: 600, textDecoration: 'none' }}>
+                    nivasaccommodations@gmail.com
+                  </a>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                <Phone size={18} style={{ color: 'var(--primary)', marginTop: '0.15rem' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>Helpline Numbers</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <a href="tel:9676268929" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500 }}>
+                      Deepak: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>9676268929</span>
+                    </a>
+                    <a href="tel:8919892669" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500 }}>
+                      Harsha: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>8919892669</span>
+                    </a>
+                    <a href="tel:9059174370" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500 }}>
+                      Sudarsan: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>9059174370</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 3: Direct Mail Form */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Direct Mail</span>
+            <ContactForm />
+          </div>
         </div>
 
         {/* Footer Bottom copyright */}
@@ -668,6 +883,7 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [lang, setLang] = useState('en'); // 'en' or 'te'
   const [showCollegeTooltip, setShowCollegeTooltip] = useState(false);
+  const [tempSelectedCollege, setTempSelectedCollege] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -742,34 +958,6 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
           gap: '1.5rem',
           textAlign: 'left'
         }}>
-          {closeButtonVisible && (
-            <button 
-              onClick={() => setIsOpen(false)}
-              style={{
-                position: 'absolute',
-                top: '0.85rem',
-                right: '0.85rem',
-                background: 'rgba(0, 0, 0, 0.05)',
-                border: '1px solid rgba(0, 0, 0, 0.1)',
-                color: '#000000',
-                borderRadius: '50%',
-                width: '2.2rem',
-                height: '2.2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                zIndex: 100,
-                transition: 'all 0.2s ease-in-out'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)'; e.currentTarget.style.transform = 'scale(1)'; }}
-              title="Close Note"
-              aria-label="Close Note"
-            >
-              <X size={16} />
-            </button>
-          )}
 
           {/* Header & Warning Section */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -831,7 +1019,7 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
                   </li>
                   <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                     <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
-                    <span>The prices may differ from the website to original.</span>
+                    <span>Photos provided on the website are verified by hostels.</span>
                   </li>
                 </>
               ) : (
@@ -842,7 +1030,7 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
                   </li>
                   <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                     <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
-                    <span>వెబ్సైట్ లో ధరలకు మరియు అసలు ధరలకు తేడా ఉండవచ్చు.</span>
+                    <span>వెబ్‌సైట్‌లో అందించిన ఫోటోలు హాస్టల్స్ ద్వారా ధృవీకరించబడ్డాయి.</span>
                   </li>
                 </>
               )}
@@ -906,13 +1094,12 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
                 { name: 'SRKR Engineering', label: 'SRKR Engineering' },
                 { name: 'Vishnu engineering college', label: 'Vishnu Engineering' }
               ].map((college) => {
-                const isSelected = selectedCollege === college.name;
+                const isSelected = tempSelectedCollege === college.name;
                 return (
                   <button
                     key={college.name}
                     onClick={() => {
-                      setSelectedCollege(college.name);
-                      setIsOpen(false);
+                      setTempSelectedCollege(college.name);
                     }}
                     style={{
                       flex: 1,
@@ -952,6 +1139,48 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
                 );
               })}
             </div>
+
+            {/* Open Button */}
+            <button
+              onClick={() => {
+                if (tempSelectedCollege) {
+                  setSelectedCollege(tempSelectedCollege);
+                } else {
+                  setSelectedCollege('SRKR Engineering');
+                }
+                setIsOpen(false);
+              }}
+              style={{
+                marginTop: '1rem',
+                padding: '0.85rem 1.5rem',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--primary)',
+                color: '#ffffff',
+                border: 'none',
+                fontWeight: 700,
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+                textAlign: 'center',
+                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#4f46e5';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--primary)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+              }}
+            >
+              Open
+            </button>
           </div>
         </div>
       </div>
@@ -980,7 +1209,7 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
       <div className="glass" style={{
         position: 'relative',
         width: '100%',
-        maxWidth: isMobile ? '100%' : '1600px',
+        maxWidth: isMobile ? '100%' : '600px',
         borderRadius: 'var(--radius-lg)',
         overflow: 'hidden',
         border: '1px solid rgba(255, 255, 255, 0.1)',

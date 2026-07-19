@@ -32,6 +32,13 @@ app.use('/api/hostels', hostelsRouter);
 app.use('/api/rooms', roomsRouter);
 app.use('/api/auth', authRouter);
 
+// Contact Message endpoint
+app.post('/api/contact', (req, res) => {
+  const { name, email, message } = req.body;
+  console.log(`✉️ New Contact Message from ${name} (${email}): ${message}`);
+  res.status(200).json({ success: true, message: 'Message sent successfully!' });
+});
+
 // Health Check endpoint for Keep-Alive pinger (cron-job.org)
 app.get('/api/health', (req, res) => {
   res.status(200).send('OK');
