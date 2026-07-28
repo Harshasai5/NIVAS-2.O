@@ -825,14 +825,14 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Sponsor Placements Display Order (0 for None, 1-4 for Sponsored)</label>
+                      <label className="form-label">Sponsor Placements Display Order (0 for None, 1-8 for Sponsored)</label>
                       <input 
                         type="number" 
                         value={formData.sponsor_order !== undefined ? formData.sponsor_order : 0} 
                         onChange={(e) => setFormData({ ...formData, sponsor_order: parseInt(e.target.value) })} 
                         className="form-input" 
                         min="0"
-                        max="4"
+                        max="8"
                       />
                     </div>
 
@@ -1330,14 +1330,14 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Sponsor Placements Display Order (0 for None, 1-4 for Sponsored)</label>
+                    <label className="form-label">Sponsor Placements Display Order (0 for None, 1-8 for Sponsored)</label>
                     <input 
                       type="number" 
                       value={formData.sponsor_order !== undefined ? formData.sponsor_order : 0} 
                       onChange={(e) => setFormData({ ...formData, sponsor_order: parseInt(e.target.value) })} 
                       className="form-input" 
                       min="0"
-                      max="4"
+                      max="8"
                     />
                   </div>
 

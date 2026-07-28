@@ -122,6 +122,8 @@ export default function HostelsList({
         isOpen={showMobileFilters}
         setIsOpen={setShowMobileFilters}
         priceBounds={priceBounds}
+        selectedCollege={selectedCollege}
+        setSelectedCollege={setSelectedCollege}
       />
 
       {/* Main Listings Column */}

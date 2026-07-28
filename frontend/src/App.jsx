@@ -800,17 +800,28 @@ export default function App() {
 
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
                 <Phone size={18} style={{ color: 'var(--primary)', marginTop: '0.15rem' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>Helpline Numbers</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>Student Support</span>
+                  
+                  {/* for SRKR */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <a href="tel:9676268929" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500 }}>
-                      Deepak: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>9676268929</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em', borderBottom: '1px solid var(--border)', paddingBottom: '0.15rem', marginTop: '0.15rem' }}>for SRKR</span>
+                    <a href="tel:9676268929" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>
+                      B.Sai Deepak: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>9676268929</span>
                     </a>
-                    <a href="tel:8919892669" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500 }}>
-                      Harsha: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>8919892669</span>
+                    <a href="tel:9059174370" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>
+                      M.S.R.Sudarsan: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>9059174370</span>
                     </a>
-                    <a href="tel:9059174370" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500 }}>
-                      Sudarsan: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>9059174370</span>
+                  </div>
+                  
+                  {/* for Vishnu */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.35rem' }}>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em', borderBottom: '1px solid var(--border)', paddingBottom: '0.15rem' }}>for Vishnu</span>
+                    <a href="tel:6309119868" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>
+                      G Revanth: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>63091 19868</span>
+                    </a>
+                    <a href="tel:9963299188" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>
+                      M.siddhardha: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>99632 99188</span>
                     </a>
                   </div>
                 </div>
@@ -837,7 +848,6 @@ export default function App() {
           gap: '0.25rem'
         }}>
           <p>© 2026 Nivas Accommodations. developed by KaliX technologies</p>
-          <p style={{ fontSize: '0.72rem' }}>- Proudly created by SRKR Students.</p>
         </div>
       </footer>
 
@@ -1021,6 +1031,10 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
                     <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
                     <span>Photos provided on the website are verified by hostels.</span>
                   </li>
+                  <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
+                    <span>To know the basic fee structure call us...</span>
+                  </li>
                 </>
               ) : (
                 <>
@@ -1031,6 +1045,10 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
                   <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                     <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
                     <span>వెబ్‌సైట్‌లో అందించిన ఫోటోలు హాస్టల్స్ ద్వారా ధృవీకరించబడ్డాయి.</span>
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <Check size={16} style={{ flexShrink: 0, marginTop: '0.15rem', color: 'var(--primary)' }} />
+                    <span>ఫీజు వివరాలు తెలుసుకోవడానికి మమ్మల్ని సంప్రదించండి...</span>
                   </li>
                 </>
               )}
@@ -1142,41 +1160,45 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
 
             {/* Open Button */}
             <button
+              disabled={!tempSelectedCollege}
               onClick={() => {
                 if (tempSelectedCollege) {
                   setSelectedCollege(tempSelectedCollege);
-                } else {
-                  setSelectedCollege('SRKR Engineering');
+                  setIsOpen(false);
                 }
-                setIsOpen(false);
               }}
               style={{
                 marginTop: '1rem',
                 padding: '0.85rem 1.5rem',
                 borderRadius: 'var(--radius-md)',
-                background: 'var(--primary)',
-                color: '#ffffff',
+                background: tempSelectedCollege ? 'var(--primary)' : 'var(--border)',
+                color: tempSelectedCollege ? '#ffffff' : 'var(--text-muted)',
                 border: 'none',
                 fontWeight: 700,
                 fontSize: '1rem',
-                cursor: 'pointer',
+                cursor: tempSelectedCollege ? 'pointer' : 'not-allowed',
                 transition: 'all 0.25s ease',
                 textAlign: 'center',
-                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+                boxShadow: tempSelectedCollege ? '0 4px 12px var(--primary-glow)' : 'none',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem'
+                gap: '0.5rem',
+                opacity: tempSelectedCollege ? 1 : 0.6
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#4f46e5';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.4)';
+                if (tempSelectedCollege) {
+                  e.currentTarget.style.filter = 'brightness(0.95)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px var(--primary-glow)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--primary)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.3)';
+                if (tempSelectedCollege) {
+                  e.currentTarget.style.filter = 'none';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px var(--primary-glow)';
+                }
               }}
             >
               Open

@@ -8,7 +8,9 @@ export default function FiltersBar({
   resetFilters,
   isOpen,
   setIsOpen,
-  priceBounds
+  priceBounds,
+  selectedCollege,
+  setSelectedCollege
 }) {
   if (!isOpen) return null;
 
@@ -59,6 +61,16 @@ export default function FiltersBar({
     }));
   };
 
+  const handleAssociatedCollegeChange = (collegeVal) => {
+    if (setSelectedCollege) {
+      setSelectedCollege(collegeVal);
+    }
+    setFilters(prev => ({
+      ...prev,
+      associated_college: collegeVal
+    }));
+  };
+
   return (
     <div className="filter-modal-overlay" onClick={() => setIsOpen(false)}>
       <aside className="filter-modal-content glass" onClick={(e) => e.stopPropagation()}>
@@ -78,6 +90,25 @@ export default function FiltersBar({
         </div>
 
         <div className="filter-modal-body">
+          {/* College Location Filter */}
+          <div className="filter-section">
+            <h4 className="filter-title">College Location</h4>
+            <div className="filter-chips">
+              <button 
+                className={`filter-chip ${filters.associated_college === 'SRKR Engineering' ? 'active' : ''}`}
+                onClick={() => handleAssociatedCollegeChange('SRKR Engineering')}
+              >
+                SRKR Engineering
+              </button>
+              <button 
+                className={`filter-chip ${filters.associated_college === 'Vishnu engineering college' ? 'active' : ''}`}
+                onClick={() => handleAssociatedCollegeChange('Vishnu engineering college')}
+              >
+                Vishnu Engineering
+              </button>
+            </div>
+          </div>
+
           {/* Gender Filter */}
           <div className="filter-section">
             <h4 className="filter-title">Gender Accommodation</h4>
@@ -104,6 +135,27 @@ export default function FiltersBar({
               )}
             </div>
           </div>
+
+          {/* Hostel Category Filter */}
+          {type === 'hostel' && (
+            <div className="filter-section">
+              <h4 className="filter-title">Hostel Category</h4>
+              <div className="filter-chips">
+                <button 
+                  className={`filter-chip ${filters.college === '1' ? 'active' : ''}`}
+                  onClick={() => handleCollegeChange('1')}
+                >
+                  College Hostels
+                </button>
+                <button 
+                  className={`filter-chip ${filters.college === '0' ? 'active' : ''}`}
+                  onClick={() => handleCollegeChange('0')}
+                >
+                  Private Hostels
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* AC / Non-AC Filter */}
           <div className="filter-section">

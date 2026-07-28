@@ -240,81 +240,167 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
         <span>Back to {type === 'hostel' ? 'Hostels' : 'Rooms & PGs'}</span>
       </div>
 
-      {/* Header Info */}
-      <div className="detail-header">
-        <div className="detail-title-col">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', width: '100%' }}>
-            <h1 className="detail-name" style={{ margin: 0 }}>{name}</h1>
-            <span className={`card-gender-badge gender-${gender}`} style={{ position: 'static' }}>
-              <UserCheck size={12} />
-              <span>{gender === 'boys' ? 'Boys Only' : gender === 'girls' ? 'Girls Only' : 'Unisex PG'}</span>
-            </span>
-            {isAc && (
-              <span className="card-ac-badge" style={{ position: 'static', background: 'var(--primary-glow)' }}>
-                <Wind size={12} />
-                <span>AC Accommodation</span>
-              </span>
-            )}
+      {/* Title, Badges and Actions Row */}
+      <div className="detail-header-top" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', width: '100%', marginBottom: '1.25rem' }}>
+        <h1 className="detail-name" style={{ margin: 0 }}>{name}</h1>
+        <span className={`card-gender-badge gender-${gender}`} style={{ position: 'static' }}>
+          <UserCheck size={12} />
+          <span>{gender === 'boys' ? 'Boys Only' : gender === 'girls' ? 'Girls Only' : 'Unisex PG'}</span>
+        </span>
+        {isAc && (
+          <span className="card-ac-badge" style={{ position: 'static', background: 'var(--primary-glow)' }}>
+            <Wind size={12} />
+            <span>AC Accommodation</span>
+          </span>
+        )}
 
+        {/* Save and Share Actions */}
+        <div className="detail-actions-inline" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+          <button
+            onClick={handleLikeClick}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: liked ? 'rgba(99, 102, 241, 0.15)' : 'rgba(0, 0, 0, 0.02)',
+              border: '1px solid',
+              borderColor: liked ? 'rgba(99, 102, 241, 0.3)' : 'var(--border)',
+              borderRadius: 'var(--radius-full)',
+              padding: '0.5rem 1rem',
+              color: liked ? 'var(--primary)' : 'var(--text-secondary)',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = liked ? 'rgba(99, 102, 241, 0.3)' : 'var(--border)'; }}
+          >
+            <Bookmark size={16} fill={liked ? 'var(--primary)' : 'transparent'} />
+            <span>{liked ? 'Saved' : 'Save'}</span>
+          </button>
 
-            {/* Save and Share Actions */}
-            <div className="detail-actions-inline" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
-              <button
-                onClick={handleLikeClick}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  background: liked ? 'rgba(99, 102, 241, 0.15)' : 'rgba(0, 0, 0, 0.02)',
-                  border: '1px solid',
-                  borderColor: liked ? 'rgba(99, 102, 241, 0.3)' : 'var(--border)',
-                  borderRadius: 'var(--radius-full)',
-                  padding: '0.5rem 1rem',
-                  color: liked ? 'var(--primary)' : 'var(--text-secondary)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  boxShadow: 'var(--shadow-sm)'
+          <button
+            onClick={handleShareClick}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: 'rgba(0, 0, 0, 0.02)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-full)',
+              padding: '0.5rem 1rem',
+              color: 'var(--text-secondary)',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+          >
+            <Share2 size={16} />
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Interactive Gallery Layout */}
+      {/* Asymmetric grid: large photo left, two stacked thumbnails right */}
+      <div className="gallery-layout">
+        <div 
+          className="gallery-main" 
+          onClick={() => openLightbox(activePhotoIndex)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <img src={photos[activePhotoIndex]} alt="Main View" className="gallery-img" loading="lazy" />
+          
+          {/* Mobile/Tablet Controls: Dots and Arrows */}
+          {photos.length > 1 && (
+            <>
+              {/* Prev / Next Arrows */}
+              <button 
+                className="gallery-nav-btn prev"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActivePhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = liked ? 'rgba(99, 102, 241, 0.3)' : 'var(--border)'; }}
+                aria-label="Previous Photo"
               >
-                <Bookmark size={16} fill={liked ? 'var(--primary)' : 'transparent'} />
-                <span>{liked ? 'Saved' : 'Save'}</span>
+                <ChevronLeft size={18} />
               </button>
-
-              <button
-                onClick={handleShareClick}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  background: 'rgba(0, 0, 0, 0.02)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-full)',
-                  padding: '0.5rem 1rem',
-                  color: 'var(--text-secondary)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  boxShadow: 'var(--shadow-sm)'
+              <button 
+                className="gallery-nav-btn next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActivePhotoIndex((prev) => (prev + 1) % photos.length);
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                aria-label="Next Photo"
               >
-                <Share2 size={16} />
-                <span>Share</span>
+                <ChevronRight size={18} />
               </button>
-            </div>
+ 
+              {/* Navigation Dots */}
+              <div className="gallery-dots">
+                {photos.map((_, idx) => (
+                  <span 
+                    key={idx}
+                    className={`gallery-dot ${activePhotoIndex === idx ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActivePhotoIndex(idx);
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+        
+        <div className="gallery-thumb-grid">
+          <div 
+            className={`gallery-img-box ${activePhotoIndex === 1 % photos.length ? 'active' : ''}`} 
+            onClick={(e) => { e.stopPropagation(); setActivePhotoIndex(1 % photos.length); }}
+          >
+            <img 
+              src={photos[1 % photos.length]} 
+              alt="Thumbnail 1" 
+              className="gallery-img" 
+              loading="lazy"
+              onError={(e) => { e.target.src = photos[0]; }}
+            />
           </div>
+          
+          <div 
+            className={`gallery-img-box ${activePhotoIndex === 2 % photos.length ? 'active' : ''}`} 
+            onClick={(e) => { e.stopPropagation(); setActivePhotoIndex(2 % photos.length); }}
+          >
+            <img 
+              src={photos[2 % photos.length]} 
+              alt="Thumbnail 2" 
+              className="gallery-img"
+              loading="lazy"
+              onError={(e) => { e.target.src = photos[0]; }}
+            />
+            {photos.length > 3 && (
+              <div className="gallery-more-overlay" onClick={(e) => { e.stopPropagation(); openLightbox(3); }}>
+                <span>+{photos.length - 3}</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', marginTop: '0.2rem' }}>More Photos</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Details and Pricing Header Block */}
+      <div className="detail-header" style={{ marginTop: '1.5rem' }}>
+        <div className="detail-title-col">
           <div className="detail-address-row" style={{ marginTop: '0.75rem' }}>
             <GoogleMapsIcon size={18} />
             <span>{item.address || 'Near SRKR College, Bhimavaram'}</span>
-            {distance !== null && (
-              <span style={{ color: 'var(--unisex-color)', fontWeight: 700 }}>• {distance} km to {item.associated_college || 'SRKR Engineering College'}</span>
-            )}
           </div>
         </div>
 
@@ -368,130 +454,6 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               </div>
             )}
           </div>
-
-          {/* Proximity/Distance Card */}
-          {(distance !== null && distance !== undefined) && (
-            <div className="detail-price-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '150px', flex: 1 }}>
-              <div className="beds-label" style={{ marginBottom: '0.4rem', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>
-                College Distance
-              </div>
-              <div 
-                style={{ 
-                  background: 'var(--primary-glow)', 
-                  color: 'var(--primary)', 
-                  padding: '0.35rem 0.75rem', 
-                  borderRadius: 'var(--radius-full)', 
-                  fontSize: '0.8rem', 
-                  fontWeight: 700, 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  gap: '0.3rem',
-                  boxShadow: 'var(--shadow-sm)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.02em',
-                  margin: '0.15rem 0 0.35rem 0'
-                }}
-              >
-                <MapPin size={12} style={{ color: 'var(--primary)' }} />
-                <span>{distance} KM</span>
-              </div>
-              <div style={{ width: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.65rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700 }}>Near To</span>
-                <span style={{ fontWeight: 600, color: 'var(--primary)' }}>
-                  {item.associated_college === 'Vishnu engineering college' ? 'Vishnu' : 'SRKR'}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Interactive Gallery Layout */}
-      {/* Asymmetric grid: large photo left, two stacked thumbnails right */}
-      <div className="gallery-layout">
-        <div 
-          className="gallery-main" 
-          onClick={() => openLightbox(activePhotoIndex)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <img src={photos[activePhotoIndex]} alt="Main View" className="gallery-img" loading="lazy" />
-          
-          {/* Mobile/Tablet Controls: Dots and Arrows */}
-          {photos.length > 1 && (
-            <>
-              {/* Prev / Next Arrows */}
-              <button 
-                className="gallery-nav-btn prev"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActivePhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
-                }}
-                aria-label="Previous Photo"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button 
-                className="gallery-nav-btn next"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActivePhotoIndex((prev) => (prev + 1) % photos.length);
-                }}
-                aria-label="Next Photo"
-              >
-                <ChevronRight size={18} />
-              </button>
-
-              {/* Navigation Dots */}
-              <div className="gallery-dots">
-                {photos.map((_, idx) => (
-                  <span 
-                    key={idx}
-                    className={`gallery-dot ${activePhotoIndex === idx ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActivePhotoIndex(idx);
-                    }}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-        
-        <div className="gallery-thumb-grid">
-          <div 
-            className={`gallery-img-box ${activePhotoIndex === 1 % photos.length ? 'active' : ''}`} 
-            onClick={(e) => { e.stopPropagation(); setActivePhotoIndex(1 % photos.length); }}
-          >
-            <img 
-              src={photos[1 % photos.length]} 
-              alt="Thumbnail 1" 
-              className="gallery-img" 
-              loading="lazy"
-              onError={(e) => { e.target.src = photos[0]; }}
-            />
-          </div>
-          
-          <div 
-            className={`gallery-img-box ${activePhotoIndex === 2 % photos.length ? 'active' : ''}`} 
-            onClick={(e) => { e.stopPropagation(); setActivePhotoIndex(2 % photos.length); }}
-          >
-            <img 
-              src={photos[2 % photos.length]} 
-              alt="Thumbnail 2" 
-              className="gallery-img"
-              loading="lazy"
-              onError={(e) => { e.target.src = photos[0]; }}
-            />
-            {photos.length > 3 && (
-              <div className="gallery-more-overlay" onClick={(e) => { e.stopPropagation(); openLightbox(3); }}>
-                <span>+{photos.length - 3}</span>
-                <span style={{ fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', marginTop: '0.2rem' }}>More Photos</span>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
@@ -512,7 +474,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
       >
         <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <MessageSquare size={16} style={{ color: 'var(--primary)' }} />
-          Interested? Send a quick enquiry to the owner:
+          Contact for more details
         </span>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           <a 
