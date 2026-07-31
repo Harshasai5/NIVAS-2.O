@@ -403,9 +403,111 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
             <span>{item.address || 'Near SRKR College, Bhimavaram'}</span>
           </div>
         </div>
+      </div>
 
-        <div className="detail-pricing-col" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end', textAlign: 'left' }}>
-          <div className="detail-price-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '150px', flex: 1 }}>
+      {/* Side-by-side Contact and Vacancy Containers (Website View) */}
+      <div 
+        className="detail-meta-group" 
+        style={{ 
+          display: 'flex', 
+          gap: '1.5rem', 
+          flexWrap: 'wrap', 
+          alignItems: 'stretch', 
+          margin: '1.5rem 0 2.5rem 0' 
+        }}
+      >
+        {/* Quick Enquiry Section */}
+        <div 
+          className="quick-enquiry-container" 
+          style={{ 
+            flex: '2 1 450px',
+            padding: '1.25rem', 
+            background: 'var(--bg-card)', 
+            border: '1px solid var(--border)', 
+            borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--shadow-sm)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.85rem',
+            margin: 0
+          }}
+        >
+          <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <MessageSquare size={16} style={{ color: 'var(--primary)' }} />
+            Contact for more details
+          </span>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <a 
+              href={`tel:${item.phone}`}
+              className="action-btn action-btn-primary"
+              style={{ 
+                textDecoration: 'none', 
+                flex: 1, 
+                minWidth: '140px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '0.5rem',
+                padding: '0.75rem 1.25rem',
+                fontSize: '0.9rem',
+                fontWeight: 700
+              }}
+            >
+              <Phone size={16} />
+              <span>Call for Enquiry</span>
+            </a>
+            <a 
+              href={`https://wa.me/91${item.phone}?text=Hello, I saw your accommodation listing "${name}" on Nivas Platform and I am interested in it.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="action-btn action-btn-secondary"
+              style={{ 
+                textDecoration: 'none', 
+                flex: 1, 
+                minWidth: '140px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '0.5rem',
+                padding: '0.75rem 1.25rem',
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                color: '#25D366', 
+                borderColor: '#25D366'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(37, 211, 102, 0.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              <MessageSquare size={16} />
+              <span>WhatsApp Enquiry</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Vacancy Details Card */}
+        <div 
+          className="detail-pricing-col" 
+          style={{ 
+            flex: '1 1 250px',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <div 
+            className="detail-price-box" 
+            style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              height: '100%',
+              padding: '1.25rem',
+              boxShadow: 'var(--shadow-sm)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)'
+            }}
+          >
             {type === 'hostel' ? (
               <>
                 <div className="beds-label" style={{ marginBottom: '0.4rem', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Occupancy Status</div>
@@ -454,73 +556,6 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Quick Enquiry Section */}
-      <div 
-        className="quick-enquiry-container" 
-        style={{ 
-          margin: '1.5rem 0 2.5rem 0', 
-          padding: '1.25rem', 
-          background: 'var(--bg-card)', 
-          border: '1px solid var(--border)', 
-          borderRadius: 'var(--radius-md)',
-          boxShadow: 'var(--shadow-sm)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.85rem'
-        }}
-      >
-        <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <MessageSquare size={16} style={{ color: 'var(--primary)' }} />
-          Contact for more details
-        </span>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <a 
-            href={`tel:${item.phone}`}
-            className="action-btn action-btn-primary"
-            style={{ 
-              textDecoration: 'none', 
-              flex: 1, 
-              minWidth: '140px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '0.5rem',
-              padding: '0.75rem 1.25rem',
-              fontSize: '0.9rem',
-              fontWeight: 700
-            }}
-          >
-            <Phone size={16} />
-            <span>Call for Enquiry</span>
-          </a>
-          <a 
-            href={`https://wa.me/91${item.phone}?text=Hello, I saw your accommodation listing "${name}" on Nivas Platform and I am interested in it.`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="action-btn action-btn-secondary"
-            style={{ 
-              textDecoration: 'none', 
-              flex: 1, 
-              minWidth: '140px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '0.5rem',
-              padding: '0.75rem 1.25rem',
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              color: '#25D366', 
-              borderColor: '#25D366'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(37, 211, 102, 0.05)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-          >
-            <MessageSquare size={16} />
-            <span>WhatsApp Enquiry</span>
-          </a>
         </div>
       </div>
 
@@ -670,7 +705,9 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
               <div className="beds-label">Room Sharing</div>
               <div className="beds-value-row">
                 <span className="beds-val-large">{beds}</span>
-                <span className="beds-label" style={{ color: 'var(--text-secondary)' }}>members per room</span>
+                <span className="beds-label" style={{ color: 'var(--text-secondary)' }}>
+                  {beds && beds.toString().includes(',') ? 'sharing options available' : 'members per room'}
+                </span>
               </div>
             </div>
 
@@ -707,6 +744,45 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Redirection link right above footer */}
+      <div style={{ textAlign: 'center', margin: '3rem 0 1rem 0', borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', fontWeight: 600 }}>
+          {type === 'hostel' ? (
+            <>
+              Looking for some more hostels{' '}
+              <span 
+                onClick={() => setPage('hostels')} 
+                style={{ 
+                  color: 'var(--primary)', 
+                  fontWeight: 800, 
+                  cursor: 'pointer', 
+                  textDecoration: 'underline',
+                  marginLeft: '0.25rem'
+                }}
+              >
+                click here
+              </span>
+            </>
+          ) : (
+            <>
+              Looking for some more rooms{' '}
+              <span 
+                onClick={() => setPage('rooms')} 
+                style={{ 
+                  color: 'var(--primary)', 
+                  fontWeight: 800, 
+                  cursor: 'pointer', 
+                  textDecoration: 'underline',
+                  marginLeft: '0.25rem'
+                }}
+              >
+                click here
+              </span>
+            </>
+          )}
+        </p>
       </div>
 
       {/* --- SWIPEABLE LIGHTBOX CAROUSEL OVERLAY --- */}

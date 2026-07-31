@@ -29,6 +29,13 @@ async function testConnection() {
       console.log("✨ Appended 'clicks' column to 'hostels' table successfully.");
     }
 
+    // Schema migration: Alter beds_per_room in hostels to support multiple sharing options
+    const [hostelBedsType] = await pool.query("SHOW COLUMNS FROM hostels LIKE 'beds_per_room'");
+    if (hostelBedsType.length > 0 && hostelBedsType[0].Type.toLowerCase().includes('int')) {
+      await pool.query("ALTER TABLE hostels MODIFY COLUMN beds_per_room VARCHAR(255) NOT NULL DEFAULT '1'");
+      console.log("✨ Migrated 'beds_per_room' in 'hostels' table to VARCHAR(255) successfully.");
+    }
+
     const [hostelInstCols] = await pool.query("SHOW COLUMNS FROM hostels LIKE 'installments'");
     if (hostelInstCols.length === 0) {
       await pool.query("ALTER TABLE hostels ADD COLUMN installments INT DEFAULT 1");

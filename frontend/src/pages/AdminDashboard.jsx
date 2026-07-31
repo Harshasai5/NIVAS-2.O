@@ -763,7 +763,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                       <div className="form-group">
                         <label className="form-label">Beds sharing per room</label>
                         <input 
-                          type="number" 
+                          type="text" 
+                          placeholder="e.g. 2,3,4"
                           value={formData.beds_per_room || ''} 
                           onChange={(e) => setFormData({ ...formData, beds_per_room: e.target.value })} 
                           className="form-input" 
@@ -1268,7 +1269,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                     <div className="form-group">
                       <label className="form-label">Beds sharing per room</label>
                       <input 
-                        type="number" 
+                        type="text" 
+                        placeholder="e.g. 2,3,4"
                         value={formData.beds_per_room || ''} 
                         onChange={(e) => setFormData({ ...formData, beds_per_room: e.target.value })} 
                         className="form-input" 

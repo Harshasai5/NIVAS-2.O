@@ -9,7 +9,6 @@ import logoImg from '../assets/logo.jpeg';
 export default function Home({ setPage, openDetail, setHostelFilters, initialHostelFilters, userToken, triggerLike, triggerShare, selectedCollege, setSelectedCollege }) {
   const [banners, setBanners] = useState([]);
   const [sponsoredHostels, setSponsoredHostels] = useState([]);
-  const [nearbyRooms, setNearbyRooms] = useState([]);
   const [allHostels, setAllHostels] = useState([]);
   const [allRooms, setAllRooms] = useState([]);
   const [collegeHostels, setCollegeHostels] = useState([]);
@@ -33,7 +32,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
         setBanners(mainBanners.length > 0 ? mainBanners : bannersData);
 
         // 2. Fetch Sponsored Hostels
-        const sponsoredRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=true&limit=6&associated_college=${encodeURIComponent(selectedCollege)}`, { headers });
+        const sponsoredRes = await fetch(`${API_BASE_URL}/api/hostels?sponsored=true&limit=8&associated_college=${encodeURIComponent(selectedCollege)}`, { headers });
         const sponsoredJson = await sponsoredRes.json();
         setSponsoredHostels(Array.isArray(sponsoredJson) ? sponsoredJson : []);
 
@@ -47,10 +46,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
         const roomsJson = await roomsRes.json();
         setAllRooms(Array.isArray(roomsJson) ? roomsJson : []);
 
-        // 5. Fetch Nearby Rooms (Limit to 6, under 1.2km)
-        const nearbyRes = await fetch(`${API_BASE_URL}/api/rooms?distance_max=1.2&limit=6&associated_college=${encodeURIComponent(selectedCollege)}`);
-        const nearbyJson = await nearbyRes.json();
-        setNearbyRooms(Array.isArray(nearbyJson) ? nearbyJson : []);
+
 
         // 6. Fetch College Hostels (Limit to 6)
         const collegeRes = await fetch(`${API_BASE_URL}/api/hostels?college=true&limit=6&associated_college=${encodeURIComponent(selectedCollege)}`, { headers });
@@ -119,7 +115,6 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
         setAllHostels(prev => updateListItem(prev));
         setCollegeHostels(prev => updateListItem(prev));
       } else {
-        setNearbyRooms(prev => updateListItem(prev));
         setAllRooms(prev => updateListItem(prev));
       }
     });
@@ -163,44 +158,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
         </button>
       </div>
 
-      {/* 3. Nearby Rooms Section */}
-      <section style={{ margin: '2rem 0' }}>
-        <div className="section-header">
-          <h2 className="section-title">
-            <span>Rooms Near {selectedCollege === 'Vishnu engineering college' ? 'Vishnu College' : 'SRKR College'}</span>
-          </h2>
-          <div className="section-action" onClick={() => setPage('rooms')}>
-            <span>View All</span>
-            <ArrowRight size={16} />
-          </div>
-        </div>
 
-        <div className="scroll-container" style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '1rem 0' }}>
-          <div 
-            className="glass"
-            style={{
-              width: '100%',
-              maxWidth: '600px',
-              padding: '2.5rem 1.5rem',
-              borderRadius: 'var(--radius-md)',
-              border: '1px dashed var(--border)',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: 'rgba(255,255,255,0.01)'
-            }}
-          >
-            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--unisex-color)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Launching soon!!!
-            </span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              If you have rental rooms or PGs near college, list them with us!
-            </span>
-          </div>
-        </div>
-      </section>
 
       {/* Hostels Section */}
       {allHostels.length > 0 && (

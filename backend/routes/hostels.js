@@ -127,8 +127,8 @@ router.get('/', optionalUser, async (req, res) => {
 
     // Beds sharing filter
     if (beds_per_room) {
-      query += " AND h.beds_per_room = ?";
-      params.push(parseInt(beds_per_room));
+      query += " AND FIND_IN_SET(?, h.beds_per_room) > 0";
+      params.push(beds_per_room);
     }
 
     // Price range filters
@@ -278,7 +278,7 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
         gender,
         parseFloat(price_starting),
         is_ac === 'true' || is_ac === '1' ? 1 : 0,
-        parseInt(beds_per_room || '1'),
+        beds_per_room ? String(beds_per_room).trim() : '1',
         phone,
         google_maps_link || '',
         address || '',
@@ -399,7 +399,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         gender !== undefined ? gender : existing[0].gender,
         price_starting !== undefined ? parseFloat(price_starting) : existing[0].price_starting,
         is_ac !== undefined ? (is_ac === 'true' || is_ac === '1' || is_ac === 1 ? 1 : 0) : existing[0].is_ac,
-        beds_per_room !== undefined ? parseInt(beds_per_room) : existing[0].beds_per_room,
+        beds_per_room !== undefined ? String(beds_per_room).trim() : existing[0].beds_per_room,
         phone !== undefined ? phone : existing[0].phone,
         google_maps_link !== undefined ? google_maps_link : existing[0].google_maps_link,
         address !== undefined ? address : existing[0].address,
