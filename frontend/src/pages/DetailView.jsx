@@ -514,11 +514,11 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                 <div 
                   className="card-avail-badge" 
                   style={{ 
-                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--girls-color)', 
+                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--primary)', 
                     color: 'white', 
                     padding: '0.35rem 0.75rem', 
                     borderRadius: 'var(--radius-full)', 
-                    fontSize: '0.8rem', 
+                    fontSize: availableBeds > 0 ? '0.8rem' : '0.68rem', 
                     fontWeight: 700, 
                     display: 'inline-flex', 
                     alignItems: 'center', 
@@ -538,7 +538,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                     background: 'white', 
                     opacity: 0.9 
                   }} />
-                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'Filled'}</span>
+                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'contact hostel for seats availability'}</span>
                 </div>
               </>
             ) : (
@@ -675,23 +675,42 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
             
             {/* Beds capacity widget */}
             <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                <span>Occupancy Status</span>
-                <span>{availableBeds} / {totalCap} Available</span>
-              </div>
-              <div className="beds-bar-container">
-                <div 
-                  className="beds-bar-fill"
-                  style={{ 
-                    width: `${fillPercentage}%`,
-                    background: fillPercentage > 85 ? 'var(--girls-color)' : 'var(--unisex-color)' 
-                  }}
-                />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-                <span>{filledBeds} Beds Filled</span>
-                <span>{totalCap} Total Capacity</span>
-              </div>
+              {availableBeds === 0 ? (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '1rem 0.75rem', 
+                  background: 'rgba(99, 102, 241, 0.05)', 
+                  border: '1px dashed var(--primary)', 
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--primary)',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.02em'
+                }}>
+                  contact hostel for seats availability
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    <span>Occupancy Status</span>
+                    <span>{availableBeds} / {totalCap} Available</span>
+                  </div>
+                  <div className="beds-bar-container">
+                    <div 
+                      className="beds-bar-fill"
+                      style={{ 
+                        width: `${fillPercentage}%`,
+                        background: fillPercentage > 85 ? 'var(--girls-color)' : 'var(--unisex-color)' 
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                    <span>{filledBeds} Beds Filled</span>
+                    <span>{totalCap} Total Capacity</span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="beds-status-widget">

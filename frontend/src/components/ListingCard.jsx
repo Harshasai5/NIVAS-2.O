@@ -106,11 +106,11 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
                 <div 
                   className="card-avail-badge" 
                   style={{ 
-                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--girls-color)', 
+                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--primary)', 
                     color: 'white', 
                     padding: '0.25rem 0.6rem', 
                     borderRadius: 'var(--radius-full)', 
-                    fontSize: '0.72rem', 
+                    fontSize: availableBeds > 0 ? '0.72rem' : '0.62rem', 
                     fontWeight: 700, 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -129,7 +129,7 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
                     background: 'white', 
                     opacity: 0.9 
                   }} />
-                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'Filled'}</span>
+                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'contact hostel for seats availability'}</span>
                 </div>
               ) : (
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Status N/A</div>
@@ -154,11 +154,11 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
                 <div 
                   className="card-avail-badge" 
                   style={{ 
-                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--girls-color)', 
+                    background: availableBeds > 0 ? 'var(--unisex-color)' : 'var(--primary)', 
                     color: 'white', 
                     padding: '0.25rem 0.6rem', 
                     borderRadius: 'var(--radius-full)', 
-                    fontSize: '0.68rem', 
+                    fontSize: availableBeds > 0 ? '0.68rem' : '0.58rem', 
                     fontWeight: 700, 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -177,7 +177,7 @@ export default function ListingCard({ item, type, onClick, triggerLike, triggerS
                     background: 'white', 
                     opacity: 0.9 
                   }} />
-                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'Filled'}</span>
+                  <span>{availableBeds > 0 ? `${availableBeds} Seats Left` : 'contact hostel for seats availability'}</span>
                 </div>
               )}
             </div>

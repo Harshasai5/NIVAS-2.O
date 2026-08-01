@@ -959,6 +959,8 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
           position: 'relative',
           width: '100%',
           maxWidth: '550px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           borderRadius: 'var(--radius-lg)',
           border: '1px solid var(--border)',
           boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.15)',
@@ -1212,9 +1214,9 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
               letterSpacing: '0.015em',
               boxShadow: '0 2px 8px rgba(239, 68, 68, 0.03)'
             }}>
-              📢 There are some offers contact us to know ( M.S.R.Sudarsan:{' '}
+              📢 There are some offers contact us to know ( B.Sai Deepak:{' '}
               <a 
-                href="tel:9059174370" 
+                href="tel:9676268929" 
                 style={{ 
                   color: 'inherit', 
                   textDecoration: 'underline', 
@@ -1222,7 +1224,7 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
                   cursor: 'pointer' 
                 }}
               >
-                9059174370
+                9676268929
               </a>
               )
             </div>
