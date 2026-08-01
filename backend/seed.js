@@ -294,7 +294,7 @@ const hostelsData = [
     hostel_name: 'Naresh Boys Hostel',
     phone: '',
     gender: 'boys',
-    beds_per_room: '1',
+    beds_per_room: '',
     total_beds: 0,
     available_beds: 0,
     installments: 1,

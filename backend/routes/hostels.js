@@ -87,6 +87,7 @@ router.get('/', optionalUser, async (req, res) => {
         h.installments,
         h.associated_college,
         h.distance_from_srkr,
+        h.order,
         hp.photo AS primary_photo,
         (SELECT COUNT(*) FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND interaction_type = 'like') AS likes_count,
         ? IS NOT NULL AND EXISTS(SELECT 1 FROM user_interactions WHERE item_id = h.id AND item_type = 'hostel' AND user_id = ? AND interaction_type = 'like') AS is_liked
@@ -153,11 +154,11 @@ router.get('/', optionalUser, async (req, res) => {
       query += " AND (h.sponsor_order = 0 OR h.sponsor_order IS NULL)";
     }
 
-    // Sorting: Sponsored first, then by sponsor_order, then newest
+    // Sorting: order column first for main page, else sponsor_order
     if (sponsored === 'true') {
       query += " ORDER BY h.sponsor_order ASC, h.id DESC";
     } else {
-      query += " ORDER BY h.sponsor_order > 0 DESC, h.sponsor_order ASC, h.id DESC";
+      query += " ORDER BY h.order ASC, h.sponsor_order > 0 DESC, h.sponsor_order ASC, h.id DESC";
     }
 
     // Limit records
@@ -240,7 +241,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
     total_beds,
     status,
     installments,
-    associated_college
+    associated_college,
+    order
   } = req.body;
 
   if (!hostel_name || !gender || !price_starting || !phone) {
@@ -271,8 +273,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
 
     const [result] = await conn.query(
       `INSERT INTO hostels 
-       (hostel_name, gender, price_starting, is_ac, beds_per_room, phone, google_maps_link, address, facilities_json, rules_json, sponsor_order, is_college_hostel, available_beds, total_beds, status, room_options_json, installments, associated_college) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (hostel_name, gender, price_starting, is_ac, beds_per_room, phone, google_maps_link, address, facilities_json, rules_json, sponsor_order, is_college_hostel, available_beds, total_beds, status, room_options_json, installments, associated_college, \`order\`) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         hostel_name,
         gender,
@@ -291,7 +293,8 @@ router.post('/', verifyAdmin, upload.array('photos', 10), async (req, res) => {
         status || 'active',
         room_options_json,
         installments ? parseInt(installments) : 1,
-        associated_college || 'SRKR Engineering'
+        associated_college || 'SRKR Engineering',
+        order !== undefined ? parseInt(order) : 9999
       ]
     );
 
@@ -350,7 +353,8 @@ router.put('/:id', verifyAdmin, async (req, res) => {
     total_beds,
     status,
     installments,
-    associated_college
+    associated_college,
+    order
   } = req.body;
 
   try {
@@ -392,7 +396,8 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         status = ?,
         room_options_json = ?,
         installments = ?,
-        associated_college = ?
+        associated_college = ?,
+        \`order\` = ?
       WHERE id = ?`,
       [
         hostel_name !== undefined ? hostel_name : existing[0].hostel_name,
@@ -413,6 +418,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         room_options_json,
         installments !== undefined ? parseInt(installments) : existing[0].installments,
         associated_college !== undefined ? associated_college : existing[0].associated_college,
+        order !== undefined ? parseInt(order) : existing[0].order,
         id
       ]
     );

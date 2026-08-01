@@ -661,14 +661,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                   allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
                   src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                    (() => {
-                      try {
-                        const url = new URL(item.google_maps_link);
-                        const q = url.searchParams.get('q');
-                        if (q) return q;
-                      } catch (e) {}
-                      return item.address || 'SRKR Engineering College Bhimavaram';
-                    })()
+                    item.google_maps_resolved || item.google_maps_link || item.address || 'SRKR Engineering College Bhimavaram'
                   )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                 />
               </div>

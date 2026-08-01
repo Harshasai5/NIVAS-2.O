@@ -107,7 +107,7 @@ function ContactForm() {
         disabled={loading}
       />
       <textarea 
-        placeholder="Your Message" 
+        placeholder="your question + phone number for clear communication" 
         rows="3"
         value={formData.message} 
         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -184,7 +184,7 @@ export default function App() {
   useEffect(() => {
     async function fetchBanners() {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/banners`);
+        const res = await fetch(`${API_BASE_URL}/api/banners?associated_college=${encodeURIComponent(selectedCollege)}`);
         const data = await res.json();
         const bannersList = Array.isArray(data) ? data : [];
         setInBetweenBanners(bannersList.filter(b => b.in_between === 1 || b.in_between === true));
@@ -193,7 +193,7 @@ export default function App() {
       }
     }
     fetchBanners();
-  }, []);
+  }, [selectedCollege]);
 
   // Pathname routing helper
   const navigateTo = (path, pageName, queryParams = '') => {
@@ -806,11 +806,11 @@ export default function App() {
                   {/* for SRKR */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em', borderBottom: '1px solid var(--border)', paddingBottom: '0.15rem', marginTop: '0.15rem' }}>for SRKR</span>
-                    <a href="tel:9676268929" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>
-                      B.Sai Deepak: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>9676268929</span>
-                    </a>
                     <a href="tel:9059174370" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>
                       M.S.R.Sudarsan: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>9059174370</span>
+                    </a>
+                    <a href="tel:8919892669" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>
+                      P.Sai Harsha: <span style={{ fontWeight: 700, color: 'var(--primary)' }}>8919892669</span>
                     </a>
                   </div>
                   
@@ -894,6 +894,8 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
   const [lang, setLang] = useState('en'); // 'en' or 'te'
   const [showCollegeTooltip, setShowCollegeTooltip] = useState(false);
   const [tempSelectedCollege, setTempSelectedCollege] = useState(null);
+  const [tcChecked, setTcChecked] = useState(false);
+  const [tcOpen, setTcOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -1158,11 +1160,78 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
               })}
             </div>
 
+            {/* T&C Checkbox */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.6rem', 
+              marginTop: '0.75rem', 
+              fontSize: '0.85rem',
+              color: 'var(--text-secondary)',
+              textAlign: 'left'
+            }}>
+              <input 
+                type="checkbox" 
+                id="tc-checkbox"
+                checked={tcChecked}
+                onChange={(e) => setTcChecked(e.target.checked)}
+                style={{ 
+                  cursor: 'pointer', 
+                  width: '16px', 
+                  height: '16px', 
+                  accentColor: 'var(--primary)',
+                  flexShrink: 0
+                }}
+              />
+              <label htmlFor="tc-checkbox" style={{ cursor: 'pointer', fontWeight: 600, userSelect: 'none' }}>
+                by clicking this ,you directly agree for{' '}
+                <span 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTcOpen(true);
+                  }} 
+                  style={{ color: 'var(--primary)', textDecoration: 'underline', cursor: 'pointer', fontWeight: 700 }}
+                >
+                  T&C
+                </span>
+              </label>
+            </div>
+
+            {/* Offers Promotion Banner */}
+            <div style={{ 
+              marginTop: '1.25rem', 
+              padding: '0.65rem 1rem', 
+              borderRadius: 'var(--radius-sm)', 
+              background: 'rgba(239, 68, 68, 0.06)', 
+              borderLeft: '4px solid #ef4444',
+              color: '#d97706', // High-visibility premium orange-red shade
+              fontWeight: 700, 
+              fontSize: '0.85rem',
+              textAlign: 'center',
+              letterSpacing: '0.015em',
+              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.03)'
+            }}>
+              📢 There are some offers contact us to know ( M.S.R.Sudarsan:{' '}
+              <a 
+                href="tel:9059174370" 
+                style={{ 
+                  color: 'inherit', 
+                  textDecoration: 'underline', 
+                  fontWeight: 800,
+                  cursor: 'pointer' 
+                }}
+              >
+                9059174370
+              </a>
+              )
+            </div>
+
             {/* Open Button */}
             <button
-              disabled={!tempSelectedCollege}
+              disabled={!tempSelectedCollege || !tcChecked}
               onClick={() => {
-                if (tempSelectedCollege) {
+                if (tempSelectedCollege && tcChecked) {
                   setSelectedCollege(tempSelectedCollege);
                   setIsOpen(false);
                 }
@@ -1171,30 +1240,30 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
                 marginTop: '1rem',
                 padding: '0.85rem 1.5rem',
                 borderRadius: 'var(--radius-md)',
-                background: tempSelectedCollege ? 'var(--primary)' : 'var(--border)',
-                color: tempSelectedCollege ? '#ffffff' : 'var(--text-muted)',
+                background: (tempSelectedCollege && tcChecked) ? 'var(--primary)' : 'var(--border)',
+                color: (tempSelectedCollege && tcChecked) ? '#ffffff' : 'var(--text-muted)',
                 border: 'none',
                 fontWeight: 700,
                 fontSize: '1rem',
-                cursor: tempSelectedCollege ? 'pointer' : 'not-allowed',
+                cursor: (tempSelectedCollege && tcChecked) ? 'pointer' : 'not-allowed',
                 transition: 'all 0.25s ease',
                 textAlign: 'center',
-                boxShadow: tempSelectedCollege ? '0 4px 12px var(--primary-glow)' : 'none',
+                boxShadow: (tempSelectedCollege && tcChecked) ? '0 4px 12px var(--primary-glow)' : 'none',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.5rem',
-                opacity: tempSelectedCollege ? 1 : 0.6
+                opacity: (tempSelectedCollege && tcChecked) ? 1 : 0.6
               }}
               onMouseEnter={(e) => {
-                if (tempSelectedCollege) {
+                if (tempSelectedCollege && tcChecked) {
                   e.currentTarget.style.filter = 'brightness(0.95)';
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 6px 16px var(--primary-glow)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (tempSelectedCollege) {
+                if (tempSelectedCollege && tcChecked) {
                   e.currentTarget.style.filter = 'none';
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 4px 12px var(--primary-glow)';
@@ -1203,8 +1272,201 @@ function AdPopup({ banners, selectedCollege, setSelectedCollege }) {
             >
               Open
             </button>
+
+            {/* Micro disclaimer to maintain college relationship */}
+            <div style={{ 
+              marginTop: '0.65rem', 
+              fontSize: '0.62rem', 
+              color: 'var(--text-muted)', 
+              opacity: 0.5, 
+              textAlign: 'center',
+              letterSpacing: '0.01em'
+            }}>
+              Take College hostels as first preference
+            </div>
           </div>
         </div>
+
+        {/* T&C Pop-up Page Modal */}
+        {tcOpen && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000000,
+            padding: '1.5rem',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            <div className="glass" style={{
+              width: '100%',
+              maxWidth: '600px',
+              maxHeight: '80vh',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              background: '#ffffff',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}>
+              {/* Modal Header */}
+              <div style={{
+                padding: '1.25rem 1.5rem',
+                borderBottom: '1px solid var(--border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%'
+              }}>
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                    Nivas Accommodations
+                  </h3>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                    Terms & Conditions • Effective Date: August 2026
+                  </span>
+                </div>
+                <button
+                  onClick={() => setTcOpen(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    padding: '0.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '50%',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--border)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Modal Scrollable Content */}
+              <div style={{
+                padding: '1.5rem',
+                overflowY: 'auto',
+                fontSize: '0.88rem',
+                lineHeight: '1.5',
+                color: 'var(--text-secondary)',
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem'
+              }}>
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>1. Purpose of the Platform</h4>
+                  <p style={{ margin: 0 }}>Nivas Accommodations is an online platform developed to help students and parents discover hostels and rental accommodations in Bhimavaram, especially near SRKR Engineering College and Vishnu Engineering College. Our objective is to simplify the accommodation search process by providing verified information in one place.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>2. Information Accuracy</h4>
+                  <p style={{ margin: 0 }}>All hostel details, including rent, amenities, contact information, and availability, are provided by the respective hostel owners or their authorized representatives. Nivas Accommodations is responsible only for designing, developing, and maintaining the platform. Users should verify all information directly with the hostel before making any decisions.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>3. Data Updates</h4>
+                  <p style={{ margin: 0 }}>Hostel listings are reviewed and updated approximately every 12 hours whenever revised information is received from property owners. Temporary differences in availability, pricing, or facilities may occur due to real-time changes.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>4. Platform Responsibility</h4>
+                  <p style={{ margin: 0 }}>Nivas Accommodations serves only as an information and discovery platform. We do not own any listed hostel, guarantee room availability. Any accommodation agreement is solely between the user and the hostel management.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>5. User Responsibilities</h4>
+                  <p style={{ margin: 0 }}>Users agree to use the platform lawfully, provide accurate information when contacting hostels, verify accommodation details before making payments, and avoid any misuse of the platform, including unauthorized access, spam, or fraudulent activities.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>6. Privacy & User Data</h4>
+                  <p style={{ margin: 0 }}>We respect your privacy. Personal information collected through the platform is used only to improve our services and user experience. User data will not be sold, shared with unauthorized third parties, or used for illegal purposes, except where disclosure is required by applicable law.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>7. Intellectual Property</h4>
+                  <p style={{ margin: 0 }}>The website design, branding, user interface, graphics, source code, and original content of Nivas Accommodations are the intellectual property of the platform unless otherwise stated. Unauthorized copying or commercial use is prohibited.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>8. Limitation of Liability</h4>
+                  <p style={{ margin: 0 }}>Nivas Accommodations is not responsible for changes in hostel fees, room availability, disputes between users and hostel owners, property conditions, financial transactions, or losses arising from accommodation agreements. Users are advised to inspect the property and verify all details before making any payment.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>9. Changes to the Platform</h4>
+                  <p style={{ margin: 0 }}>We reserve the right to update, modify, or remove listings and platform features whenever necessary without prior notice.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>10. Changes to Terms & Conditions</h4>
+                  <p style={{ margin: 0 }}>These Terms & Conditions may be revised from time to time. Continued use of the platform constitutes acceptance of the updated terms.</p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 700, color: 'var(--text-primary)' }}>11. Contact</h4>
+                  <p style={{ margin: 0 }}>For questions, feedback, or reporting incorrect hostel information, please contact us using the contact details provided on the website.</p>
+                </div>
+
+                <div style={{ 
+                  marginTop: '0.5rem',
+                  padding: '0.75rem',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(239, 68, 68, 0.05)',
+                  borderLeft: '3px solid #ef4444',
+                  fontSize: '0.82rem',
+                  color: '#b91c1c'
+                }}>
+                  <strong style={{ display: 'block', marginBottom: '0.2rem' }}>Disclaimer</strong>
+                  Nivas Accommodations is an independent student accommodation discovery platform. We neither own nor manage the listed properties and are not involved in rental agreements or financial transactions between users and hostel owners. Users are strongly encouraged to verify accommodation details, inspect the property personally, and communicate directly with the respective hostel management before making any commitment.
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div style={{
+                padding: '1rem 1.5rem',
+                borderTop: '1px solid var(--border)',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                background: '#f8fafc'
+              }}>
+                <button
+                  onClick={() => {
+                    setTcChecked(true);
+                    setTcOpen(false);
+                  }}
+                  style={{
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--primary)',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)'
+                  }}
+                >
+                  I Agree
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

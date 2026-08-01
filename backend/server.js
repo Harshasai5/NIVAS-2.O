@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import nodemailer from 'nodemailer';
 import adminRouter, { seedDefaultAdmin } from './routes/admin.js';
 import bannersRouter from './routes/banners.js';
 import hostelsRouter from './routes/hostels.js';
@@ -9,6 +10,15 @@ import roomsRouter from './routes/rooms.js';
 import authRouter from './routes/auth.js';
 
 dotenv.config();
+
+// Configure Nodemailer GMail SMTP Transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'nivasaccommodations@gmail.com',
+    pass: process.env.EMAIL_PASS // GMail App Password (set in .env)
+  }
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,10 +43,30 @@ app.use('/api/rooms', roomsRouter);
 app.use('/api/auth', authRouter);
 
 // Contact Message endpoint
-app.post('/api/contact', (req, res) => {
+app.post('/api/contact', async (req, res) => {
   const { name, email, message } = req.body;
   console.log(`✉️ New Contact Message from ${name} (${email}): ${message}`);
-  res.status(200).json({ success: true, message: 'Message sent successfully!' });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER || 'nivasaccommodations@gmail.com',
+    to: 'nivasaccommodations@gmail.com',
+    replyTo: email,
+    subject: `New Nivas Contact Message from ${name}`,
+    text: `Name: ${name}\nEmail: ${email}\n\nMessage/Question:\n${message}`
+  };
+
+  try {
+    if (process.env.EMAIL_PASS) {
+      await transporter.sendMail(mailOptions);
+      console.log(`✅ Email successfully sent to nivasaccommodations@gmail.com`);
+    } else {
+      console.warn(`⚠️ EMAIL_PASS not set in .env. Email was logged but not sent via SMTP.`);
+    }
+    res.status(200).json({ success: true, message: 'Message sent successfully!' });
+  } catch (error) {
+    console.error('💥 Failed to send email:', error);
+    res.status(500).json({ error: 'Failed to send message via email.' });
+  }
 });
 
 // Health Check endpoint for Keep-Alive pinger (cron-job.org)

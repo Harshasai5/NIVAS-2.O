@@ -25,7 +25,7 @@ export default function Home({ setPage, openDetail, setHostelFilters, initialHos
         }
 
         // 1. Fetch Banners
-        const bannersRes = await fetch(`${API_BASE_URL}/api/banners`);
+        const bannersRes = await fetch(`${API_BASE_URL}/api/banners?associated_college=${encodeURIComponent(selectedCollege)}`);
         const bannersJson = await bannersRes.json();
         const bannersData = Array.isArray(bannersJson) ? bannersJson : [];
         const mainBanners = bannersData.filter(b => b.main_display === 1 || b.main_display === true);

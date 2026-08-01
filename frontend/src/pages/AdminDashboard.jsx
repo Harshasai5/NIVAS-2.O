@@ -139,7 +139,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
         total_beds: 30,
         status: 'active',
         installments: 1,
-        associated_college: 'SRKR Engineering'
+        associated_college: 'SRKR Engineering',
+        order: 9999
       });
     } else if (type === 'room') {
       setFormData({
@@ -165,9 +166,11 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
         display_order: 1,
         in_between: 0,
         main_display: 0,
-        status: 'active'
+        status: 'active',
+        associated_college: 'SRKR Engineering'
       });
     }
+
     setCreateMode(true);
   };
 
@@ -179,7 +182,8 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
       display_order: banner.display_order,
       in_between: banner.in_between || 0,
       main_display: banner.main_display || 0,
-      status: banner.status
+      status: banner.status,
+      associated_college: banner.associated_college || 'SRKR Engineering'
     });
     setCoverFile(null);
     setGalleryFiles([]);
@@ -233,6 +237,7 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
           uploadData.append('in_between', formData.in_between === 1 || formData.in_between === true ? 1 : 0);
           uploadData.append('main_display', formData.main_display === 1 || formData.main_display === true ? 1 : 0);
           uploadData.append('status', formData.status || 'active');
+          uploadData.append('associated_college', formData.associated_college || 'SRKR Engineering');
           
           if (coverFile) {
             uploadData.append('banner_image', coverFile);
@@ -838,6 +843,17 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                     </div>
 
                     <div className="form-group">
+                      <label className="form-label">Display Flow Order (1, 2, 3... or 9999 for default)</label>
+                      <input 
+                        type="number" 
+                        value={formData.order !== undefined ? formData.order : 9999} 
+                        onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })} 
+                        className="form-input" 
+                        min="1"
+                      />
+                    </div>
+
+                    <div className="form-group">
                       <label className="form-label">Number of Fee Installments</label>
                       <input 
                         type="number" 
@@ -1174,6 +1190,9 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
                       Sequence: **Order {b.display_order}** | Status: **{b.status}**
                     </p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                      College: **{b.associated_college || 'SRKR Engineering'}**
+                    </p>
                     <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.25rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                       {b.main_display === 1 || b.main_display === true ? <span style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}>🏠 Home Hero</span> : null}
                       {b.in_between === 1 || b.in_between === true ? <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--unisex-color)', padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}>📜 Inline List</span> : null}
@@ -1340,6 +1359,17 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                       className="form-input" 
                       min="0"
                       max="8"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Display Flow Order (1, 2, 3... or 9999 for default)</label>
+                    <input 
+                      type="number" 
+                      value={formData.order !== undefined ? formData.order : 9999} 
+                      onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })} 
+                      className="form-input" 
+                      min="1"
                     />
                   </div>
 
@@ -1535,6 +1565,18 @@ export default function AdminDashboard({ token, logoutAdmin, setPage, navigateTo
                         <option value="inactive">Inactive</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
+                    <label className="form-label">Associated College</label>
+                    <select 
+                      value={formData.associated_college || 'SRKR Engineering'} 
+                      onChange={(e) => setFormData({ ...formData, associated_college: e.target.value })} 
+                      className="form-input"
+                    >
+                      <option value="SRKR Engineering">SRKR Engineering</option>
+                      <option value="Vishnu engineering college">Vishnu engineering college</option>
+                    </select>
                   </div>
 
                   <div className="form-grid-2" style={{ margin: '1rem 0 1.5rem 0' }}>

@@ -24,12 +24,28 @@ const deleteFile = (relativePath) => {
 // Admin: GET /api/banners?admin=true to get all banners including inactive ones
 router.get('/', async (req, res) => {
   const isAdmin = req.query.admin === 'true';
+  const { associated_college } = req.query;
   try {
-    let query = 'SELECT * FROM banners ORDER BY display_order ASC, id DESC';
+    let query = 'SELECT * FROM banners';
+    const params = [];
+    const conditions = [];
+
     if (!isAdmin) {
-      query = "SELECT * FROM banners WHERE status = 'active' ORDER BY display_order ASC, id DESC";
+      conditions.push("status = 'active'");
     }
-    const [banners] = await pool.query(query);
+
+    if (associated_college) {
+      conditions.push("associated_college = ?");
+      params.push(associated_college);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    query += ' ORDER BY display_order ASC, id DESC';
+
+    const [banners] = await pool.query(query, params);
     res.json(banners);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -38,7 +54,7 @@ router.get('/', async (req, res) => {
 
 // POST create banner (admin only, uploads 1 banner_image)
 router.post('/', verifyAdmin, upload.single('banner_image'), async (req, res) => {
-  const { title, redirect_link, display_order, status } = req.body;
+  const { title, redirect_link, display_order, status, associated_college } = req.body;
   
   if (!req.file) {
     return res.status(400).json({ error: 'Banner image is required.' });
@@ -54,8 +70,8 @@ router.post('/', verifyAdmin, upload.single('banner_image'), async (req, res) =>
     const banner_image = await uploadToCloudinary(req.file.path, 'banners');
 
     const [result] = await pool.query(
-      'INSERT INTO banners (title, banner_image, redirect_link, display_order, in_between, main_display, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [title || '', banner_image, redirect_link || '#', order, in_between, main_display, activeStatus]
+      'INSERT INTO banners (title, banner_image, redirect_link, display_order, in_between, main_display, status, associated_college) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [title || '', banner_image, redirect_link || '#', order, in_between, main_display, activeStatus, associated_college || 'SRKR Engineering']
     );
 
     const [newBanner] = await pool.query('SELECT * FROM banners WHERE id = ?', [result.insertId]);
@@ -72,7 +88,7 @@ router.post('/', verifyAdmin, upload.single('banner_image'), async (req, res) =>
 // PUT update banner (admin only, optionally uploads a new banner_image)
 router.put('/:id', verifyAdmin, upload.single('banner_image'), async (req, res) => {
   const { id } = req.params;
-  const { title, redirect_link, display_order, status } = req.body;
+  const { title, redirect_link, display_order, status, associated_college } = req.body;
 
   try {
     // Get existing banner to clean up old image if a new one is uploaded
@@ -95,9 +111,10 @@ router.put('/:id', verifyAdmin, upload.single('banner_image'), async (req, res) 
     const activeStatus = status || existing[0].status;
     const in_between = req.body.in_between !== undefined ? (req.body.in_between === 'true' || req.body.in_between === '1' || req.body.in_between === 1 || req.body.in_between === true ? 1 : 0) : existing[0].in_between;
     const main_display = req.body.main_display !== undefined ? (req.body.main_display === 'true' || req.body.main_display === '1' || req.body.main_display === 1 || req.body.main_display === true ? 1 : 0) : existing[0].main_display;
+    const college = associated_college !== undefined ? associated_college : existing[0].associated_college;
 
     await pool.query(
-      'UPDATE banners SET title = ?, banner_image = ?, redirect_link = ?, display_order = ?, in_between = ?, main_display = ?, status = ? WHERE id = ?',
+      'UPDATE banners SET title = ?, banner_image = ?, redirect_link = ?, display_order = ?, in_between = ?, main_display = ?, status = ?, associated_college = ? WHERE id = ?',
       [
         title !== undefined ? title : existing[0].title,
         banner_image,
@@ -106,6 +123,7 @@ router.put('/:id', verifyAdmin, upload.single('banner_image'), async (req, res) 
         in_between,
         main_display,
         activeStatus,
+        college,
         id
       ]
     );

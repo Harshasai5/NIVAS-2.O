@@ -49,6 +49,7 @@ CREATE TABLE `banners` (
   `in_between` tinyint(1) DEFAULT 0,
   `main_display` tinyint(1) DEFAULT 0,
   `status` enum('active','inactive') DEFAULT 'active',
+  `associated_college` varchar(255) DEFAULT 'SRKR Engineering',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -56,11 +57,11 @@ CREATE TABLE `banners` (
 -- Dumping data for table `banners`
 --
 
-INSERT INTO `banners` (`id`, `title`, `banner_image`, `redirect_link`, `display_order`, `in_between`, `main_display`, `status`, `created_at`) VALUES
-(1, 'Premium Hostels Near SRKR', 'Uploads/Banners/1.png', '#', 1, 0, 1, 'active', '2026-05-23 15:18:14'),
-(2, 'Affordable PG Rooms Available', 'Uploads/Banners/2.png', '#', 2, 0, 1, 'active', '2026-05-23 15:18:14'),
-(3, 'AC Rooms Starting From ₹3000', 'Uploads/Banners/3.png', '#', 3, 1, 1, 'active', '2026-05-23 15:18:14'),
-(4, 'Best Student Accommodation', 'Uploads/Banners/4.png', '#', 4, 1, 0, 'active', '2026-05-23 15:18:14');
+INSERT INTO `banners` (`id`, `title`, `banner_image`, `redirect_link`, `display_order`, `in_between`, `main_display`, `status`, `associated_college`, `created_at`) VALUES
+(1, 'Premium Hostels Near SRKR', 'Uploads/Banners/1.png', '#', 1, 0, 1, 'active', 'SRKR Engineering', '2026-05-23 15:18:14'),
+(2, 'Affordable PG Rooms Available', 'Uploads/Banners/2.png', '#', 2, 0, 1, 'active', 'SRKR Engineering', '2026-05-23 15:18:14'),
+(3, 'AC Rooms Starting From ₹3000', 'Uploads/Banners/3.png', '#', 3, 1, 1, 'active', 'SRKR Engineering', '2026-05-23 15:18:14'),
+(4, 'Best Student Accommodation', 'Uploads/Banners/4.png', '#', 4, 1, 0, 'active', 'Vishnu engineering college', '2026-05-23 15:18:14');
 
 -- --------------------------------------------------------
 
@@ -86,6 +87,7 @@ CREATE TABLE `hostels` (
   `total_beds` int(11) DEFAULT 0,
   `status` enum('active','inactive') DEFAULT 'active',
   `installments` int(11) DEFAULT 1,
+  `order` int(11) DEFAULT 9999,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
