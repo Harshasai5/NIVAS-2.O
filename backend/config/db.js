@@ -124,7 +124,7 @@ async function testConnection() {
     await pool.query("UPDATE hostels SET beds_per_room = '4,5,6' WHERE hostel_name = '7 Hills Boys Hostel' AND associated_college = 'Vishnu engineering college'");
     await pool.query("UPDATE hostels SET beds_per_room = '4,5' WHERE hostel_name = 'Aditya Tripura Boys Hostel' AND associated_college = 'Vishnu engineering college'");
     await pool.query("UPDATE hostels SET beds_per_room = '2,3,4,5,6' WHERE hostel_name = 'OM SAI BOYS HOSTEL' AND associated_college = 'Vishnu engineering college'");
-    await pool.query("UPDATE hostels SET beds_per_room = '' WHERE hostel_name = 'Naresh Boys Hostel' AND associated_college = 'Vishnu engineering college'");
+    await pool.query("UPDATE hostels SET beds_per_room = '3,4,5' WHERE hostel_name = 'Naresh Boys Hostel' AND associated_college = 'Vishnu engineering college'");
     console.log("✨ Bed sharing updates applied successfully.");
 
     // Perform google maps link updates
@@ -143,20 +143,21 @@ async function testConnection() {
     await pool.query("UPDATE hostels SET google_maps_link = 'https://maps.app.goo.gl/RZm37qV5BryLZozu7' WHERE hostel_name = '7 Hills Boys Hostel' AND associated_college = 'Vishnu engineering college'");
     await pool.query("UPDATE hostels SET google_maps_link = 'https://maps.app.goo.gl/N5CjfWcWfhzyXRrx9' WHERE hostel_name = 'Aditya Tripura Boys Hostel' AND associated_college = 'Vishnu engineering college'");
     await pool.query("UPDATE hostels SET google_maps_link = 'https://maps.app.goo.gl/KgGHdvy6hDK1pX4E7' WHERE hostel_name = 'OM SAI BOYS HOSTEL' AND associated_college = 'Vishnu engineering college'");
+    await pool.query("UPDATE hostels SET google_maps_link = 'https://maps.app.goo.gl/zfcfBTXDmpvNqsWP9' WHERE hostel_name = 'Naresh Boys Hostel' AND associated_college = 'Vishnu engineering college'");
     console.log("✨ Google maps link updates applied successfully.");
 
     // Perform display flow order updates
     console.log("🛠️ Applying display flow order updates to database...");
     // SRKR Hostels
-    await pool.query("UPDATE hostels SET `order` = 2 WHERE hostel_name = 'Sri Vigneswara Boys Hostel' AND associated_college = 'SRKR Engineering'");
+    await pool.query("UPDATE hostels SET `order` = 3 WHERE hostel_name = 'Sri Vigneswara Boys Hostel' AND associated_college = 'SRKR Engineering'");
     await pool.query("UPDATE hostels SET `order` = 5 WHERE hostel_name = 'Vijaya Aditya Boys Hostel' AND associated_college = 'SRKR Engineering'");
     await pool.query("UPDATE hostels SET `order` = 6 WHERE hostel_name = 'Tatavarthy Boys Hostel' AND associated_college = 'SRKR Engineering'");
     await pool.query("UPDATE hostels SET `order` = 8 WHERE hostel_name = '7 Hills Boys Hostel' AND associated_college = 'SRKR Engineering'");
-    await pool.query("UPDATE hostels SET `order` = 3 WHERE hostel_name = 'P.V.R Girls Hostel' AND associated_college = 'SRKR Engineering'");
+    await pool.query("UPDATE hostels SET `order` = 4 WHERE hostel_name = 'P.V.R Girls Hostel' AND associated_college = 'SRKR Engineering'");
     await pool.query("UPDATE hostels SET `order` = 10 WHERE hostel_name = 'Sri Siva Bala Girls hostel' AND associated_college = 'SRKR Engineering'");
     await pool.query("UPDATE hostels SET `order` = 7 WHERE hostel_name = 'OM SAI BOYS HOSTEL' AND associated_college = 'SRKR Engineering'");
     await pool.query("UPDATE hostels SET `order` = 1 WHERE hostel_name = 'Naresh Boys Hostel' AND associated_college = 'SRKR Engineering'");
-    await pool.query("UPDATE hostels SET `order` = 4 WHERE hostel_name = 'Naresh Girls Hostel' AND associated_college = 'SRKR Engineering'");
+    await pool.query("UPDATE hostels SET `order` = 2 WHERE hostel_name = 'Naresh Girls Hostel' AND associated_college = 'SRKR Engineering'");
     await pool.query("UPDATE hostels SET `order` = 9 WHERE hostel_name = 'Kusuma Sri Girls Hostel' AND associated_college = 'SRKR Engineering'");
 
     // Vishnu Hostels
