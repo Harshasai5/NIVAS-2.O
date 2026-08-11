@@ -166,21 +166,40 @@ export default function HostelsList({
         {/* Quick Sharing Filters (Circular Category Buttons) */}
         <div className="quick-filters-container">
           {[
-            { value: '', label: 'All Sharing', display: 'All' },
-            { value: '3', label: '3 members per room', display: '3 Sharing' },
-            { value: '4', label: '4 members per room', display: '4 Sharing' },
-            { value: '6', label: '6 members per room', display: '6 Sharing' }
+            { type: 'gender', value: 'boys', label: 'Boys Hostels', display: 'Boys' },
+            { type: 'gender', value: 'girls', label: 'Girls Hostels', display: 'Girls' },
+            { type: 'sharing', value: '', label: 'All Sharing', display: 'All' },
+            { type: 'sharing', value: '3', label: '3 members per room', display: '3 Sharing' },
+            { type: 'sharing', value: '4', label: '4 members per room', display: '4 Sharing' },
+            { type: 'sharing', value: '6', label: '6 members per room', display: '6 Sharing' }
           ].map((item, index) => {
-            const isActive = filters.beds_per_room === item.value;
+            const isActive = item.type === 'gender'
+              ? filters.gender === item.value
+              : filters.beds_per_room === item.value;
+
+            const handleClick = () => {
+              if (item.type === 'gender') {
+                setFilters(prev => ({
+                  ...prev,
+                  gender: prev.gender === item.value ? '' : item.value
+                }));
+              } else {
+                setFilters(prev => ({
+                  ...prev,
+                  beds_per_room: prev.beds_per_room === item.value ? '' : item.value
+                }));
+              }
+            };
+
             return (
               <div 
                 key={index} 
                 className={`quick-filter-item ${isActive ? 'active' : ''}`}
-                onClick={() => setFilters(prev => ({ ...prev, beds_per_room: item.value }))}
+                onClick={handleClick}
               >
                 {/* Circle Container */}
                 <div className="quick-filter-circle">
-                  <span className="number">
+                  <span className="number" style={item.type === 'gender' ? { fontSize: '0.95rem' } : {}}>
                     {item.display.split(' ')[0]}
                   </span>
                   {item.display.split(' ')[1] && (

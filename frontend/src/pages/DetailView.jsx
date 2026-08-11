@@ -740,7 +740,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                 style={{ textDecoration: 'none' }}
               >
                 <Phone size={18} />
-                <span>Call Owner ({item.phone})</span>
+                <span>Call Us ({item.phone})</span>
               </a>
               
               <a 
@@ -751,7 +751,7 @@ export default function DetailView({ id, type, setPage, userToken, triggerLike, 
                 style={{ textDecoration: 'none', color: '#25D366', borderColor: '#25D366' }}
               >
                 <MessageSquare size={18} />
-                <span>WhatsApp Owner</span>
+                <span>WhatsApp Us</span>
               </a>
             </div>
           </div>
