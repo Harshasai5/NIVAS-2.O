@@ -166,9 +166,9 @@ export default function HostelsList({
         {/* Quick Sharing Filters (Circular Category Buttons) */}
         <div className="quick-filters-container">
           {[
+            { type: 'sharing', value: '', label: 'All Sharing', display: 'All' },
             { type: 'gender', value: 'boys', label: 'Boys Hostels', display: 'Boys' },
             { type: 'gender', value: 'girls', label: 'Girls Hostels', display: 'Girls' },
-            { type: 'sharing', value: '', label: 'All Sharing', display: 'All' },
             { type: 'sharing', value: '3', label: '3 members per room', display: '3 Sharing' },
             { type: 'sharing', value: '4', label: '4 members per room', display: '4 Sharing' },
             { type: 'sharing', value: '6', label: '6 members per room', display: '6 Sharing' }
